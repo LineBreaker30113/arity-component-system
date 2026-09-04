@@ -31,6 +31,16 @@
             <version>8.5.13</version>
         </dependency>
 
+        <!-- Reached for by the incubation indexer. Marked optional so it is NOT inherited by
+             consumers, which is what the "one runtime dependency" rule above is actually
+             protecting: anyone using the Roaring-backed indexer declares it themselves. -->
+        <dependency>
+            <groupId>org.roaringbitmap</groupId>
+            <artifactId>RoaringBitmap</artifactId>
+            <version>1.6.21</version>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Test only. Versions match OntoDirectory's, so a test moved between the two projects
              behaves identically. No mocking framework, deliberately: call counting is done with
              java.lang.reflect.Proxy, the technique OntologyServiceProxy already uses. -->

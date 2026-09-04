@@ -24,8 +24,10 @@ import java.util.NoSuchElementException;
  *   <li>neither bound is itself a hole, so the first element is always {@code firstIndex} and the
  *       last is always {@code lastIndex}. An empty set is {@code firstIndex > lastIndex}.</li>
  * </ul>
- * Not multi thread safe, and every {@link IntSet} handed out by {@link #getLister()} is a view over
+ * Not multi thread safe, and every {@link OE_IntSet} handed out by {@link #getSet()} is a view over
  * the same state - mutating through one is visible through all of them.
+ *
+ * Simple, took me few minutes, but better than RoaringBitset for this specific use.
  * */
 public class IntSetListerNegative {
 
@@ -54,8 +56,8 @@ public IntSetListerNegative(int lastIndex) {
 }
 
 
-IntSet getLister() {
-	return new IntSet() {
+OE_IntSet getSet() {
+	return new OE_IntSet() {
 		@Override
 		public int get(int i) {
 			int size = count();
@@ -70,6 +72,12 @@ IntSet getLister() {
 		@Override
 		public boolean remove(int i) {
 			return removeValue(i);
+		}
+		
+		/** Inside the bounds and not punched out - two comparisons and one binary search. */
+		@Override
+		public boolean contains(int i) {
+			return i >= firstIndex && i <= lastIndex && exclusionSlot(i) < 0;
 		}
 		
 		@Override
@@ -98,7 +106,7 @@ IntSet getLister() {
 /**
  * Walks the iteration order, and is the one place that turns an element index back into a value.
  * */
-private final class Cursor implements IntSet.IntListerIterator {
+private final class Cursor implements OE_IntSet.IntListerIterator {
 	
 	int cursor;
 	int lastReturned = -1;

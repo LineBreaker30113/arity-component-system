@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -19,15 +20,15 @@ import static org.junit.jupiter.api.Named.named;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 /**
- * Holds both {@link IntSet} representations to the same contract. Nearly every test here is
+ * Holds both {@link OE_IntSet} representations to the same contract. Nearly every test here is
  * parameterized over the two, so the positive and the negative form are checked against one
  * reference {@link TreeSet} and, through it, against each other - only the tests that are about a
  * representation's own trade-off are specific to one of them.
  * <p>
  * Lives in the source package rather than {@code org.halim.test} because it reaches for
- * {@code getLister()} and the backing lists to check the storage invariants after every mutation.
+ * {@code getSet()} and the backing lists to check the storage invariants after every mutation.
  * */
-public class IntSetListerTest {
+public class OEIntSetListerTest {
 
 /** Seeded, so a failure is reproducible and reports the sequence that got there. */
 private static final long SEED = 2026;
@@ -42,9 +43,9 @@ private static final int OPERATIONS_PER_ROUND = 100;
 static final class Form {
 	
 	final Object backing;
-	final IntSet set;
+	final OE_IntSet set;
 	
-	Form(Object backing, IntSet set) {
+	Form(Object backing, OE_IntSet set) {
 		this.backing = backing;
 		this.set = set;
 	}
@@ -100,17 +101,17 @@ interface RangeFactory {
 
 static Form negativeRange(int firstIndex, int lastIndex) {
 	IntSetListerNegative backing = new IntSetListerNegative(firstIndex, lastIndex);
-	return new Form(backing, backing.getLister());
+	return new Form(backing, backing.getSet());
 }
 static Form positiveRange(int firstIndex, int lastIndex) {
 	IntSetListerPositive backing = new IntSetListerPositive(firstIndex, lastIndex);
-	return new Form(backing, backing.getLister());
+	return new Form(backing, backing.getSet());
 }
 
 static Stream<Arguments> forms() {
 	return Stream.of(
-			arguments(named("negative", (RangeFactory) IntSetListerTest::negativeRange)),
-			arguments(named("positive", (RangeFactory) IntSetListerTest::positiveRange)));
+			arguments(named("negative", (RangeFactory) OEIntSetListerTest::negativeRange)),
+			arguments(named("positive", (RangeFactory) OEIntSetListerTest::positiveRange)));
 }
 
 
@@ -118,12 +119,12 @@ static Stream<Arguments> forms() {
  * Reads the set through every observable the interface offers and asserts they tell the same story,
  * then hands back that one story for the caller to compare against the reference.
  * */
-private static List<Integer> snapshot(IntSet set) {
+private static List<Integer> snapshot(OE_IntSet set) {
 	List<Integer> byGet = new ArrayList<>();
 	for(int i = 0; i < set.size(); i++) { byGet.add(set.get(i)); }
 	
 	List<Integer> forward = new ArrayList<>();
-	IntSet.IntListerIterator iterator = set.iterator();
+	OE_IntSet.IntListerIterator iterator = set.iterator();
 	while(iterator.hasNext()) { forward.add(iterator.next()); }
 	
 	// the same iterator, now walked back to the start
@@ -219,7 +220,7 @@ public void testIteratorRemove_DropsEveryOtherElementGoingForward(RangeFactory f
 	Form form = factory.of(10, 25);
 	List<Integer> expected = new ArrayList<>();
 	
-	IntSet.IntListerIterator iterator = form.set.iterator();
+	OE_IntSet.IntListerIterator iterator = form.set.iterator();
 	for(int i = 0; iterator.hasNext(); i++) {
 		int value = iterator.next();
 		if(i % 2 == 0) { iterator.remove(); }
@@ -236,7 +237,7 @@ public void testIteratorRemove_EmptiesTheSetGoingBackward(RangeFactory factory) 
 	Form form = factory.of(-4, 6);
 	form.set.remove(0);   // a hole to walk over on the way back
 	
-	IntSet.IntListerIterator iterator = form.set.iterator();
+	OE_IntSet.IntListerIterator iterator = form.set.iterator();
 	while(iterator.hasNext()) { iterator.next(); }
 	while(iterator.hasPrevious()) {
 		iterator.previous();
@@ -250,7 +251,7 @@ public void testIteratorRemove_EmptiesTheSetGoingBackward(RangeFactory factory) 
 @ParameterizedTest(name = "{0}")
 @MethodSource("forms")
 public void testIteratorRemove_WithoutAPrecedingMoveThrows(RangeFactory factory) {
-	IntSet.IntListerIterator iterator = factory.of(0, 3).set.iterator();
+	OE_IntSet.IntListerIterator iterator = factory.of(0, 3).set.iterator();
 	assertThatThrownBy(iterator::remove).isInstanceOf(IllegalStateException.class);
 	
 	iterator.next();
@@ -261,7 +262,7 @@ public void testIteratorRemove_WithoutAPrecedingMoveThrows(RangeFactory factory)
 @ParameterizedTest(name = "{0}")
 @MethodSource("forms")
 public void testIterator_WalkingPastEitherEndThrows(RangeFactory factory) {
-	IntSet.IntListerIterator iterator = factory.of(0, 1).set.iterator();
+	OE_IntSet.IntListerIterator iterator = factory.of(0, 1).set.iterator();
 	assertThatThrownBy(iterator::previous).isInstanceOf(NoSuchElementException.class);
 	
 	iterator.next();
@@ -272,7 +273,7 @@ public void testIterator_WalkingPastEitherEndThrows(RangeFactory factory) {
 @ParameterizedTest(name = "{0}")
 @MethodSource("forms")
 public void testGet_OutsideTheSetThrows(RangeFactory factory) {
-	IntSet set = factory.of(0, 1).set;
+	OE_IntSet set = factory.of(0, 1).set;
 	assertThatThrownBy(() -> set.get(-1)).isInstanceOf(IndexOutOfBoundsException.class);
 	assertThatThrownBy(() -> set.get(2)).isInstanceOf(IndexOutOfBoundsException.class);
 	assertThatThrownBy(() -> factory.of(0, -1).set.get(0)).as("on an empty set").isInstanceOf(IndexOutOfBoundsException.class);
@@ -281,7 +282,7 @@ public void testGet_OutsideTheSetThrows(RangeFactory factory) {
 @ParameterizedTest(name = "{0}")
 @MethodSource("forms")
 public void testToList_IsASnapshotDetachedFromTheStorage(RangeFactory factory) {
-	IntSet set = factory.of(0, 4).set;
+	OE_IntSet set = factory.of(0, 4).set;
 	IntArrayList ints = set.toList();
 	List<Integer> integers = set.getIntList();
 	
@@ -295,10 +296,10 @@ public void testToList_IsASnapshotDetachedFromTheStorage(RangeFactory factory) {
 @Test
 public void testNegative_StoresADenseRangeInNothingButItsBounds() {
 	IntSetListerNegative backing = new IntSetListerNegative(0, 100_000);
-	assertThat(backing.getLister().size()).isEqualTo(100_001);
+	assertThat(backing.getSet().size()).isEqualTo(100_001);
 	assertThat(boxed(backing.exclusionList)).as("a full range costs one pair of ints").isEmpty();
 	
-	backing.getLister().remove(500);
+	backing.getSet().remove(500);
 	assertThat(boxed(backing.exclusionList)).as("a removal is what costs storage here").containsExactly(500);
 }
 
@@ -307,7 +308,7 @@ public void testPositive_HandlesASparseWorkloadTheNegativeFormCouldNot() {
 	// The negative form would have to materialise every integer between these as a hole, which is
 	// the whole reason the positive form exists.
 	IntSetListerPositive backing = new IntSetListerPositive();
-	IntSet set = backing.getLister();
+	OE_IntSet set = backing.getSet();
 	TreeSet<Integer> reference = new TreeSet<>();
 	Random random = new Random(SEED);
 	
@@ -322,6 +323,120 @@ public void testPositive_HandlesASparseWorkloadTheNegativeFormCouldNot() {
 	
 	assertThat(set.getIntList()).isEqualTo(new ArrayList<>(reference));
 	assertThat(backing.inclusionList.size()).as("storage is the set itself").isEqualTo(reference.size());
+}
+
+// ---------------------------------------------------------------- set algebra
+
+/** Builds one form holding exactly {@code values}, so a test can pick the representation. */
+static OE_IntSet of(String form, Collection<Integer> values) {
+	if(form.equals("negative")) {
+		IntSetListerNegative backing = new IntSetListerNegative(0, -1);
+		OE_IntSet set = backing.getSet();
+		for(int v : values) { set.add(v); }
+		return set;
+	}
+	IntSetListerPositive backing = new IntSetListerPositive();
+	OE_IntSet set = backing.getSet();
+	for(int v : values) { set.add(v); }
+	return set;
+}
+
+/** Both representations paired every way round, since the algebra crosses them. */
+static Stream<Arguments> formPairs() {
+	return Stream.of(
+			arguments("negative", "negative"), arguments("negative", "positive"),
+			arguments("positive", "negative"), arguments("positive", "positive"));
+}
+
+@ParameterizedTest(name = "{0} vs {1}")
+@MethodSource("formPairs")
+public void testContains_AgreesWithTheReference(String leftForm, String rightForm) {
+	Random random = new Random(SEED);
+	TreeSet<Integer> reference = new TreeSet<>();
+	for(int i = 0; i < 400; i++) { reference.add(random.nextInt(900)); }
+	OE_IntSet set = of(leftForm, reference);
+	
+	for(int value = -20; value < 920; value++) {
+		assertThat(set.contains(value)).as("contains(%d) in %s form", value, leftForm).isEqualTo(reference.contains(value));
+	}
+}
+
+@ParameterizedTest(name = "{0} vs {1}")
+@MethodSource("formPairs")
+public void testAlgebra_MatchesTreeSetAcrossEveryPairing(String leftForm, String rightForm) {
+	Random random = new Random(SEED);
+	for(int round = 0; round < 40; round++) {
+		TreeSet<Integer> leftRef = new TreeSet<>(), rightRef = new TreeSet<>();
+		// deliberately overlapping ranges, so the sets share some elements and not others
+		for(int i = 0; i < 1 + random.nextInt(120); i++) { leftRef.add(random.nextInt(300)); }
+		for(int i = 0; i < 1 + random.nextInt(120); i++) { rightRef.add(random.nextInt(300) + 100); }
+		OE_IntSet left = of(leftForm, leftRef), right = of(rightForm, rightRef);
+		
+		TreeSet<Integer> expectedShared = new TreeSet<>(leftRef);
+		expectedShared.retainAll(rightRef);
+		TreeSet<Integer> expectedOnly = new TreeSet<>(leftRef);
+		expectedOnly.removeAll(rightRef);
+		
+		assertThat(boxed(left.intersect(right))).as("intersect").isEqualTo(new ArrayList<>(expectedShared));
+		assertThat(left.intersectionCount(right)).as("intersectionCount").isEqualTo(expectedShared.size());
+		assertThat(boxed(left.difference(right))).as("difference").isEqualTo(new ArrayList<>(expectedOnly));
+		assertThat(left.containsAll(right)).as("containsAll").isEqualTo(leftRef.containsAll(rightRef));
+		
+		// intersection is symmetric even though the implementation drives from the smaller side
+		assertThat(boxed(right.intersect(left))).as("intersect is symmetric").isEqualTo(new ArrayList<>(expectedShared));
+		assertThat(right.intersectionCount(left)).as("count is symmetric").isEqualTo(expectedShared.size());
+	}
+}
+
+@ParameterizedTest(name = "{0} vs {1}")
+@MethodSource("formPairs")
+public void testMutatingAlgebra_LeavesTheSameSetAsTheReference(String leftForm, String rightForm) {
+	Random random = new Random(SEED);
+	for(int round = 0; round < 30; round++) {
+		TreeSet<Integer> leftRef = new TreeSet<>(), rightRef = new TreeSet<>();
+		for(int i = 0; i < 1 + random.nextInt(80); i++) { leftRef.add(random.nextInt(200)); }
+		for(int i = 0; i < 1 + random.nextInt(80); i++) { rightRef.add(random.nextInt(200) + 50); }
+		OE_IntSet right = of(rightForm, rightRef);
+		
+		OE_IntSet retained = of(leftForm, leftRef);
+		TreeSet<Integer> retainedRef = new TreeSet<>(leftRef);
+		assertThat(retained.retainAll(right)).as("retainAll reports change").isEqualTo(retainedRef.retainAll(rightRef));
+		assertThat(retained.getIntList()).as("retainAll result").isEqualTo(new ArrayList<>(retainedRef));
+		
+		OE_IntSet removed = of(leftForm, leftRef);
+		TreeSet<Integer> removedRef = new TreeSet<>(leftRef);
+		assertThat(removed.removeAll(right)).as("removeAll reports change").isEqualTo(removedRef.removeAll(rightRef));
+		assertThat(removed.getIntList()).as("removeAll result").isEqualTo(new ArrayList<>(removedRef));
+		
+		OE_IntSet added = of(leftForm, leftRef);
+		TreeSet<Integer> addedRef = new TreeSet<>(leftRef);
+		assertThat(added.addAll(right)).as("addAll reports change").isEqualTo(addedRef.addAll(rightRef));
+		assertThat(added.getIntList()).as("addAll result").isEqualTo(new ArrayList<>(addedRef));
+	}
+}
+
+@ParameterizedTest(name = "{0} vs {1}")
+@MethodSource("formPairs")
+public void testAlgebra_HandlesEmptyAndDisjointOperands(String leftForm, String rightForm) {
+	OE_IntSet empty = of(leftForm, List.of());
+	OE_IntSet full = of(rightForm, List.of(1, 2, 3));
+	
+	assertThat(empty.isEmpty()).isTrue();
+	assertThat(boxed(empty.intersect(full))).isEmpty();
+	assertThat(boxed(full.intersect(empty))).isEmpty();
+	assertThat(empty.intersectionCount(full)).isZero();
+	assertThat(boxed(empty.difference(full))).isEmpty();
+	assertThat(boxed(full.difference(empty))).containsExactly(1, 2, 3);
+	assertThat(empty.containsAll(full)).isFalse();
+	assertThat(full.containsAll(empty)).as("everything contains the empty set").isTrue();
+	assertThat(empty.retainAll(full)).as("no change retaining against anything").isFalse();
+	
+	OE_IntSet disjoint = of(rightForm, List.of(90, 91));
+	OE_IntSet left = of(leftForm, List.of(1, 2, 3));
+	assertThat(boxed(left.intersect(disjoint))).isEmpty();
+	assertThat(left.removeAll(disjoint)).as("removing a disjoint set changes nothing").isFalse();
+	assertThat(left.retainAll(disjoint)).as("retaining a disjoint set empties this one").isTrue();
+	assertThat(left.isEmpty()).isTrue();
 }
 
 
