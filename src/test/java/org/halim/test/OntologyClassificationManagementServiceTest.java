@@ -1,8 +1,8 @@
 package org.halim.test;
 
-import org.halim.ontology.core.OntologyEngine;
-import org.halim.ontology.view.implementations.DefaultOntologyService;
-import org.halim.ontology.view.OntologyService;
+import org.halim.ontology.legacy.core.OntologyEngine;
+import org.halim.ontology.legacy.view.implementations.DefaultOntologyService;
+import org.halim.ontology.legacy.view.OntologyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

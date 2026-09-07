@@ -1,6 +1,6 @@
 package org.halim.test;
 
-import org.halim.ontology.core.segments.data.OntologyCatalogDetailStore;
+import org.halim.ontology.legacy.core.segments.data.OntologyCatalogDetailStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

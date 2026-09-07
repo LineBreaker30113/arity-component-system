@@ -1,7 +1,7 @@
 package org.halim.test;
 
-import org.halim.ontology.core.TransactionContext;
-import org.halim.ontology.core.segments.manager.DoubleArrayedIndexer;
+import org.halim.ontology.legacy.core.TransactionContext;
+import org.halim.ontology.legacy.core.segments.manager.DoubleArrayedIndexer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,7 +1,7 @@
 package org.halim.test;
 
-import org.halim.ontology.core.OntologyEngine;
-import org.halim.ontology.core.segmentation.query.OntologyElementFilter;
+import org.halim.ontology.legacy.core.OntologyEngine;
+import org.halim.ontology.legacy.core.segmentation.query.OntologyElementFilter;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;

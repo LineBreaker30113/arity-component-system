@@ -1,8 +1,8 @@
 package org.halim.ontology.incubation;
 
-import org.halim.ontology.core.segmentation.command.OntologyClassificationSegmentation;
-import org.halim.ontology.core.segmentation.helper.OntologyQueryable;
-import org.halim.ontology.core.segmentation.helper.OntologyTransaction;
+import org.halim.ontology.legacy.core.segmentation.command.OntologyClassificationSegmentation;
+import org.halim.ontology.legacy.core.segmentation.helper.OntologyQueryable;
+import org.halim.ontology.legacy.core.segmentation.helper.OntologyTransaction;
 
 public interface BidirectionalIndexingService {
 
@@ -123,7 +123,7 @@ int getLastElementIndex();
 
 /** Whether {@code elementIdentity} is currently tombstoned (deleted, awaiting id reuse) or was
  *  never allocated at all -- as opposed to a live element that simply has zero class connections,
- *  which {@link org.halim.ontology.core.segmentation.helper.OntologyQueryable.BaseElementData#getClassesCount}
+ *  which {@link org.halim.ontology.legacy.core.segmentation.helper.OntologyQueryable.BaseElementData#getClassesCount}
  *  can't distinguish from a tombstone on its own. */
 @OntologyQueryable.BypassNonQueryConcerns
 boolean isElementTombstoned(int elementIdentity);

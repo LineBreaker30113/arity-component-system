@@ -1,20 +1,20 @@
 package org.halim.test;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.halim.ontology.core.segmentation.command.AnyCatalogMutableBase;
-import org.halim.ontology.core.segmentation.query.AnyCatalogBase;
-import org.halim.ontology.core.segmentation.query.CustomOntologyFilterBase;
-import org.halim.ontology.core.segmentation.query.OntologyClassFilter;
-import org.halim.ontology.core.segmentation.query.OntologyElementCatalogSegmentation;
-import org.halim.ontology.core.segmentation.query.OntologyElementFilter;
-import org.halim.ontology.core.segments.data.OntologyAnalyticsCalculator;
-import org.halim.ontology.core.segments.data.OntologyClassCatalog;
-import org.halim.ontology.core.segments.data.OntologyElementCatalog;
-import org.halim.ontology.core.segments.data.OntologyFilterResolverSegmentation;
-import org.halim.ontology.core.segments.manager.DoubleArrayedIndexer;
-import org.halim.ontology.core.segments.manager.OntologyHierarchyLister;
-import org.halim.ontology.view.filter.AbstractEnumeratingFilterBase;
-import org.halim.ontology.view.filter.AbstractTestingFilterBase;
+import org.halim.ontology.legacy.core.segmentation.command.AnyCatalogMutableBase;
+import org.halim.ontology.legacy.core.segmentation.query.AnyCatalogBase;
+import org.halim.ontology.legacy.core.segmentation.query.CustomOntologyFilterBase;
+import org.halim.ontology.legacy.core.segmentation.query.OntologyClassFilter;
+import org.halim.ontology.legacy.core.segmentation.query.OntologyElementCatalogSegmentation;
+import org.halim.ontology.legacy.core.segmentation.query.OntologyElementFilter;
+import org.halim.ontology.legacy.core.segments.data.OntologyAnalyticsCalculator;
+import org.halim.ontology.legacy.core.segments.data.OntologyClassCatalog;
+import org.halim.ontology.legacy.core.segments.data.OntologyElementCatalog;
+import org.halim.ontology.legacy.core.segments.data.OntologyFilterResolverSegmentation;
+import org.halim.ontology.legacy.core.segments.manager.DoubleArrayedIndexer;
+import org.halim.ontology.legacy.core.segments.manager.OntologyHierarchyLister;
+import org.halim.ontology.legacy.view.filter.AbstractEnumeratingFilterBase;
+import org.halim.ontology.legacy.view.filter.AbstractTestingFilterBase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,7 +1,7 @@
 package org.halim.test;
 
-import org.halim.ontology.core.OntologyEngine;
-import org.halim.ontology.core.segments.data.OntologyCatalogDetailStore;
+import org.halim.ontology.legacy.core.OntologyEngine;
+import org.halim.ontology.legacy.core.segments.data.OntologyCatalogDetailStore;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

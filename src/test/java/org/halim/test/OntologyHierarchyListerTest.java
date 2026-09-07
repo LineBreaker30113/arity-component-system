@@ -1,7 +1,7 @@
 package org.halim.test;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.halim.ontology.core.segments.manager.OntologyHierarchyLister;
+import org.halim.ontology.legacy.core.segments.manager.OntologyHierarchyLister;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

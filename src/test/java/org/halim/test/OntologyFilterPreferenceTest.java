@@ -1,9 +1,9 @@
 package org.halim.test;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.halim.ontology.core.segmentation.query.*;
-import org.halim.ontology.view.filter.AbstractEnumeratingFilterBase;
-import org.halim.ontology.view.filter.AbstractTestingFilterBase;
+import org.halim.ontology.legacy.core.segmentation.query.*;
+import org.halim.ontology.legacy.view.filter.AbstractEnumeratingFilterBase;
+import org.halim.ontology.legacy.view.filter.AbstractTestingFilterBase;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

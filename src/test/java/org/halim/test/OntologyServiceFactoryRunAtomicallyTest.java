@@ -1,6 +1,6 @@
 package org.halim.test;
 
-import org.halim.ontology.core.OntologyEngine;
+import org.halim.ontology.legacy.core.OntologyEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

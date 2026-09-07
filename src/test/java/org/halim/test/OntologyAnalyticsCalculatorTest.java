@@ -1,8 +1,8 @@
 package org.halim.test;
 
-import org.halim.ontology.core.segments.data.OntologyAnalyticsCalculator;
-import org.halim.ontology.core.segments.manager.DoubleArrayedIndexer;
-import org.halim.ontology.core.segments.manager.OntologyHierarchyLister;
+import org.halim.ontology.legacy.core.segments.data.OntologyAnalyticsCalculator;
+import org.halim.ontology.legacy.core.segments.manager.DoubleArrayedIndexer;
+import org.halim.ontology.legacy.core.segments.manager.OntologyHierarchyLister;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
