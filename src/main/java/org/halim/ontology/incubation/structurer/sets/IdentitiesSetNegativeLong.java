@@ -1,8 +1,7 @@
 package org.halim.ontology.incubation.structurer.sets;
 
-import it.unimi.dsi.fastutil.shorts.ShortArrayList;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,16 +19,9 @@ import java.util.NoSuchElementException;
  * cost the whole gap - and here that gap is measured in longs, so it can be a gap no machine will
  * hold. The bound is the class's own ceiling, not the caller's patience.
  * <p>
- * Holes are stored <em>unsigned</em>. Identities start at 0 and never go negative, so the sign bit
- * would cost a bit and half the range with it; this variant covers [0, 65535] - half the memory per
- * hole of the int form, at a ceiling most single-class element lists never come near.
- * <p>
- * Holes are stored as absolute values, narrowed on the way in, so the ceiling applies to every
- * element and to both bounds alike. The alternative - storing each hole as an offset from
- * {@code firstIndex} - would trade that ceiling for a limit on the <em>span</em> instead, letting a
- * narrow variant sit anywhere in the long range as long as it stayed dense; it costs a rebase of
- * every offset each time the low bound moves, which is exactly the operation {@link #removeValue}
- * already treats as special.
+ * Nothing is narrowed here - a stored hole is the value - so this is the terminal variant the other
+ * three promote into, and the reference they are checked against. Negatives are still rejected,
+ * which keeps the range [0, Long.MAX_VALUE] and leaves ascending order unambiguous.
  * <p>
  * Three invariants hold at all times, and everything below leans on them:
  * <ul>
@@ -41,16 +33,16 @@ import java.util.NoSuchElementException;
  *       for - a wrapped identity is indistinguishable from a real one, so it throws rather than
  *       narrowing silently. That throw is the signal to promote to the next width.</li>
  * </ul>
- * Not multi thread safe, and every {@link LongIntSet} handed out by {@link #getSet()} is a view over
- * the same state - mutating through one is visible through all of them.
+ * Not multi thread safe. The storage is the set: this class implements {@link IdentitiesSet} itself
+ * rather than handing out a separate view, so there is one object per set and nothing to unwrap.
  * */
-public class LongIntSetListerNegativeShort {
+public class IdentitiesSetNegativeLong implements IdentitiesSet {
 
 
 /** The largest identity this width can carry. Past it, promote to the next variant. */
-public static final long MAX_VALUE = 0xFFFFL;
+public static final long MAX_VALUE = Long.MAX_VALUE;
 
-ShortArrayList exclusionList;
+LongArrayList exclusionList;
 long firstIndex, lastIndex;
 
 /** The smallest element. For an empty set this meets getEnd(), leaving an empty range. */
@@ -65,13 +57,13 @@ long getFreeSpace() {
 	return ++lastIndex;
 }
 
-public LongIntSetListerNegativeShort getCopy() {
-	LongIntSetListerNegativeShort result = new LongIntSetListerNegativeShort(this.firstIndex, this.lastIndex);
+public IdentitiesSetNegativeLong getCopy() {
+	IdentitiesSetNegativeLong result = new IdentitiesSetNegativeLong(this.firstIndex, this.lastIndex);
 	result.exclusionList.addAll(this.exclusionList);
 	return result;
 }
 
-public LongIntSetListerNegativeShort(long firstIndex, long lastIndex) {
+public IdentitiesSetNegativeLong(long firstIndex, long lastIndex) {
 	this.firstIndex = firstIndex;
 	// count() reads the span straight off the bounds, so a backwards range would report a negative
 	// size and isEmpty() would sail right past it. Pinning the floor at firstIndex - 1 leaves the
@@ -79,75 +71,50 @@ public LongIntSetListerNegativeShort(long firstIndex, long lastIndex) {
 	this.lastIndex = Math.max(lastIndex, firstIndex - 1);
 	// Only a non-empty range actually stores anything, so only that one has to fit.
 	if(this.firstIndex <= this.lastIndex) { checkFits(this.firstIndex); checkFits(this.lastIndex); }
-	exclusionList = new ShortArrayList();
+	exclusionList = new LongArrayList();
 }
-public LongIntSetListerNegativeShort(long lastIndex) {
+public IdentitiesSetNegativeLong(long lastIndex) {
 	this(0, lastIndex);
 }
 
 
-public static class ShortNegativeLongIntSet implements LongIntSet {
-	
-	LongIntSetListerNegativeShort data;
-	public ShortNegativeLongIntSet(LongIntSetListerNegativeShort data) {
-		setData(data);
-	}
-	public LongIntSetListerNegativeShort getData() { return data; }
-	
-	public void setData(LongIntSetListerNegativeShort data) { this.data = data; }
-	
-	@Override
-	public long get(long i) {
-		long size = data.spanCount();
-		if(i < 0 || i >= size) { throw new IndexOutOfBoundsException("index " + i + ", size " + size); }
-		return data.elementAt(i);
-	}
-	
-	@Override
-	public boolean add(long i) {
-		return data.addValue(i);
-	}
-	@Override
-	public boolean remove(long i) {
-		return data.removeValue(i);
-	}
-	
-	/** Inside the bounds and not punched out - two comparisons and one binary search. */
-	@Override
-	public boolean contains(long i) {
-		return i >= data.firstIndex && i <= data.lastIndex && data.exclusionSlot(i) < 0;
-	}
-	
-	@Override
-	public int size() {
-		return data.count();
-	}
-	
-	@Override
-	public LongListerIterator iterator() {
-		return data.new Cursor();
-	}
-	
-	@Override
-	public List<Integer> getIntList() {
-		return data.toList();
-	}
-	
-	@Override
-	public IntArrayList toList() {
-		return data.toIntArrayList();
-	}
+@Override
+public long identityAt(long index) {
+	long size = spanCount();
+	if(index < 0 || index >= size) { throw new IndexOutOfBoundsException("index " + index + ", size " + size); }
+	return elementAt(index);
 }
 
-LongIntSet getSet() {
-	return new ShortNegativeLongIntSet(this);
+@Override
+public boolean register(long identity) {
+	return addValue(identity);
+}
+@Override
+public boolean unsign(long identity) {
+	return removeValue(identity);
+}
+
+/** Inside the bounds and not punched out - two comparisons and one binary search. */
+@Override
+public boolean contains(long i) {
+	return i >= firstIndex && i <= lastIndex && exclusionSlot(i) < 0;
+}
+
+@Override
+public long size() {
+	return spanCount();
+}
+
+@Override
+public LongListerIterator identityIteritor() {
+	return new Cursor();
 }
 
 
 /**
  * Walks the iteration order, and is the one place that turns an element index back into a value.
  * */
-private final class Cursor implements LongIntSet.LongListerIterator {
+private final class Cursor implements IdentitiesSet.LongListerIterator {
 	
 	long cursor;
 	long lastReturned = -1;
@@ -185,19 +152,22 @@ private final class Cursor implements LongIntSet.LongListerIterator {
 }
 
 
-boolean isEmpty() {
+@Override
+public boolean isEmpty() {
 	return spanCount() == 0;
 }
 
 /**
- * The element count, which a negative set can carry past what {@code int} reports: the bounds are
- * longs and the holes are what cost memory, so a set of 2^40 elements is three fields wide. Kept in
- * long here, and narrowed only where the {@link LongIntSet} contract asks for an int.
+ * The element count. A negative set carries more of them than an int can name: the bounds are longs
+ * and only the holes cost memory, so a set of 2^40 identities is three fields wide. This is the real
+ * count, and {@link #count()} is the narrowed one, used only where an int-shaped container needs a
+ * capacity - which is exactly where the ceiling belongs.
  * */
 long spanCount() {
 	return lastIndex - firstIndex + 1 - exclusionList.size();
 }
 
+/** The count as an int, for sizing an int-indexed container. Throws rather than truncating. */
 int count() {
 	return Math.toIntExact(spanCount());
 }
@@ -220,20 +190,20 @@ long elementAt(long i) {
 	return firstIndex + i + low;
 }
 
-/** The p-th hole, widened. Storage is the only place the narrow type is visible. */
+/** The p-th hole. Nothing to widen at this width; kept for shape. */
 long holeAt(int p) {
-	return exclusionList.getShort(p) & 0xFFFFL;
+	return exclusionList.getLong(p);
 }
 
-/** Narrows for storage. Only ever reached behind {@link #checkFits}, so nothing is lost here. */
-short narrow(long value) {
-	return (short) value;
+/** Identity, kept so the four variants stay line-for-line the same shape. */
+long narrow(long value) {
+	return (long) value;
 }
 
 /** The ceiling, enforced. A wrapped identity would be indistinguishable from a real one. */
 void checkFits(long value) {
 	if(value < 0 || value > MAX_VALUE) {
-		throw new IllegalArgumentException(value + " does not fit in 16 unsigned bits, max " + MAX_VALUE);
+		throw new IllegalArgumentException(value + " is not a valid identity, max " + MAX_VALUE);
 	}
 }
 
@@ -277,7 +247,7 @@ boolean addValue(long value) {
 	// cannot break either invariant, since the bounds are untouched.
 	int slot = exclusionSlot(value);
 	if(slot < 0) { return false; }
-	exclusionList.removeShort(slot);
+	exclusionList.removeLong(slot);
 	return true;
 }
 
@@ -292,7 +262,7 @@ private void punchGap(int at, long from, long to) {
 	long length = to - from + 1;
 	if(length <= 0) { return; }
 	int span = Math.toIntExact(length);
-	short[] gap = new short[span];
+	long[] gap = new long[span];
 	for(int k = 0; k < span; k++) { gap[k] = narrow(from + k); }
 	exclusionList.addElements(at, gap, 0, span);
 }
@@ -330,7 +300,8 @@ boolean removeValue(long value) {
 }
 
 /** Materialises the set in ascending order. Linear in the size of the set, not of the storage. */
-List<Integer> toList() {
+@Override
+public List<Integer> getIntList() {
 	List<Integer> elements = new ArrayList<>(count());
 	int hole = 0;
 	for(long value = firstIndex; value <= lastIndex; value++) {
@@ -340,7 +311,8 @@ List<Integer> toList() {
 	return Collections.unmodifiableList(elements);
 }
 /** Materialises the set in ascending order. Linear in the size of the set, not of the storage. */
-IntArrayList toIntArrayList() {
+@Override
+public IntArrayList toList() {
 	IntArrayList elements = new IntArrayList(count());
 	int hole = 0;
 	for(long value = firstIndex; value <= lastIndex; value++) {
@@ -350,7 +322,7 @@ IntArrayList toIntArrayList() {
 	return elements;
 }
 /** The lossless materialisation. The two int forms above narrow, and throw on an element too big. */
-LongArrayList toLongArrayList() {
+public LongArrayList toLongArrayList() {
 	LongArrayList elements = new LongArrayList(count());
 	int hole = 0;
 	for(long value = firstIndex; value <= lastIndex; value++) {

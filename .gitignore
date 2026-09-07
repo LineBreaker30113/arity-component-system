@@ -30,3 +30,6 @@ bin/
 .DS_Store
 ### Maven ###
 target/
+
+### Reference sources (read-only, not part of the build) ###
+/reference/
