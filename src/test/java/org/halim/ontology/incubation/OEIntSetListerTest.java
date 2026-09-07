@@ -52,7 +52,7 @@ static final class Form {
 	
 	int first() {
 		return switch(backing) {
-			case IntSetListerNegative negative -> negative.getFirst();
+			case IntSetListerNegative negative -> negative.getBegin();
 			case IntSetListerPositive positive -> positive.getFirst();
 			default -> throw new IllegalStateException("unknown form " + backing);
 		};

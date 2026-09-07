@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
  * Not multi thread safe, and every {@link OE_IntSet} handed out by {@link #getSet()} is a view over
  * the same state - mutating through one is visible through all of them.
  *
- * Simple, took me few minutes, but better than RoaringBitset for this specific use.
+ * Simple, took me few minutes, but better than RoaringBitset for few specific use, plus .
  * */
 public class IntSetListerNegative {
 
@@ -36,10 +36,18 @@ IntArrayList exclusionList;
 int firstIndex, lastIndex;
 
 /** The smallest element. For an empty set this meets getEnd(), leaving an empty range. */
-int getFirst() { return firstIndex; }
+int getBegin() { return firstIndex; }
 
 /** Exclusive like the intended java behavior. */
 int getEnd() { return lastIndex + 1; }
+
+int getFreeSpace() { return exclusionList.isEmpty() ? ++lastIndex : exclusionList.getLast(); }
+
+public IntSetListerNegative getCopy() {
+	IntSetListerNegative result = new IntSetListerNegative(this.firstIndex, this.lastIndex);
+	result.exclusionList.addAll(this.exclusionList);
+	return result;
+}
 
 public IntSetListerNegative(int firstIndex, int lastIndex) {
 	this.firstIndex = firstIndex;
@@ -56,50 +64,61 @@ public IntSetListerNegative(int lastIndex) {
 }
 
 
+public static class NegativeDataIntSet implements OE_IntSet {
+	
+	IntSetListerNegative data;
+	public NegativeDataIntSet(IntSetListerNegative data) {
+		setData(data);
+	}
+	public IntSetListerNegative getData() { return data; }
+	
+	public void setData(IntSetListerNegative data) { this.data = data; }
+	
+	@Override
+	public int get(int i) {
+		int size = data.count();
+		if(i < 0 || i >= size) { throw new IndexOutOfBoundsException("index " + i + ", size " + size); }
+		return data.elementAt(i);
+	}
+	
+	@Override
+	public boolean add(int i) {
+		return data.addValue(i);
+	}
+	@Override
+	public boolean remove(int i) {
+		return data.removeValue(i);
+	}
+	
+	/** Inside the bounds and not punched out - two comparisons and one binary search. */
+	@Override
+	public boolean contains(int i) {
+		return i >= data.firstIndex && i <= data.lastIndex && data.exclusionSlot(i) < 0;
+	}
+	
+	@Override
+	public int size() {
+		return data.count();
+	}
+	
+	@Override
+	public IntListerIterator iterator() {
+		return data.new Cursor();
+	}
+	
+	@Override
+	public List<Integer> getIntList() {
+		return data.toList();
+	}
+	
+	@Override
+	public IntArrayList toList() {
+		return data.toIntArrayList();
+	}
+}
+
 OE_IntSet getSet() {
-	return new OE_IntSet() {
-		@Override
-		public int get(int i) {
-			int size = count();
-			if(i < 0 || i >= size) { throw new IndexOutOfBoundsException("index " + i + ", size " + size); }
-			return elementAt(i);
-		}
-		
-		@Override
-		public boolean add(int i) {
-			return addValue(i);
-		}
-		@Override
-		public boolean remove(int i) {
-			return removeValue(i);
-		}
-		
-		/** Inside the bounds and not punched out - two comparisons and one binary search. */
-		@Override
-		public boolean contains(int i) {
-			return i >= firstIndex && i <= lastIndex && exclusionSlot(i) < 0;
-		}
-		
-		@Override
-		public int size() {
-			return count();
-		}
-		
-		@Override
-		public IntListerIterator iterator() {
-			return new Cursor();
-		}
-		
-		@Override
-		public List<Integer> getIntList() {
-			return IntSetListerNegative.this.toList();
-		}
-		
-		@Override
-		public IntArrayList toList() {
-			return IntSetListerNegative.this.toIntArrayList();
-		}
-	};
+	return new NegativeDataIntSet(this);
 }
 
 
