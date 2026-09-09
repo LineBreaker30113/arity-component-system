@@ -55,7 +55,7 @@ public void setDetailBoolean(int entryIdentity, int detailTypeIdentity, boolean 
 private static UnsupportedOperationException unsupported() {
     return new UnsupportedOperationException(
           "OntologyCatalogDetailStore only stores the name detail (Object); "
-                + "supply a custom AnyCatalogBase/AnyCatalogMutableBase for typed numeric/boolean details.");
+                + "supply a custom CatalogModuleBase/AnyCatalogMutableBase for typed numeric/boolean details.");
 }
 
 }

@@ -2,9 +2,13 @@
  * Data hanging off identities. A catalog is one value per identity - a column - and this package is
  * the contract for that plus the storage forms that satisfy it.
  * <p>
- * {@link org.halim.ontology.incubation.structurer.catalogs.AnyCatalogBase} is what every catalog
- * answers to whatever it stores: the lifecycle, the type it prefers, what one identity costs, and
- * five widened accessors. Two families sit under it -
+ * {@link ArityModule.CatalogModuleBase} is what every
+ * catalog answers to whatever it stores: the lifecycle, the type it prefers, what one identity costs,
+ * five widened accessors and their range forms. It is nested inside
+ * {@link ArityModule} because the two are one contract
+ * under two addressing schemes - a column addressed by its receiver here, a cell addressed by
+ * {@code (catalog, identity)} there - and keeping them in one file is what stops them drifting apart.
+ * Two families sit under it -
  * {@link org.halim.ontology.incubation.structurer.catalogs.IntegerValueCatalog} and
  * {@link org.halim.ontology.incubation.structurer.catalogs.FloatingValueCatalog} - because a
  * {@code long getData} and a {@code double getData} cannot be one generic method without boxing the
@@ -42,6 +46,15 @@
  * {@link org.halim.ontology.incubation.structurer.catalogs.LongChunkInt} owning where an identity
  * lands.
  * <p>
+ * <b>Reading in bulk is a range copied into the caller's array</b>, not a value handed to a consumer:
+ * a callback would put a call back per element at the very site the bulk form exists to empty. The
+ * defaults are the per-element loop and buy nothing on their own - what they buy is the override
+ * point, and every storage form here takes it. A lister copies the range in one run, and an arrays
+ * catalog resolves the chunk split once per block rather than once per identity, so a caller reading
+ * a column pays for chunking once over the whole run instead of on every read. Only the primitive
+ * views have a range form; a bulk {@code Object} accessor is an {@code Object[]} fill, which is the
+ * thing this package is arranged to avoid.
+ * <p>
  * A catalog is <b>total</b>: it answers for every identity, and a stored slot never written reads as
  * zero rather than as absent. Zero is a value here, not a sentinel. Which identities exist is the
  * occupied set's question and not a catalog's.
@@ -49,3 +62,5 @@
  * None of these is multi thread safe.
  * */
 package org.halim.ontology.incubation.structurer.catalogs;
+
+import org.halim.ontology.incubation.structurer.ArityModule;

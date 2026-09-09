@@ -58,11 +58,11 @@ public void testGetAncestorAsSet_ThroughRealProxy_DoesNotDeadlock() {
 }
 
 /**
- * {@code NameContaining} resolution calls {@code AnyCatalogBase.getDetailObject} on the
+ * {@code NameContaining} resolution calls {@code CatalogModuleBase.getDetailObject} on the
  * already-proxied element-data service from inside another already-locked proxied call
  * ({@code filteringService.getAllElements}) — the same nested-proxy-call shape that caused the
  * original deadlock this test class guards against. Catches a missing bypass annotation on
- * {@code AnyCatalogBase}/{@code AnyCatalogMutableBase}'s methods.
+ * {@code CatalogModuleBase}/{@code AnyCatalogMutableBase}'s methods.
  */
 @Test
 public void testFilterElementsByName_ThroughRealProxy_DoesNotDeadlock() {

@@ -1,7 +1,7 @@
 /**
  * The engine's internal read-side ports. {@code OntologyClassCatalogSegmentation}/{@code
  * OntologyElementCatalogSegmentation} expose per-class/per-element detail storage through the
- * generic {@code AnyCatalogBase} addressing scheme ({@code (entryIdentity, detailTypeIdentity)});
+ * generic {@code CatalogModuleBase} addressing scheme ({@code (entryIdentity, detailTypeIdentity)});
  * {@code OntologyAnalyticsSegmentation} answers hierarchy-shape questions (ancestry, heritage,
  * counts); {@code OntologyClassFilter}/{@code OntologyElementFilter} are plain-data predicate ASTs
  * that {@code OntologyFilteringServiceSegmentation} resolves into actual matches; {@code
@@ -14,7 +14,7 @@
  * Most of this package is implemented by {@code core.segments} and consumed by callers. Two
  * interfaces run the other way — a client implements them and the engine calls through:
  * <ul>
- *   <li>{@code AnyCatalogBase} — storage. A client plugs its own structure-of-arrays store in behind
+ *   <li>{@code CatalogModuleBase} — storage. A client plugs its own structure-of-arrays store in behind
  *       a catalog.</li>
  *   <li>{@code CustomOntologyFilterBase} — filtering. A client supplies a filtering rule over that
  *       same client-defined data, wrapped into a tree by {@code OntologyClassFilter.Custom} or

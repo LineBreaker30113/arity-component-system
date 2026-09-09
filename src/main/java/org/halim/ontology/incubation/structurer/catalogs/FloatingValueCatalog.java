@@ -1,5 +1,7 @@
 package org.halim.ontology.incubation.structurer.catalogs;
 
+import org.halim.ontology.incubation.structurer.ArityModule;
+
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 
@@ -12,7 +14,7 @@ import it.unimi.dsi.fastutil.floats.FloatArrayList;
  * {@code getData} as the double ones, widening on the way out, and differ only in what
  * {@link #getEstimatedBytesPerIdentity} reports.
  * */
-public interface FloatingValueCatalog extends AnyCatalogBase {
+public interface FloatingValueCatalog extends ArityModule.CatalogModuleBase {
 
 double getData(long identity);
 
@@ -27,12 +29,12 @@ default double getDoubleFor(long identity) {
 
 @Override
 default long getLongFor(long identity) {
-	return AnyCatalogBase.exactLong(getData(identity));
+	return ArityModule.exactLong(getData(identity));
 }
 
 @Override
 default int getIntFor(long identity) {
-	return AnyCatalogBase.exactInt(getData(identity));
+	return ArityModule.exactInt(getData(identity));
 }
 
 
@@ -61,6 +63,17 @@ class FloatingValueCatalogListerDouble implements FloatingValueCatalog {
 	@Override
 	public void truncate(long capacity) {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
+	}
+
+
+	/**
+	 * The flat list is the storage, so the whole range is one run and there is no chunk split to pay
+	 * for. This is the case the per-element default is worst against - the loop it replaces was all
+	 * dispatch and no work.
+	 * */
+	@Override
+	public void copyDoublesInto(long from, long to, double[] dest, int offset) {
+		data.getElements(Math.toIntExact(from), dest, offset, Math.toIntExact(to - from));
 	}
 
 }
@@ -102,6 +115,21 @@ class FloatingValueCatalogListerFloat implements FloatingValueCatalog {
 	@Override
 	public void truncate(long capacity) {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
+	}
+
+
+	/**
+	 * The flat list is the storage, so the whole range is one run and there is no chunk split to pay
+	 * for. This is the case the per-element default is worst against - the loop it replaces was all
+	 * dispatch and no work.
+	 * */
+	@Override
+	public void copyDoublesInto(long from, long to, double[] dest, int offset) {
+		float[] elements = data.elements();
+		int at = Math.toIntExact(from);
+		int end = Math.toIntExact(to);
+		if(end > data.size()) { throw new IndexOutOfBoundsException("identity " + (end - 1) + " is past this catalog"); }
+		while(at < end) { dest[offset++] = elements[at++]; }
 	}
 
 }

@@ -40,7 +40,7 @@ public class OntologyCustomFilterTest {
 private static final int SIZE_IN_BYTES_DETAIL = 7;
 
 /**
- * A client-supplied catalog store, of the kind {@code AnyCatalogBase}'s javadoc describes: names in
+ * A client-supplied catalog store, of the kind {@code CatalogModuleBase}'s javadoc describes: names in
  * one row, a typed {@code long} size in another. The engine's built-in
  * {@code OntologyCatalogDetailStore} deliberately stores only the name detail and tells callers to
  * supply exactly this for anything typed -- so using one here is not test scaffolding around a

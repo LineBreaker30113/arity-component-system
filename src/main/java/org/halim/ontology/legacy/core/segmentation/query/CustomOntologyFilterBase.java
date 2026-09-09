@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 /**
  * The engine's extension point for filtering logic {@code core} cannot express on its own — the
  * query-side counterpart to {@link AnyCatalogBase}'s role for storage. A client plugs its own
- * structure-of-arrays store into a catalog through {@code AnyCatalogBase}; it plugs its own filtering
+ * structure-of-arrays store into a catalog through {@code CatalogModuleBase}; it plugs its own filtering
  * rule over that same client-defined data in through here, and {@code core} only ever calls through
  * this contract. Wrapped into a filter tree by {@link OntologyClassFilter.Custom} or
  * {@link OntologyElementFilter.Custom}.

@@ -1,6 +1,6 @@
 package org.halim.ontology.incubation.structurer.catalogs.integer;
 
-import org.halim.ontology.incubation.structurer.catalogs.AnyCatalogBase;
+import org.halim.ontology.incubation.structurer.ArityModule;
 import org.halim.ontology.incubation.structurer.catalogs.ChunkedCatalogBase;
 import org.halim.ontology.incubation.structurer.catalogs.LongChunkInt;
 import org.halim.ontology.incubation.structurer.catalogs.IntegerValueCatalog.IntSizedIntegerValueCatalog;
@@ -57,7 +57,7 @@ public boolean setData(long identity, byte value) {
  * wanted was a wider one.
  * */
 public boolean setData(long identity, long value) {
-	return setData(identity, AnyCatalogBase.exactByte(value));
+	return setData(identity, ArityModule.exactByte(value));
 }
 
 /** Skips the growth check, so the caller carries the invariant that the slot already exists. */
@@ -65,5 +65,24 @@ public void setDataRaw(long identity, byte value) {
 	data.get(chunking.chunkOf(identity))[chunking.offsetOf(identity)] = value;
 }
 
+
+
+/**
+ * The range copied chunk by chunk rather than element by element. The chunk split is resolved once
+ * per block instead of once per identity, and inside a block the copy is a run - so the cost of
+ * chunking, which the per-element path pays on every read, is amortised over the whole run.
+ * */
+@Override
+public void copyIntsInto(long from, long to, int[] dest, int offset) {
+	for(long identity = from; identity < to; ) {
+		byte[] block = data.get(chunking.chunkOf(identity));
+		int start = chunking.offsetOf(identity);
+		int run = (int) Math.min(to - identity, block.length - start);
+		if(run <= 0) { throw new IndexOutOfBoundsException("identity " + identity + " is past this catalog"); }
+		for(int i = 0; i < run; i++) { dest[offset + i] = block[start + i]; }
+		identity += run;
+		offset += run;
+	}
+}
 
 }

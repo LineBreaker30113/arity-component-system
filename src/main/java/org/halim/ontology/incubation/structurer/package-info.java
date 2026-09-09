@@ -41,15 +41,30 @@
  * table first and then loops on something the compiler can see through.
  * <p>
  * <b>What is settled here and what is not.</b> The rules above are decisions, not sketches - they
- * hold across the package and the code below already keeps them. The module type that owns an arity
- * is being replaced, so the class currently named {@code ArityModule} is a staging area rather than
- * the shape being aimed at; read it as work in flight and not as the contract.
+ * hold across the package and the code below already keeps them.
  * <p>
- * {@link org.halim.ontology.incubation.structurer.ArityCatalogBase} is in progress too. It is the table
- * form of the catalog contract - one object holding every column of an arity, a cell addressed by
- * {@code (catalog, identity)} - so that a client who knows their arity can write one class over a
- * few flat arrays and skip the per-column machinery entirely. Catalogs stay interfaces rather than
- * classes precisely so a column need not be stored at all: a value that is a function of the
- * identity costs no memory, grows for free, and answers the same contract.
+ * {@link ArityModule} is the type that owns an arity:
+ * the occupied set, and every column addressed by {@code (catalog, identity)}. It replaced the module
+ * class that used to hold a list of catalogs beside a list of their names, and the reason it is an
+ * interface rather than that class is the cost of the modular shape when the arity is simple. A
+ * client with three int columns can implement it over three flat arrays and be done - no module
+ * object per column, no slot table holding what a field would have held.
+ * {@link org.halim.ontology.incubation.structurer.ModularArityCatalog} is the other side of that
+ * trade and is still the right answer when the columns genuinely are their own storage, or already
+ * exist as objects. Catalogs stay interfaces rather than classes precisely so a column need not be
+ * stored at all: a value that is a function of the identity costs no memory, grows for free, and
+ * answers the same contract.
+ * <p>
+ * <b>Bulk reads are how a loop stops paying for the interface.</b> Addressing a column by parameter
+ * rather than by receiver puts a switch inside the callee, and a switch inside a call that did not
+ * inline is paid on every element - so the table form needs the range accessors more than the column
+ * form does, not less. They are defaults, so nothing has to supply them, and the default body is the
+ * per-element loop; what they are for is the override, where the loop runs on a concrete array the
+ * compiler can see through. A modular arity forwards the whole range to the column and pays its two
+ * dispatches once instead of once per element.
+ * <p>
+ * What is <b>not</b> settled: catalogs are addressed by slot and nothing yet resolves a name to one,
+ * and there is no gather - a read of an arbitrary identity list rather than a contiguous range -
+ * which is the shape closure over an occupied set actually wants.
  * */
 package org.halim.ontology.incubation.structurer;

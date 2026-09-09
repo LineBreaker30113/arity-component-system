@@ -1,7 +1,7 @@
 /**
  * Ready-made base classes for the engine's filtering extension point — the {@code core.segmentation
  * .query.CustomOntologyFilterBase} contract that lets a client supply filtering logic {@code core}
- * cannot express on its own. This is the query-side counterpart to {@code AnyCatalogBase}: that lets a
+ * cannot express on its own. This is the query-side counterpart to {@code CatalogModuleBase}: that lets a
  * client plug its own storage into a catalog, these let filtering exploit whatever it stored there.
  *
  * <h2>Contents</h2>
@@ -12,7 +12,7 @@
  *   <li>{@code AbstractTestingFilterBase} — implement {@code test(int)}; you are never asked to
  *       produce a set.</li>
  * </ul>
- * Both serve class filtering and element filtering alike, for the same reason {@code AnyCatalogBase}
+ * Both serve class filtering and element filtering alike, for the same reason {@code CatalogModuleBase}
  * serves both catalogs: a filter is a predicate over identities, and the two kinds of identity are the
  * same shape. Which kind an implementation is actually written for is a matter of naming and
  * discipline, not of type — see {@code CustomOntologyFilterBase} for that trade-off.

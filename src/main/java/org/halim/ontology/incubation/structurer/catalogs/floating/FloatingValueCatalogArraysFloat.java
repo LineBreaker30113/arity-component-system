@@ -1,6 +1,5 @@
 package org.halim.ontology.incubation.structurer.catalogs.floating;
 
-import org.halim.ontology.incubation.structurer.catalogs.AnyCatalogBase;
 import org.halim.ontology.incubation.structurer.catalogs.ChunkedCatalogBase;
 import org.halim.ontology.incubation.structurer.catalogs.LongChunkInt;
 import org.halim.ontology.incubation.structurer.catalogs.FloatingValueCatalog;
@@ -60,5 +59,24 @@ public void setDataRaw(long identity, double value) {
 	data.get(chunking.chunkOf(identity))[chunking.offsetOf(identity)] = (float) value;
 }
 
+
+
+/**
+ * The range copied chunk by chunk rather than element by element. The chunk split is resolved once
+ * per block instead of once per identity, and inside a block the copy is a run - so the cost of
+ * chunking, which the per-element path pays on every read, is amortised over the whole run.
+ * */
+@Override
+public void copyDoublesInto(long from, long to, double[] dest, int offset) {
+	for(long identity = from; identity < to; ) {
+		float[] block = data.get(chunking.chunkOf(identity));
+		int start = chunking.offsetOf(identity);
+		int run = (int) Math.min(to - identity, block.length - start);
+		if(run <= 0) { throw new IndexOutOfBoundsException("identity " + identity + " is past this catalog"); }
+		for(int i = 0; i < run; i++) { dest[offset + i] = block[start + i]; }
+		identity += run;
+		offset += run;
+	}
+}
 
 }

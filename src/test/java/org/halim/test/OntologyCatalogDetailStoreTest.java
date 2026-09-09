@@ -27,7 +27,7 @@ public void testSetObjectDetail_ThenGet_RoundTrips() {
 }
 
 // The default store is names-only (Object-typed); it deliberately doesn't implement the
-// unboxed-primitive detail types that a custom AnyCatalogBase would use for some other detail.
+// unboxed-primitive detail types that a custom CatalogModuleBase would use for some other detail.
 
 @Test
 public void testGetDetailLong_ThrowsUnsupported() {

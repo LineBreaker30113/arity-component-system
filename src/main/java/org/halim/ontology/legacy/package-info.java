@@ -5,7 +5,7 @@
  * <b>Elements adn classes are deliberately undefined, and so is the data a class carries.</b>
  * An element or Class is an int identity and nothing more; the engine attaches no meaning to it.
  * Anything a client wants to hang off a class or an element goes in through
- * {@code core.segmentation.query.AnyCatalogBase} (storage) and is filtered on through
+ * {@code core.segmentation.query.CatalogModuleBase} (storage) and is filtered on through
  * {@code core.segmentation.query.CustomOntologyFilterBase} (queries). Consequently anything in this
  * package that assumed a shape for an element or its data would be wrong by construction -- the
  * engine is not usable on its own, it is meant to be adaptable to anything.

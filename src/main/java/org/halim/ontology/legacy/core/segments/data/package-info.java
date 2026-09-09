@@ -8,7 +8,7 @@
  * <h2>Contents</h2>
  * <ul>
  *   <li>{@code OntologyClassCatalog} / {@code OntologyElementCatalog} — per-entry detail storage,
- *       layered over a composed {@code AnyCatalogBase}/{@code AnyCatalogMutableBase} store that
+ *       layered over a composed {@code CatalogModuleBase}/{@code AnyCatalogMutableBase} store that
  *       defaults to {@code OntologyCatalogDetailStore} but can be supplied by a client.</li>
  *   <li>{@code OntologyCatalogDetailStore} — the engine's built-in default for that store. It holds
  *       the name detail only, and deliberately refuses typed numeric/boolean details rather than

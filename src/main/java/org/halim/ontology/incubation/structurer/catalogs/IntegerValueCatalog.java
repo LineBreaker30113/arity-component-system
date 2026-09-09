@@ -1,5 +1,7 @@
 package org.halim.ontology.incubation.structurer.catalogs;
 
+import org.halim.ontology.incubation.structurer.ArityModule;
+
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
@@ -19,7 +21,7 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
  * catalog was built at is a promise about its contents, and {@link IntSizedIntegerValueCatalog}
  * exists to carry that promise in the type rather than in a comment.
  * */
-public interface IntegerValueCatalog extends AnyCatalogBase {
+public interface IntegerValueCatalog extends ArityModule.CatalogModuleBase {
 
 long getData(long identity);
 
@@ -34,18 +36,18 @@ default long getLongFor(long identity) {
 
 @Override
 default int getIntFor(long identity) {
-	return AnyCatalogBase.exactInt(getData(identity));
+	return ArityModule.exactInt(getData(identity));
 }
 
 @Override
 default double getDoubleFor(long identity) {
-	return AnyCatalogBase.exactDouble(getData(identity));
+	return ArityModule.exactDouble(getData(identity));
 }
 
 
 /**
  * An integral catalog whose values are known to fit in an int, which is what
- * {@link AnyCatalogBase#PREFERRED_INTEGER} means: integers can be used carefreely.
+ * {@link ArityModule#PREFERRED_INTEGER} means: integers can be used carefreely.
  * <p>
  * The promise is structural rather than checked. {@link #getIntData} is the stored value, so there
  * is nothing to verify on the way out - {@link #getIntFor} cannot throw here, and neither can
@@ -105,6 +107,17 @@ class IntegerValueCatalogListerLong implements IntegerValueCatalog {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
 	}
 
+
+	/**
+	 * The flat list is the storage, so the whole range is one run and there is no chunk split to pay
+	 * for. This is the case the per-element default is worst against - the loop it replaces was all
+	 * dispatch and no work.
+	 * */
+	@Override
+	public void copyLongsInto(long from, long to, long[] dest, int offset) {
+		data.getElements(Math.toIntExact(from), dest, offset, Math.toIntExact(to - from));
+	}
+
 }
 
 
@@ -133,6 +146,17 @@ class IntegerValueCatalogListerInt implements IntSizedIntegerValueCatalog {
 	@Override
 	public void truncate(long capacity) {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
+	}
+
+
+	/**
+	 * The flat list is the storage, so the whole range is one run and there is no chunk split to pay
+	 * for. This is the case the per-element default is worst against - the loop it replaces was all
+	 * dispatch and no work.
+	 * */
+	@Override
+	public void copyIntsInto(long from, long to, int[] dest, int offset) {
+		data.getElements(Math.toIntExact(from), dest, offset, Math.toIntExact(to - from));
 	}
 
 }
@@ -165,6 +189,21 @@ class IntegerValueCatalogListerShort implements IntSizedIntegerValueCatalog {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
 	}
 
+
+	/**
+	 * The flat list is the storage, so the whole range is one run and there is no chunk split to pay
+	 * for. This is the case the per-element default is worst against - the loop it replaces was all
+	 * dispatch and no work.
+	 * */
+	@Override
+	public void copyIntsInto(long from, long to, int[] dest, int offset) {
+		short[] elements = data.elements();
+		int at = Math.toIntExact(from);
+		int end = Math.toIntExact(to);
+		if(end > data.size()) { throw new IndexOutOfBoundsException("identity " + (end - 1) + " is past this catalog"); }
+		while(at < end) { dest[offset++] = elements[at++]; }
+	}
+
 }
 
 
@@ -193,6 +232,21 @@ class IntegerValueCatalogListerByte implements IntSizedIntegerValueCatalog {
 	@Override
 	public void truncate(long capacity) {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
+	}
+
+
+	/**
+	 * The flat list is the storage, so the whole range is one run and there is no chunk split to pay
+	 * for. This is the case the per-element default is worst against - the loop it replaces was all
+	 * dispatch and no work.
+	 * */
+	@Override
+	public void copyIntsInto(long from, long to, int[] dest, int offset) {
+		byte[] elements = data.elements();
+		int at = Math.toIntExact(from);
+		int end = Math.toIntExact(to);
+		if(end > data.size()) { throw new IndexOutOfBoundsException("identity " + (end - 1) + " is past this catalog"); }
+		while(at < end) { dest[offset++] = elements[at++]; }
 	}
 
 }
