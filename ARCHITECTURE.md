@@ -38,7 +38,7 @@ concrete structure. The list has to be typed to a contract, not to a class.
 
 | Layer | Package | State |
 |---|---|---|
-| Identity representation | `structurer/sets/` | Seven encodings — positive/negative, byte/short/int/long, Roaring. Done. |
+| Identity representation | `structurer/sets/` | Seven encodings — negative at byte/short/int/long, positive at byte/short only, Roaring. Narrowing to five: see below. |
 | Data per identity | `structurer/catalogs/` | Column contract, integral and floating families, lister and chunked storage, six widths. Done. |
 | The arity | `structurer/ArityModule`, `ModularArityCatalog` | Occupied set plus columns, cell addressed `(catalog, identity)`. Done. |
 | Structures | `structurer/structures/` | One unary structure. `indexers/` is an empty directory. |
@@ -145,6 +145,38 @@ element)` — with all policy (capture once per element per transaction, buffer,
 one class. That preserves what AOP was actually buying: the concern stays in a single place. Put the
 barrier in the private mutators, not the public API, so anything added later is journalled by
 construction rather than by remembering.
+
+### The set widths narrow to int and long
+
+The byte and short representations go, and the positive family gains the two widths it never had. The
+end state is five encodings — negative at int and long, positive at int and long, Roaring — where
+today there are seven, and the two that exist on the positive side are the two being removed.
+
+The saving they were built for does not survive contact with where the representations are actually
+used. The storage is genuinely unsigned — `MAX_VALUE = 0xFFFFL`, reads masked with `& 0xFFFFL`, and
+`checkFits` refusing anything outside `[0, 65535]` — so a short-wide set really does carry 65,536
+distinct values, and its arithmetic ceiling really is 128 KiB against an int. But that ceiling sits
+exactly where the form is the wrong one. A positive set reaches it only by holding every value in its
+range, which is when the negative form would have cost two bounds and an empty hole list; a negative
+set reaches it only when nearly every identity is a hole, which is when the positive form was wanted.
+In the band where each form is the right choice the saving is single-digit KiB — a negative set
+carrying four thousand holes saves eight.
+
+Those are per-set figures besides, and `occupied` is the only thing in the tree that holds an
+`IdentitiesSet` at all — one per arity, and arities are few. The package-info's "forty identities
+under 256 comfortably" was imagining many small sets, and nothing holds many small sets. Against a
+saving that size, the four narrow classes are 1,210 lines and a pairing every algebra fast path has to
+consider.
+
+The order matters: **`IdentitiesSetPositiveInt` and `IdentitiesSetPositiveLong` are written before
+`IdentitiesSetPositiveByte` and `IdentitiesSetPositiveShort` are deleted.** Positive exists only at
+those two widths today, so deleting them first removes the representation entirely and leaves negative
+and Roaring — and positive is the form for small or scattered sets, which is precisely where a
+negative set degenerates worst. The negative pair can go whenever.
+
+This is the first decision here that removes a premise rather than adding one. Storage width bounding
+identity *values* is still true and still the reason the wide forms exist; what stops being true is
+that the narrow end of that range was worth a class.
 
 ### Edit speed is the cheap resource
 
