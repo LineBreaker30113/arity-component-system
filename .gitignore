@@ -31,5 +31,5 @@ bin/
 ### Maven ###
 target/
 
-### Reference sources (read-only, not part of the build) ###
+### Local study material, not part of the build ###
 /reference/

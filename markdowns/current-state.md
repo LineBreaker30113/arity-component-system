@@ -41,5 +41,4 @@ Nothing under `src/test/` exercises `structurer/structures/` (checked 2026-09-17
 Work decided to be done and urgent.
 
 - The urgent code work: `inferred-decisions.md` → Urgent work, not yet reviewed.
-- Delete `ARCHITECTURE.md` and `GOALS.md`; their content is migrated. The author: "prepare to delete".
 - Nothing is committed. The staged `ontructure/package-info.java` is the author's.

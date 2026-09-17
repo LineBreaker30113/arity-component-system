@@ -55,7 +55,6 @@ without being asked.
 - `markdowns/response.md` — long answers that read badly in the terminal. Never a source.
 - `CLAUDE.md` — how we work. Other files do not restate its rules.
 - `README.md` — goal, what it is not, the application.
-- `ARCHITECTURE.md`, `GOALS.md` — being deleted; content migrated. Do not read or update them.
 - Claude's memory, outside the repo — pointers only.
 
 **The quote test.** An entry in the author's words is a sentence the author wrote, in a message or in
@@ -92,7 +91,7 @@ their code, with only filler removed.
 - `reference/` — third-party code and papers kept locally for study. Gitignored, never on the build
   path, never a dependency. Read it, then close it and write your own: nothing is copied, pasted or
   transcribed from there into `src/`. Cite where an idea came from, in the answer or the commit
-  message. `reference/reference-rules.md` holds the detail and stays out of the repository.
+  message.
 
 ## Build
 
