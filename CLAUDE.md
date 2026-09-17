@@ -5,22 +5,82 @@ formal concept analysis. Java 21, Maven, `fastutil` as the only hard runtime dep
 
 ## Working relationship
 
-**The user writes the code. Claude answers questions.**
+The author: "My job is to make decisions and write the parts unique, so Claude can complete the
+boilerplate."
 
-What is wanted: research on packages and prior art, explanations of algorithms, a read on a design,
-occasionally a sketch of boilerplate. What is not wanted: implementing features, refactoring, or
-improving code that was shown for discussion.
+| Job | Who | When | Output | Checked by |
+|---|---|---|---|---|
+| Decide | author | a question | `decisions.md` | nothing: the authority |
+| Write the unique parts | author | — | interfaces, invariants, tests, the first class of each pattern | compiler, the author's tests |
+| Review | author | before a session or a commit | reviewed inferences, accepted diffs | — |
+| Answer | Claude | a question | the terminal, or `response.md` if asked | sources, arithmetic shown |
+| Record | Claude | on request, or a standing instruction | entries in the right file | quote test, the author's review |
+| Suggest | Claude | when it bears on the question | an option under a question | the author's decision |
+| Boilerplate | Claude | on request | the requested code | compiles, tests pass, no choices made |
 
+- **Write only when requested** — code, markdown, commits. Recording may also run under a standing
+  instruction. Not wanted: implementing features, refactoring, or improving code shown for discussion.
+- **Boilerplate** is code fully determined by the author's code, `decisions.md`, and reviewed
+  inferences: two careful people given the same inputs write the same code. If a choice is left, it
+  is a unique part — stop and ask rather than choose. It covers sibling variants of a class the author
+  wrote, delegation methods, bulk accessors per type once the first one exists, and the mechanical
+  edits of a rename (the new name is the author's). Not interfaces, invariants, or tests.
+- **State the reading before acting.** If an instruction has two readings that would change files
+  differently, ask. Otherwise state the reading in one line, then act.
 - **Answer in the terminal, at the length the question deserves.** A question gets an answer, not a
-  document. Do not produce reports, briefs, or plans unless a file is explicitly requested.
-- **Do not write to `src/`.** If code is wanted it will be asked for by name, and it is a sketch to
-  read — not a change to land.
+  document. No reports, briefs, or plans unless a file is explicitly requested.
 - **One question, one answer.** Do not anticipate the next three questions and pre-answer them, and
   do not append an architecture, a build order, or a verification section to a factual answer.
 - **A narrowing correction is about mode, not content.** "Just answer me", "don't read that",
   "you're not meant to code" mean stop the current shape of work — not continue it more carefully.
-- Research is welcome and should be real: check sources rather than answering from memory, and say
-  plainly when something is already solved elsewhere.
+- **Research should be real** — prior art, packages, algorithms, a read on a design. Check sources
+  rather than answering from memory, show the arithmetic behind a number, and say plainly when
+  something is already solved elsewhere.
+
+## Markdown files
+
+Every entry has one home. **Inferences live only in `inferred-decisions.md`**, so a wrong one can
+only sit in the file the author reviews. Keep the file count low: do not create a markdown file
+without being asked.
+
+- `markdowns/decisions.md` — the author's words only. **Wins any conflict with another doc.**
+- `markdowns/assumptions.md` — the target use case, in the author's words only.
+- `markdowns/inferred-decisions.md` — every inference, quoting its source. New entries go under
+  **Unreviewed**, at the end. The author's review corrects or deletes each one and moves it above that
+  heading. Treat entries above it as correct; build nothing on unreviewed ones.
+- `markdowns/questions.md` — open questions, each with its options and who holds each. A suggestion
+  that answers no question is not recorded. A settled question leaves the file.
+- `markdowns/current-state.md` — facts about what exists, checked against the repo and dated; and the
+  handoff: work decided to be done and urgent.
+- `markdowns/response.md` — long answers that read badly in the terminal. Never a source.
+- `CLAUDE.md` — how we work. Other files do not restate its rules.
+- `README.md` — goal, what it is not, the application. `reference-rules.md` — rules for
+  `reference/`; it stays at the root because `/reference/` is gitignored.
+- `ARCHITECTURE.md`, `GOALS.md` — being deleted; content migrated. Do not read or update them.
+- Claude's memory, outside the repo — pointers only.
+
+**The quote test.** An entry in the author's words is a sentence the author wrote, in a message or in
+their code, with only filler removed.
+
+- Spelling and grammar may be fixed.
+- Words Claude adds go in [brackets], only to say what the author's words refer to.
+- Never removed: hedges and modal words (*I think, I guess, likely, maybe, mostly, should, may, can*),
+  negations, scope, time.
+- Quote the transcript or the code, never a compaction summary.
+- A sentence of Claude's becomes the author's only when the author quotes it and approves it. General
+  agreement approves no particular sentence.
+
+**Inferences, suggestions, facts.**
+
+- An inference reads something the author said, and quotes it as its source.
+- A suggestion is Claude's opinion. It goes under a question. Claude's agreement is never a source.
+- A fact is checked against the repo when written, and dated.
+
+**Guards.**
+
+- Doc against doc: `decisions.md` wins. Doc against code: ask the author — the code may be newer.
+- A standing instruction has a scope (which files) and an end. One meant to last goes in this file.
+- A changed decision is edited in place and committed; git keeps the old version.
 
 ## Layout
 

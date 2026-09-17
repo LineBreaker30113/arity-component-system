@@ -1,5 +1,10 @@
 # Ontology Engine
 
+**A library for building arbitrary mathematical structures over N sorts of integer-identified
+entities, supplying no interpretation of its own.** The engine mints identities, stores columns of
+data against them, and maintains whatever relations a client declares between them. Meaning is the
+client's.
+
 A self-contained package of code for building any structure mathematically possible on N sorts of
 entities. Do not confuse with the name "Ontology": unlike other tools named "Ontology", this one does
 not extract ontology from the data and is not for building the ontology from the data. Not OWL, not
@@ -45,6 +50,15 @@ side.
 
 **Self-contained.** Carries its own needs. One runtime dependency, droppable into any project.
 
+## What it is not
+
+- Not OWL, RDF, or a reasoner. No semantics are extracted, assumed, or supplied.
+- Not an ontology learner. It does not mine structure out of data.
+- Not an ECS, though it converges on the archetype / structure-of-arrays layout. The aim is to pass
+  the arity-2 ceiling ECS engines stop at — flecs packs exactly two participants into one 64-bit id.
+- Not a general graph library. Structures are over identity sets, not over objects.
+- Not a schema language.
+
 ## Where this came from
 
 Built "bottom up", as the generalization of a niche problem: folders are not enough for organizing
@@ -68,3 +82,28 @@ an indexer, of which the user can choose any variant.
 
 You can use this engine in any programming language: give the code in this repo to your AI agent and
 have it rewrite the engine for you (mostly it can).
+
+## The application
+
+The engine is a substrate. The application it is built toward: **OntoDirectory**, the sibling
+project, is a file manager where a person curates an ontology by organizing and tagging their own
+archive. That curated structure becomes the retrieval backbone for a RAG over paragraphs of facts,
+with an **ingest agent** that digests PDFs into the store and an **answer agent** that responds from
+it. Target use: a personal learning assistant; the same store works as durable agent memory.
+
+Why it is interesting: published graph-RAG systems pay an LLM to *invent* their graph, and that
+extraction is the field's central cost. Here the ontology is curated, personal and free — a side
+effect of filing. Ontology-grounded RAG work reports large gains from schema-first retrieval but
+assumes an institutional domain ontology; nobody else has the user's own hand-curated hierarchy as
+the schema. That is a product position, not a research one.
+
+Prior art is recorded in `reference-rules.md`, beside the material that establishes it.
+
+## The question that decides it
+
+Take a few hundred pages actually being studied, and test whether retrieval grounded in the
+hand-curated hierarchy beats plain hybrid vector search on questions actually asked. If it wins,
+there is a result nobody else can easily reproduce. If it loses, that is known early and cheaply.
+
+The engine stands on its own either way and is not justified by the application: a personal
+assistant's corpus is orders of magnitude smaller than the scale these representations target.
