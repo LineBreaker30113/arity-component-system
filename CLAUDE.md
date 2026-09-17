@@ -54,8 +54,7 @@ without being asked.
   handoff: work decided to be done and urgent.
 - `markdowns/response.md` — long answers that read badly in the terminal. Never a source.
 - `CLAUDE.md` — how we work. Other files do not restate its rules.
-- `README.md` — goal, what it is not, the application. `reference-rules.md` — rules for
-  `reference/`; it stays at the root because `/reference/` is gitignored.
+- `README.md` — goal, what it is not, the application.
 - `ARCHITECTURE.md`, `GOALS.md` — being deleted; content migrated. Do not read or update them.
 - Claude's memory, outside the repo — pointers only.
 
@@ -90,6 +89,10 @@ their code, with only filler removed.
   **Its javadoc is not authoritative.** It documents an architecture being deliberately abandoned
   and describes intentions that may never have held. Judge legacy code by reading the code, and
   don't quote its comments back as fact.
+- `reference/` — third-party code and papers kept locally for study. Gitignored, never on the build
+  path, never a dependency. Read it, then close it and write your own: nothing is copied, pasted or
+  transcribed from there into `src/`. Cite where an idea came from, in the answer or the commit
+  message. `reference/reference-rules.md` holds the detail and stays out of the repository.
 
 ## Build
 
