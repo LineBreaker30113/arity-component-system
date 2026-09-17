@@ -59,6 +59,40 @@ accepted.")*
 - **Structure** — data about relations, over one arity or several, under any rule.
 - **Component** — a plugin the core holds (`ArityComponent`, `StructureComponent`).
 
+### Terms used in questions and inferences
+
+Claude's wording, written because `CLAUDE.md` requires a term the author does not already use to be
+defined where it first appears. Delete any that are already the author's own.
+
+- **journal** — the single ordered list of what changed. Undo, redo and logging read it instead of
+  each keeping a record of their own.
+- **slot** — a numbered place in an array or list, used instead of a name or an object reference. The
+  DAG's `slotOf` is one.
+- **gather** — reading the values for a scattered list of identities, instead of a contiguous range.
+- **proxy** — an object standing in front of another, running something extra (a lock, a log line)
+  before passing the call on.
+- **codec** — the pair of methods that write a structure's change into the journal and read it back.
+- **write barrier** — one private method every mutator calls before changing anything, so a journal
+  entry cannot be forgotten in one place.
+- **barrier** — a point where deferred work must finish before anything continues; the sync barrier.
+- **tombstone** — a marker left where an element was removed, so the positions after it do not move.
+- **single writer** — only one thread changes the engine at a time; readers work on a snapshot.
+- **snapshot** — a copy of the state, or of a region, kept before a change.
+- **invert** — a logging mode: the record holds what is needed to reverse the change.
+- **note-only** — a logging mode: the journal records that something changed, but not the old values,
+  because that state can be rebuilt.
+- **restore** — bringing a removed identity's data back under a new identity number. Not undo, which
+  returns the original number.
+- **normalise** — rewriting a filter tree into a standard shape before running it, so the parts can be
+  compared and reordered.
+- **n-ary** — taking any number of inputs: one AND over five filters, rather than four nested pairs.
+- **monotonic** — a number that only ever goes up, never down; `everReached` would be one.
+- **microkernel / kernel** — the smallest core that only holds the components and passes work between
+  them. Also called the plug-in pattern.
+- **ECS** — Entity Component System, the game-engine pattern: bare entity ids with their data in
+  columns. Its "component" is what this project calls a catalog.
+- **chunked** — storing a column in fixed-size blocks instead of one array, so growing adds a block.
+
 ### Target use case
 
 Claude's wording, from `GOALS.md`; same source as Words.

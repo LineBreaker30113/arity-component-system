@@ -1,268 +1,240 @@
-# Response — on the plan's open points, and the four questions
+# Response — the plan's open points, and the four questions
 
-Written 2026-09-16/17, answering a read of `ARCHITECTURE.md`. Records where the plan was wrong, what
-was settled in discussion, and what stays open. Current phase: design the classes; bulk accessors in
-every type (int, long, double) are boilerplate that comes later.
+Written 2026-09-16/17, rewritten in plain words 2026-09-18. Not a source: what was settled from it is
+in `decisions.md`, `inferred-decisions.md` and `questions.md`.
 
-**Terms, as settled.** *Removal* unsigns an identity from the occupied set, nothing more. *Forget*
-drops an identity's data and the connections structures hold for it, without renumbering. *Vacuum*
-renumbers the living to close gaps — rare, at save/reload.
+**The three words, as settled.**
 
----
+- **Removal** — unsign the identity in the occupied set. Nothing else happens.
+- **Forget** — drop that identity's data, and the connections structures hold for it. No number moves.
+- **Vacuum** — renumber the living identities to close the gaps. Rare: on storing to disk and reloading.
 
 ## Part 1 — the objections to the plan
 
-### The core feels too empty
+### The core is thin, not empty
 
-Thin is the goal, but not empty. Five jobs can only live in the core, because each is about the
-components' relationship to each other:
+Five jobs can only live in the core, because each is about how the components relate to each other:
 
-1. **Registry** — the two lists, typed to contracts.
-2. **Minting and the growth broadcast** — every structure over an arity follows in the same call.
-3. **The sync barrier** — removal consequences settle there, for several components at once.
-4. **Transaction boundary and journal** — one lock, one log.
-5. **Cross-arity resolution / delegation** — only the core holds both lists.
+1. **The two lists** — arity components and structure components, held by contract.
+2. **Minting, and telling everyone it grew** — one call, and every structure over that arity follows.
+3. **The sync barrier** — the one moment nothing else is running, where the consequences of removal
+   settle for several components at once. (*Barrier*: a point where deferred work must finish before
+   anything continues.)
+4. **The transaction boundary and the journal** — one lock, one list of what changed. (*Journal*: the
+   single ordered list of changes; undo, redo and logging all read it instead of each keeping its own.)
+5. **Cross-arity work and delegation** — only the core holds both lists.
 
-**Structures hold arity slots — ints the core resolves — not arity objects.** The dependency then runs
-one way and a structure stays readable alone; same decision already made for catalogs.
+- **A structure holds arity slots, not arity objects.** (*Slot*: a numbered place, used instead of a
+  name or an object reference.) The dependency then runs one way, and a structure can be read on its
+  own. Catalogs already work this way.
+- **Proxies only at the transaction boundary.** (*Proxy*: an object that stands in front of another and
+  runs something extra — a lock, a log line — before passing the call on.) Legacy put one at every
+  method entry, which was the problem. One at `runAtomically` costs one extra hop per transaction, no
+  matter how many changes happen inside it.
 
-**Proxies: at the transaction boundary only.** Legacy's proxy failed on granularity — a reflective
-call at every method entry. One proxy at `runAtomically` is one hop per transaction, amortised over
-every mutation inside, and still keeps the concern in one place. Per-component-method proxies stay
-refused.
+### Removal, sync, forget and vacuum
 
-### Removal, sync and vacuum
-
-**Delegation belongs to the core; the barrier is when it runs.** No arity can route a removal to a
-structure spanning three arities, and the barrier is the only moment the engine is quiescent. So
-`sync()` is not a flush — it is the core's slot for every cross-component action unsound at any other
-moment.
-
-**Accumulating removals: a list, not a set.** Append is O(1); `register` on a positive set is a sorted
-insert. Duplicates and already-gone identities are harmless because the occupied set is the authority
-on existence — set semantics already live there. Where a set helps is the drain, for some structures
-only: the DAG detaches per identity, a bitmap indexer wants `row.andNot(removed)`. So the list is
-primary and a set view is derived lazily and shared — the pattern of legacy's `Materialized` (an
-`IntArrayList` with a `BitSet` built on first probe).
-
-**Sync as engine-wide forget.** If removal unsigns immediately, "pending" is just the difference
-between the occupied set and what structures still hold. That extends an existing invariant —
-*existence is the occupied set's question and only its question* — so a stale structure is not
-inconsistent; it holds garbage. Consequences:
-
-- **Idempotent and interruptible.** Twice is harmless; half now, half later is a legal state.
-- **Incremental.** Bounded work per call keeps a UI from freezing on a large deletion.
-- **Composes with `tighten`.** Reconcile, then tighten once.
-- **Cost is the GC trade-off.** A pending list is a write barrier (cost per removal, collection ∝
-  removals); a sweep is mark-sweep (free per removal, collection ∝ structure). Few removals favour
-  the list, mass removal the sweep. Do both, switch on magnitude — same idiom as the `isTight` escape
-  hatch.
-- **Undo of a removal is nearly free until forget runs** — edges still exist, undo is a re-register.
-
-**Where existence is checked.**
-
-- *Index → identity through the occupied set:* no check needed; the set cannot yield a dead identity.
-- *Following a reference into another arity* (multi-arity structures, and a few other cases): checked.
-
-Rule: **a reference is validated when it leaves the structure holding it** — returned to a caller or
-used to address another arity. Inside a structure's own walk, staleness is harmless. Alongside the
-automatic rule, a manual method for a client that judges for itself; name it so skipping reads as a
-decision (`identityAtUnchecked`, not a boolean flag).
-
-Concerns raised, and where they landed:
-
-- **Holes** — `contains` and `elementAt` both binary-search the exclusion list; stays fast in
-  practice. The residual cost is memory: holes are stored individually, so a contiguous bulk removal
-  (`truncate`) costs one entry per identity.
-- **Counts** — not a structure's question; a structure is an add-on, never the authority. Dissolves.
-- **Bulk catalog reads** — catalogs are total, so a dead identity's cell reads zero, not garbage.
-  Intersect a range with the occupied set once, then read; never probe per element.
-- **Prune-on-read — rejected.** One structure (e.g. an indexer) forgetting a dead identity alone when
-  a read reaches it is harmful: it acts outside the barrier, mutates mid-traversal, and makes
-  cheap undo depend on what someone happened to read. Acceptable variant: prune-on-write, when the
-  structure is already being modified.
-
-**Identity reuse is the load-bearing hazard.** A stale reference to a removed identity is detectable;
-a stale reference to a *reused* identity silently points at a different live entity (ABA). And a
-reused identity still holds the previous occupant's catalog values, since nothing clears them on
-removal. So **forget must run before an identity is captured back.** Today the arity cannot tell it is
-recycling: `ModularArityCatalog.truncate` sets `lastIndex = Math.max(capacity, -1)` and never touches
-`occupied`. Fix: truncate unsigns what it drops, and a monotonic `everReached` (never lowered) lets
-mint do `if(identity <= everReached) forget(identity)` unconditionally — enforced, not a caller
-obligation. Without it the bug appears only on truncate-then-refill, rare enough to pass testing.
-
-**Vacuum is the undo horizon — current solution.** Undo does not span a vacuum, matching Postgres
-`VACUUM` and emptying a trash folder. Two notes kept for later:
-
-- **Spanning is possible via a mapper interface**, not by editing journal records. In-place editing
-  mutates history and pays for unreplayed records; a mapper is lazy, composes across vacuums (chain
-  two), and is the same object an external consumer needs (e.g. a vector store keyed by identity).
-  The mapping is rank/select over the dead set — `IdentitiesSetNegative*` already computes both sides
-  (`elementAt` is position→identity, `exclusionSlot` is rank), so a vacuum keeping its pre-vacuum set
-  can remap with existing code.
-- **Restore ≠ undo.** Re-creating an entity with the same data under a new identity is restore, and
-  should be named apart; undo returns the original identity. Conflating them hides dangling references.
+- **Delegation belongs to the core, and the barrier says when it runs.** No single arity can route a
+  removal to a structure that spans three arities, and the barrier is the only quiet moment. So
+  `sync()` is not a flush: it is the core's slot for every action that is unsafe at any other time.
+- **Keep pending removals in an ordered list, not a set.** Appending is one step; registering into a
+  positive set is a sorted insert. Duplicates and already-dead identities do no harm, because the
+  occupied set is the only authority on existence.
+  - Some structures want a set when draining: the DAG detaches one identity at a time, while a bitmap
+    indexer wants `row.andNot(removed)`. Build that set from the list on first use and share it —
+    legacy's `Materialized` does exactly this.
+- **Sync is an engine-wide forget.** If removal unsigns immediately, "pending" is only the difference
+  between the occupied set and what the structures still hold.
+  - Running it twice is harmless, and stopping halfway leaves a legal state.
+  - It can run in bounded pieces, so a large deletion does not freeze a UI.
+  - It composes with `tighten`: settle first, tighten once.
+  - Cost: a pending list pays per removal; a full sweep pays per structure size. Few removals favour
+    the list, mass removal favours the sweep. Do both, and switch on the size — the same idea as the
+    `isTight` escape hatch.
+  - Undo of a removal is nearly free until forget runs, since the connections are still there.
+- **Where existence is checked**
+  - Index → identity through the identitiesSet: no check needed, the set cannot hand out a dead one.
+  - Following a reference into another arity (multi-arity structures, and a few other cases): checked.
+  - The rule: a reference is checked when it leaves the structure holding it — returned to a caller, or
+    used to address another arity. Inside a structure's own walk, a dead identity does no harm.
+  - Beside it, the judgment call method, for a client that decides for itself. Name it so that skipping
+    the check looks deliberate (`identityAtUnchecked`), rather than making it a boolean flag.
+- **The concerns, and where they landed**
+  - *Holes* — `contains` and `elementAt` both binary-search the hole list, and stay fast in practice.
+    What it does cost is memory: each hole is stored on its own, so a contiguous `truncate` costs one
+    entry per identity.
+  - *Counts* — not a structure's question. A structure is an add-on, never the authority.
+  - *Bulk catalog reads* — catalogs answer for every identity, so a dead one reads zero rather than
+    garbage. Intersect the range with the occupied set once, then read; never check per element.
+  - *Cleaning up on read — rejected.* One indexer forgetting a dead identity by itself, because a read
+    reached it, acts outside the barrier, changes data in the middle of a walk, and makes cheap undo
+    depend on what someone happened to read. Cleaning up while already writing is fine.
+- **Capturing an identity back is the dangerous case.** A reference to a removed identity can be
+  caught; a reference to a *reused* identity silently points at a different live entity. The reused
+  identity also still holds the old values, because nothing clears them on removal. So forget must run
+  before an identity is captured back.
+  - Today the arity cannot tell that it is reusing a number: `ModularArityCatalog.truncate` lowers
+    `lastIndex` and never touches `occupied`. Fix: truncate unsigns what it drops, and the arity keeps
+    a number that never goes down (`everReached`), so minting can do
+    `if(identity <= everReached) forget(identity)` without the caller having to remember.
+- **Vacuum is the undo horizon.** Undo does not reach past a vacuum. Two notes for later:
+  - Reaching past it needs a mapper, not edits inside the journal. Editing rewrites history and pays
+    for records nobody will replay; a mapper is computed when asked, chains across two vacuums, and is
+    the same object an outside consumer needs (a vector store keyed by identity). The mapping is "how
+    many dead identities are below this number", which `IdentitiesSetNegative*` already computes both
+    ways (`elementAt`, `exclusionSlot`).
+  - Restore is not undo. Re-creating the same data under a new number is restore; undo gives the
+    original number back. Keeping the names apart keeps dangling references visible.
 
 ### Persistence does not need the journal
 
-The plan overreached. Snapshot and log answer different questions — ARIES has both. Over
-structure-of-arrays a snapshot is close to a byte write; replaying a journal to the same state is
-strictly more work. **Snapshot is the persistence path. The journal serves undo/redo, logging as a
-reader, and optionally durability between snapshots** — so it can live in memory, bounded by the
-undo depth or the last snapshot. Save/reload is also the natural moment to vacuum.
+- A snapshot and a journal answer different questions, and databases keep both.
+- The data is already columns, so writing a snapshot is close to a plain byte write, while replaying a
+  journal to reach the same state is strictly more work.
+- So: the snapshot is the persistence path. The journal serves undo/redo, logging reads it, and it can
+  optionally cover durability between snapshots — which lets it live in memory, bounded by the undo
+  depth or by the last snapshot.
+- Storing and reloading is the natural moment to vacuum.
 
 ### Undo: plan, then act
 
-Your idea, and correct. The plan phase consults the rules (acyclicity, tightness) and produces
-primitive writes; the act phase consults nothing. Undo replays through act. The former state was
-valid, so re-deriving rules on the way back is wasted and can be wrong (refusing a legitimate edge,
-re-tightening differently). In database terms: physical over logical logging; ARIES keeps undo
-logical only for concurrency, and there is a single writer here.
-
-**Order stops mattering if primitives are absolute.** `addParent` under `isTight` undoing in *same*
-order rather than reverse is a symptom of position-relative primitives — `removeInt(at)` shifts the
-tail. Record slot, index, old, new: each write determines its own cell, so any order lands on the same
-state. Falls out:
-
-- **Redo symmetry answers itself** — undo writes old, redo writes new, same loop.
-- **Abortable transactions and free dry-run** — refuse before the first write (e.g. a cycle).
-
-**Caution:** neglecting rules must be a property of the act phase's shape, never a public flag like
-`setTight(false)` that gets left off. The existing load-time escape hatch (clear flag, bulk load,
-`tighten(ROOT)`) is a separate, legitimate client choice.
-
-**Open:** you noted undo sometimes needs extra details — to be discussed.
+- Your idea, and it is right. The plan phase applies the rules (no cycles, tightness) and produces
+  plain writes; the act phase applies no rules. Undo replays through act.
+- The former state was valid, so applying the rules on the way back is wasted work, and can be wrong:
+  refusing an edge that was legitimate, or tightening differently.
+- **Order stops mattering once the writes are absolute.** `addParent` under `isTight` needing the
+  *same* order rather than the reverse is a symptom of writes that are relative to a position —
+  `removeInt(at)` shifts everything after it. Record slot, index, old value and new value, and each
+  write lands in its own cell, so any order reaches the same state.
+  - Redo then answers itself: undo writes the old value, redo writes the new one, the same loop.
+  - A transaction can be refused before its first write (a cycle, say), which also gives a free dry run.
+- **Careful:** ignoring the rules has to be a property of the act phase itself, never a public flag
+  like `setTight(false)` that someone leaves switched off. The load-time escape hatch (clear the flag,
+  bulk load, `tighten(ROOT)`) is a separate and legitimate client choice.
+- **Open:** you said undo sometimes needs extra details — still to be explained.
 
 ### Logging modes: three, not two
 
-| Mode | Recorded | When |
+| Mode | What the journal keeps | When |
 |---|---|---|
-| Invert | absolute primitives | ordinary bounded edits |
-| Snapshot | before-image of the region | one change touching many cells (`detach` on a wide node) |
-| Note | only that it happened | derived state |
+| Invert | the absolute writes | ordinary edits of bounded size |
+| Snapshot | a copy of the region before the change | one change touching many cells (`detach` on a wide node) |
+| Note | only that it happened | data that can be rebuilt |
 
-Slot 0's root-children list is the existing example. A structure should *declare* its derived state,
-so the journal and snapshots skip it by construction and rebuild on load.
+- Slot 0's root-children list is the example that already exists. A structure should declare which of
+  its state is rebuildable, so the journal and the snapshot skip it and rebuild it on load.
 
----
-
-## Part 2 — the questions
+## Part 2 — the four questions
 
 ### 1. Filtering
 
-**Two kinds of leaf.** *Structural* leaves read shape without supplying meaning, so the engine ships
-them: catalog comparisons (`eq ne lt lte gt gte between`) and reachability (`childOf parentOf
-descendantOf ancestorOf siblingOf`). *Interpreting* leaves (`namedLike`, units, locale, similarity)
-stay the client's. Same leaf interface; combinators do not know which is which.
-
-**On the operators.**
-
-- `CONTRADICTS` (disjoint?) and `IFOF` (equal?) look like **predicates returning boolean**, not set
-  operations — already answerable via `intersectionCount == 0` and `containsAll` both ways. Separate
-  them in the API. (If the meanings differ, the separation still applies to whichever do.)
-- AND, OR, NOT plus a universe are complete; default the rest, as `IdentitiesSet` does.
-- The universe is the occupied set. NOT over a negative-form set is a representation flip, not a scan.
-
-**Restructuring from the tree alone**, beyond legacy's `isEnumeratePreferred()` + leftmost-wins (its
-own javadoc: *"`And(broad, narrow)` drives off the broad side purely because it is leftmost"* —
-confirmed in the code). Split into normalise → plan → execute; legacy fuses them in one recursive walk.
-
-*Layer 0 — rewriting, no estimates:*
-
-- **Negation normal form** (De Morgan). Interior NOT forces materialise-and-complement, the full scan
-  the resolver avoids. `And(A, NOT B)` is `Subtract(A, B)`, so this subsumes Subtract.
-- **Absorb NOT into leaves** via optional `negated()`: `NOT(x>5)` → `x<=5`. Reachability leaves
-  usually can't, and say so.
-- **Flatten to n-ary.** A binary tree encodes an order in its shape; this is what makes reordering
-  possible at all.
-- **Idempotence / annihilation / absorption**: `A∧A→A`, `A∧¬A→∅`, `A∨(A∧B)→A`. Legacy's records
-  already give structural equality.
-- **Interval subsumption per catalog**: `(x>5)∧(x>3)→(x>5)`, `(x>5)∧(x<3)→∅` with no data read.
-  Possible only because the engine ships comparison leaves instead of opaque predicates.
-
-*Layer 1 — ordering.* Replace the boolean with estimated size and cost-per-probe. AND drives off the
-smallest estimate; probe the rest in ascending `cost / (1 − selectivity)` (Hellerstein & Stonebraker).
-Needed because leaves differ on both axes (`namedLike`: selective, expensive; int range: unselective,
-cheap). Estimates only need correct order: set `size()` is free; `ChildOf` is a child count;
-`DescendantOf` wants cached subtree size; comparisons want min/max/count or a small histogram
-(optional — unknown sorts last); `size(A∧B) ≈ min`, `size(A∨B) ≈ sum` capped at the universe.
-`isEnumeratePreferred()` survives as a degenerate case.
-
-*Layer 2 — push-down*, which legacy excluded on purpose. Thread the candidate set into leaves so they
-produce only within it. Requires **gather** (read an arbitrary identity list) — the keystone of the
-filtering work; build them together. Soundness: pushes through AND freely, through OR per branch, not
-through NOT without care; wrong push-down over-matches silently.
-
-*Layer 3 — representation.* All-Roaring operands: multi-way container intersection, ordered by
-cardinality, beats driver-plus-probe. Ask "can all of you bulk together?" before picking a driver.
+- **Two kinds of leaf.**
+  - *Structural* leaves read shape and supply no meaning, so the engine ships them: catalog comparisons
+    (`eq ne lt lte gt gte between`) and reachability (`childOf parentOf descendantOf ancestorOf
+    siblingOf`).
+  - *Interpreting* leaves stay the client's: `namedLike`, units, locale, similarity.
+  - Same leaf interface; the combinators do not know which kind they are holding.
+- **On the operators**
+  - `CONTRADICTS` (disjoint?) and `IFOF` (equal?) look like questions answered true or false, not set
+    operations — `intersectionCount == 0`, and `containsAll` both ways. Keep them apart in the API.
+  - AND, OR, NOT plus a universe are enough; everything else can default to them, as `IdentitiesSet`
+    already does.
+  - The universe is the occupied set. NOT over a negative-form set flips the representation instead of
+    scanning.
+- **Restructuring the tree by looking at it**, beyond legacy's `isEnumeratePreferred()` and
+  leftmost-wins — its own javadoc admits `And(broad, narrow)` drives off the broad side only because it
+  is leftmost. Split the work into three steps, where legacy does all of it in one recursive walk.
+  - *Rewriting, with no measurements.*
+    - Push NOT down to the leaves. A NOT in the middle forces building the whole set and complementing
+      it, which is the scan the resolver exists to avoid. `And(A, NOT B)` becomes `Subtract(A, B)`, so
+      Subtract needs no separate handling.
+    - Absorb NOT into a leaf where the leaf can take it: `NOT(x > 5)` becomes `x <= 5`. Reachability
+      leaves usually cannot, and should say so.
+    - Flatten to one AND over many children instead of nested pairs. A binary tree hides an order in
+      its shape, and flattening is what makes reordering possible at all.
+    - Simple laws: `A∧A→A`, `A∧¬A→empty`, `A∨(A∧B)→A`. Legacy's records already compare structurally.
+    - Merge ranges on the same catalog: `(x>5)∧(x>3)→(x>5)`, `(x>5)∧(x<3)→empty`, with no data read.
+      Possible only because the engine ships the comparison leaves instead of opaque client predicates.
+  - *Ordering.* Replace the boolean with two estimates: how many identities a leaf yields, and what one
+    check on it costs. AND drives off the smallest; the rest are checked cheapest-first, by cost
+    divided by how much the leaf cuts down. Needed because leaves differ on both counts — `namedLike`
+    cuts a lot and costs a lot, an int range cuts little and costs little. The estimates only need to
+    be in the right order: a set's `size()` is free, `childOf` is a child count, `descendantOf` wants a
+    cached subtree size, comparisons want min/max/count. `isEnumeratePreferred()` survives as the
+    simplest case of this.
+  - *Pushing the candidate set down*, which legacy left out on purpose. Hand the candidates into the
+    leaf, so it only produces identities inside them. This needs **gather** — reading the values for a
+    scattered list of identities rather than a contiguous range — which makes gather the keystone of
+    the filtering work. It pushes through AND freely, through OR per branch, and through NOT only with
+    care; pushing it wrongly over-matches silently.
+  - *Representation.* When every operand is a Roaring set, intersecting them as bitmaps, smallest
+    first, beats driving off one and probing the others. Ask "can all of you work in bulk?" before
+    picking a driver.
 
 ### 2. "Plugin" architecture
 
-Agreed — Richards names microkernel and plug-in as one pattern (core plus plug-in modules; Eclipse is
-the example). Don't write "the core is almost redundant", which invites scattering its five jobs.
-Suggested: *"The core is thin by design: it holds the lists, mints identities, runs the barrier, owns
-the transaction, and resolves arities for structures. Everything else is a plugin."*
+- Agreed, and it is one named pattern: microkernel, also called plug-in — a small core plus plug-in
+  modules, with Eclipse as the example.
+- I would not write "the core is almost redundant" in the documentation, because it invites scattering
+  the five jobs. Suggested wording: *the core is thin by design — it holds the lists, mints identities,
+  runs the barrier, owns the transaction, and resolves arities for structures. Everything else is a
+  plugin.*
 
 ### 3. `ArityComponent`, `StructureComponent`
 
-Fixes the `java.lang.Module` collision. Caveat: in ECS (flecs, EnTT) a *component* is per-entity data
-— a **catalog** here. So apply it to all three (`CatalogComponent` too) and add one line to `GOALS.md`
-"The words, defined": *Component — a unit the core holds and drives through a lifecycle; not the ECS
-sense, which this project calls a catalog.* That also closes the "Module — ambiguous" entry.
-Alternative: no suffix (`Arity`, `Structure`, `Catalog`).
+- Fixes the collision with `java.lang.Module`.
+- Caveat: in ECS (Entity Component System — the game-engine pattern of bare ids with their data in
+  columns) a *component* is the per-entity data, which is a **catalog** here. So either apply the word
+  to all three (`CatalogComponent` too) and define it once in `inferred-decisions.md` → Words, or use
+  no suffix at all (`Arity`, `Structure`, `Catalog`).
 
 ### 4. Client-supplied identity sets for computed arities
 
-Works today, no contract change: `contains(i)` is `0 <= i && i < n`, `size()` is `n`, `identityAt(i)`
-is `i` — stores nothing, inherits the algebra. Set-side twin of catalogs being interfaces so computed
-values cost no memory.
-
-- **Ship a dense-range set** — append-only arities are common; a zero-hole negative set carries hole
-  machinery for nothing.
-- **The perceptron weight arity is a product arity**: identity `i * outputs + j`, the arithmetic
-  `LongChunkIntUniform` already does. Computed set plus computed index; worth naming if matrices are
-  common.
-- **Cautions:** `register`/`unsign` on a computed set must throw, not no-op. A free set does not mean
-  free columns — catalogs still grow.
-- **Test of the plugin claim:** if an unknown `IdentitiesSet` breaks anything, that names where the
-  engine still assumes a shipped representation.
-
----
+- Works today with no change to the contract: `contains(i)` is `0 <= i && i < n`, `size()` is `n`, and
+  `identityAt(i)` is `i`. It stores nothing and inherits the whole algebra. It is the set-side twin of
+  catalogs being interfaces, so computed values cost no memory.
+- Ship a dense-range set: append-only arities are common, and a negative set with no holes carries the
+  hole machinery for nothing.
+- The perceptron weight arity is a product of two arities: identity `i * outputs + j`, the same
+  arithmetic `LongChunkIntUniform` already does. A computed set plus a computed index; worth naming if
+  matrices turn out to be common.
+- Cautions: `register` and `unsign` on a computed set must throw rather than do nothing, and a free set
+  does not mean free columns — the catalogs still grow.
+- It is also the test of the plugin claim: if an unknown `IdentitiesSet` breaks something, that names
+  the place where the engine still assumes one of its own.
 
 ## Part 3 — file layout
 
-`ontructure` becomes the live root (renamable; `kernel` suggested — ARCHITECTURE.md already says
-"microkernel"; avoid `core`, spent by `legacy/core/` and `OntologyEngineCore`). Unwanted incubation
-files stay where they are.
+`ontructure` becomes the live root (renamable; `kernel` suggested — avoid `core`, which
+`legacy/core/` and `OntologyEngineCore` already use). Unwanted incubation files stay where they are.
 
 ```
 incubation/
   ApplicationData, OE_IntSet, OE_Catalog, IntSetLister*,      ← left untouched
   BidirectionalIndexingService, OntologyEngineCore
-  ontructure/            (the core: registry, journal, barrier — at the root)
-    sets/                IdentitiesSet and representations
+  ontructure/            (the core: the two lists, journal, barrier — at the root)
+    sets/                IdentitiesSet and its representations
     catalogs/            column contract, integer/, floating/, shared value vocabulary
     arity/               ArityComponent, ModularArityCatalog
-    structures/          StructureComponent, plan type, graphs/, indexers/
-    filters/             peer package — spans sets, catalogs and structures
+    structures/          StructureComponent, the plan type, graphs/, indexers/
+    filters/             a peer package — it spans sets, catalogs and structures
 ```
 
-- `structurer/` disappears, ending the structurer / structures / ontructure word collision.
-- `sets/` and `catalogs/` leave the arity package: layers under it, and structures need `IdentitiesSet`.
-- `PREFERRED_*`, `typeName` and the `exact*` conversions move off `ArityModule` into `catalogs/`;
-  `CatalogModuleBase` re-declaring the constants goes away. `CatalogModuleBase` becomes top-level there.
-- Listers move beside the chunked forms in `integer/` and `floating/`. As nested interface members
+- `structurer/` disappears, which ends the structurer / structures / ontructure collision.
+- `sets/` and `catalogs/` leave the arity package: they are layers under it, and structures need
+  `IdentitiesSet` too.
+- `PREFERRED_*`, `typeName` and the `exact*` conversions move off `ArityModule` into `catalogs/`, and
+  `CatalogModuleBase` stops re-declaring the constants and becomes top-level there.
+- The listers move beside the chunked forms in `integer/` and `floating/`. As nested interface members
   they are implicitly public, despite looking package-private.
-- The plan phase is a type (passed, inspected, discarded), beside the structure contract.
-- `structures/indexers/` is empty, so untracked by git — give it a `package-info.java`.
-- Delete `catalogs/LongIntCatalog` (unreferenced duplicate of `IntegerValueCatalog`).
-- `ModularArityCatalog` is a table named "catalog" where catalog means column — rename candidate.
+- The plan phase is a type — passed, inspected, discarded — beside the structure contract.
+- `structures/indexers/` is empty, so git does not track it; give it a `package-info.java`.
+- Delete `catalogs/LongIntCatalog`, an unreferenced duplicate of `IntegerValueCatalog`.
+- `ModularArityCatalog` is a table named "catalog", where catalog means column — rename candidate.
 
-**Sets.** Byte and short widths are deleted; `IdentitiesSetPositiveInt` and `PositiveLong` are
-written first, since positive exists only at the narrow widths today (details in `ARCHITECTURE.md`).
-`firstIndex` is unneeded while the occupied set always starts at 0 — low priority.
-
----
+**Sets.** The byte and short widths are deleted, and `IdentitiesSetPositiveInt` and `PositiveLong` are
+written first, since positive exists only at the narrow widths today. `firstIndex` is not needed while
+the occupied set always starts at 0 — low priority.
 
 ## Sources
 

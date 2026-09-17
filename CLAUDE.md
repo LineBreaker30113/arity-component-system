@@ -27,8 +27,13 @@ boilerplate."
   edits of a rename (the new name is the author's). Not interfaces, invariants, or tests.
 - **State the reading before acting.** If an instruction has two readings that would change files
   differently, ask. Otherwise state the reading in one line, then act.
-- **Answer in the terminal, at the length the question deserves.** A question gets an answer, not a
-  document. No reports, briefs, or plans unless a file is explicitly requested.
+- **Dense, not brief.** A page is fine when every line carries information: clear, to the point,
+  bullet lines. Cut filler, restatement, summary and warm-up, never content. No reports, briefs, or
+  plans unless a file is explicitly requested.
+- **Use the author's words.** Answer in the vocabulary the author already uses. A term they do not
+  use is defined where it first appears — in answers, and in `questions.md` and
+  `inferred-decisions.md` too. A question that cannot be asked without jargon is not ready to be
+  asked; explain it first.
 - **One question, one answer.** Do not anticipate the next three questions and pre-answer them, and
   do not append an architecture, a build order, or a verification section to a factual answer.
 - **A narrowing correction is about mode, not content.** "Just answer me", "don't read that",
@@ -52,7 +57,8 @@ without being asked.
   that answers no question is not recorded. A settled question leaves the file.
 - `markdowns/current-state.md` — facts about what exists, checked against the repo and dated; and the
   handoff: work decided to be done and urgent.
-- `markdowns/response.md` — long answers that read badly in the terminal. Never a source.
+- `markdowns/response.md` — long answers that read badly in the terminal. It exists so the author can
+  read them rendered in IntelliJ; that is its only purpose. Never a source.
 - `CLAUDE.md` — how we work. Other files do not restate its rules.
 - `README.md` — goal, what it is not, the application.
 - Claude's memory, outside the repo — pointers only.
