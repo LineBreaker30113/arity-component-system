@@ -27,9 +27,20 @@ boilerplate."
   edits of a rename (the new name is the author's). Not interfaces, invariants, or tests.
 - **State the reading before acting.** If an instruction has two readings that would change files
   differently, ask. Otherwise state the reading in one line, then act.
-- **Dense, not brief.** A page is fine when every line carries information: clear, to the point,
-  bullet lines. Cut filler, restatement, summary and warm-up, never content. No reports, briefs, or
-  plans unless a file is explicitly requested.
+- **Dense, not brief.** A page is fine when every line carries information. Length follows content;
+  filler is not content.
+  - Before sending, make one pass at the same size: add what is missing, cut no claim. That is the
+    tested method — density roughly doubles while the length holds still.
+  - Delete on sight: preamble, restating the question, a closing summary, an offer to continue,
+    hedges, and any sentence announcing what comes next.
+  - One claim per line. Bullets when there are several claims, plain sentences when there are two;
+    formatting is not density.
+  - Budget the shape — a line cap, a list, a table. A stated budget is what shortens an answer;
+    "be short" mostly makes an answer drop content.
+  - Never trade accuracy for length. Correct a false premise, keep a caveat that changes the answer,
+    say when something was not checked. Dropping those is exactly what short answers get wrong.
+  - The budget is on the answer, not on the thinking.
+- **No reports, briefs, or plans** unless a file is explicitly requested.
 - **Use the author's words.** Answer in the vocabulary the author already uses. A term they do not
   use is defined where it first appears — in answers, and in `questions.md` and
   `inferred-decisions.md` too. A question that cannot be asked without jargon is not ready to be
