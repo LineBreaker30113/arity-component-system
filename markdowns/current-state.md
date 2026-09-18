@@ -36,9 +36,17 @@ service layer over them.
 `mvn test`: 182 tests, 0 failures (legacy suite plus `OEIntSetListerTest`), measured 2026-09-09.
 Nothing under `src/test/` exercises `structurer/structures/` (checked 2026-09-17).
 
-## Handoff — 2026-09-17
+## Handoff — 2026-09-18
 
 Work decided to be done and urgent.
 
 - The urgent code work: `inferred-decisions.md` → Urgent work, not yet reviewed.
-- Nothing is committed. The staged `ontructure/package-info.java` is the author's.
+- The author reviews the Unreviewed entries, the 19 term definitions among them, and decides the old
+  plan's positions at the end of `questions.md`.
+- `reference/` holds `pre-purge-backup.bundle` and `msgfilter.py`, both gitignored and both deletable
+  once the history rewrite is trusted.
+
+Repository state, 2026-09-18: committed through `10aa948`, working tree clean, no remote, nothing
+pushed. History was rewritten this day — the study inventory and a third-party paper were purged from
+every commit, and three commit messages that named the studied projects were reworded. The only copy
+of the pre-purge history is that bundle.
