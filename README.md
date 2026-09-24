@@ -97,8 +97,6 @@ effect of filing. Ontology-grounded RAG work reports large gains from schema-fir
 assumes an institutional domain ontology; nobody else has the user's own hand-curated hierarchy as
 the schema. That is a product position, not a research one.
 
-Prior art is recorded in `reference-rules.md`, beside the material that establishes it.
-
 ## The question that decides it
 
 Take a few hundred pages actually being studied, and test whether retrieval grounded in the

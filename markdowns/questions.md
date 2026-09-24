@@ -105,6 +105,10 @@ Markdown files.
   - Author: "We can later organize those into folders."
 - **Does the quote test cover `README.md`?** Its goal, "what it is not", and application text was
   migrated by Claude from `GOALS.md`.
+- **What licence does the repository carry?** There is no `LICENSE` file and no `<licenses>` block in
+  `pom.xml` (checked 2026-09-25), so the default is all rights reserved — which sits badly with a
+  README that invites people to reimplement the idea in their own language. The choice also decides
+  what this project may take in from elsewhere, and what others may do with it.
 
 ## Old plan — confirm, change, or reject
 
