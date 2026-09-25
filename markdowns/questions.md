@@ -30,6 +30,11 @@ Markdown files.
   - Old plan: which arities it spans; growth and removal notification; per-element read and write of
     its own state; its op codes and codec.
 - **New name for `SetHierarchyDirectedAcyclicIntGraphModule`?** It still ends in `Module`.
+- **What do the names inside `src/` become, now that the project is Arity Component System?** The
+  `OE_` prefix, `OntologyEngineCore`, and the package `org.halim.ontology` all carry the old name.
+  - Claude: decide it together with `ontructure/`'s final name and the package layout, and do the one
+    pass before the first push, so every import moves once. Leave `legacy/` alone — renaming there
+    only makes the old commits harder to read.
 - **Can a client supply its own `IdentitiesSet`?**
   - Author: "Some arities may have elements up to a certain number easily computed, like say we have a
     single layer fully [connected] perceptron: its nodes are one arity, its weights are a different
