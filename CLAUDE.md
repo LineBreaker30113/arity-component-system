@@ -77,8 +77,10 @@ without being asked.
   heading. Treat entries above it as correct; build nothing on unreviewed ones.
 - `markdowns/questions.md` — open questions, each with its options and who holds each. A suggestion
   that answers no question is not recorded. A settled question leaves the file.
-- `markdowns/current-state.md` — facts about what exists, checked against the repo and dated; and the
-  handoff: work decided to be done and urgent.
+- `markdowns/handoff.md` — work decided to be done and not done, and what must happen before the
+  first publish.
+- `markdowns/current-state.md` — facts about what exists, checked against the repo and dated, and the
+  former handoffs kept as a record.
 - `markdowns/response.md` — long answers that read badly in the terminal. It exists so the author can
   read them rendered in IntelliJ; that is its only purpose. Never a source.
 - `CLAUDE.md` — how we work. Other files do not restate its rules.

@@ -36,9 +36,9 @@ service layer over them.
 `mvn test`: 182 tests, 0 failures (legacy suite plus `OEIntSetListerTest`), measured 2026-09-09.
 Nothing under `src/test/` exercises `structurer/structures/` (checked 2026-09-17).
 
-## Handoff — 2026-09-18
+## Former handoff — 2026-09-18
 
-Work decided to be done and urgent.
+Kept as the record of where that session left things. The live one is `handoff.md`.
 
 - The urgent code work: `inferred-decisions.md` → Urgent work, not yet reviewed.
 - The author reviews the Unreviewed entries, the 19 term definitions among them, and decides the old
