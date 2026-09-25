@@ -40,6 +40,17 @@ boilerplate."
   - Never trade accuracy for length. Correct a false premise, keep a caveat that changes the answer,
     say when something was not checked. Dropping those is exactly what short answers get wrong.
   - The budget is on the answer, not on the thinking.
+- **The budgets, as defaults.** A factual question: 5 lines. A read on a design: 20. A research
+  answer: 30 plus its sources. A commit message: a subject of 70 characters and a body of 80 words,
+  carrying only what the diff cannot show. An entry Claude writes into a markdown file: 1 to 3 lines,
+  quoted material exempt — the quote test governs that. Javadoc keeps the register in Code
+  conventions instead.
+  - Longer is allowed when the extra lines carry new claims, never elaboration of the ones already
+    there. Accuracy outranks every budget: correct the false premise, keep the caveat, and say the
+    budget was blown rather than pad in silence.
+- **One-word corrections.** *fat* — re-sent at half the length, no claim dropped. *thin* — re-sent
+  with what was cut, at the same length. *jargon* — the term defined, and added to Words. The same
+  word twice on the same kind of answer becomes a line in this file.
 - **No reports, briefs, or plans** unless a file is explicitly requested.
 - **Use the author's words.** Answer in the vocabulary the author already uses. A term they do not
   use is defined where it first appears — in answers, and in `questions.md` and
