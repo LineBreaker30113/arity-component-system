@@ -70,11 +70,13 @@ Every entry has one home. **Inferences live only in `inferred-decisions.md`**, s
 only sit in the file the author reviews. Keep the file count low: do not create a markdown file
 without being asked.
 
-- `markdowns/decisions.md` — the author's words only. **Wins any conflict with another doc.**
-- `markdowns/assumptions.md` — the target use case, in the author's words only.
+- `markdowns/decisions.md` — the author's words only, the target use case among them. **Wins any
+  conflict with another doc.**
 - `markdowns/inferred-decisions.md` — every inference, quoting its source. New entries go under
-  **Unreviewed**, at the end. The author's review corrects or deletes each one and moves it above that
-  heading. Treat entries above it as correct; build nothing on unreviewed ones.
+  **Unreviewed**, at the end. The author's review corrects or deletes each one. One the author
+  confirms strongly enough, the author claims and moves into `decisions.md`; one the author keeps
+  but still doubts moves above that heading. Treat entries above it as correct; build nothing on
+  unreviewed ones.
 - `markdowns/questions.md` — open questions, each with its options and who holds each. A suggestion
   that answers no question is not recorded. A settled question leaves the file.
 - `markdowns/handoff.md` — work decided to be done and not done, and what must happen before the
@@ -95,7 +97,8 @@ their code, with only filler removed.
 - Never removed: hedges and modal words (*I think, I guess, likely, maybe, mostly, should, may, can*),
   negations, scope, time.
 - Quote the transcript or the code, never a compaction summary.
-- A sentence of Claude's becomes the author's only when the author quotes it and approves it. General
+- A sentence of Claude's becomes the author's only when the author quotes it and approves it, or
+  confirms it strongly enough to claim it — moving it into `decisions.md` is that claim. General
   agreement approves no particular sentence.
 
 **Inferences, suggestions, facts.**
@@ -107,6 +110,7 @@ their code, with only filler removed.
 **Guards.**
 
 - Doc against doc: `decisions.md` wins. Doc against code: ask the author — the code may be newer.
+- The files in `markdowns/` have higher authority than the documentation in this file.
 - A standing instruction has a scope (which files) and an end. One meant to last goes in this file.
 - A changed decision is edited in place and committed; git keeps the old version.
 

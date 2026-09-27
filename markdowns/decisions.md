@@ -17,6 +17,8 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
 - We need to clarify each component is a component, so rename things like "ArityComponent" and
   "StructureComponent".
 - The delegation-like actions should be done there [in the core].
+- The core must also have contracts about delegation; we can (right now) declare an interface [for
+  them].
 - The ontructure package can be renamed but must be used, because incubation contains many unwanted
   elements that are not worth removing.
 - The former version's missing features were critical for the application. I need the modularity and
@@ -72,7 +74,7 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
 
 
 
-### Words
+## Words
 
 Claude's definitions, mostly from `GOALS.md`. *(Claude proposed putting "the defined words and the
 load-bearing assumptions" in `decisions.md`; the author answered: "Proposed split for goal is
@@ -88,7 +90,7 @@ accepted.")*
 - **Structure** — data about relations, over one arity or several, under any rule.
 - **Component** — a plugin the core holds (`ArityComponent`, `StructureComponent`).
 
-### Terms used in questions and inferences
+## Terms used in questions and inferences
 
 Claude's wording, written because `CLAUDE.md` requires a term the author does not already use to be
 defined where it first appears. Delete any that are already the author's own.
@@ -122,7 +124,7 @@ defined where it first appears. Delete any that are already the author's own.
   columns. Its "component" is what this project calls a catalog.
 - **chunked** — storing a column in fixed-size blocks instead of one array, so growing adds a block.
 
-### Target use case
+## Target use case
 
 Claude's wording, from `GOALS.md`; same source as Words.
 
@@ -130,3 +132,5 @@ Claude's wording, from `GOALS.md`; same source as Words.
   identities become global across arities or carry generation counters.
 - **Edits may be slow; reads may not.** Write time is spent to buy read speed or exactness.
 - **Modularity the fullest** The engine must be able to express anything.
+- [The DAG is] optimized for the case where the leaves are more than branch nodes, and parent*child
+  count mostly does not exceed a constant. *(Javadoc of `SetHierarchyDirectedAcyclicIntGraphModule`.)*

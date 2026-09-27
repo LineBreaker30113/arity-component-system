@@ -25,7 +25,7 @@ Delete me! I forgot to place the section headers except the "Architecture", so m
 - **Final name for `ontructure/`?**
   - Claude: `kernel`, since the plan already says "microkernel". Avoid `core`, used by `legacy/core/`
     and `OntologyEngineCore`.
-  - Human: the project name became arity component system, so we will use "acs-beta" right now.
+  - Human: the project name became arity component system, so we will use "acs_beta" right now.
 
 
 - **Package layout under it?**
@@ -69,6 +69,8 @@ Delete me! I forgot to place the section headers except the "Architecture", so m
     pass before the first push, so every import moves once. Leave `legacy/` alone — renaming there
     only makes the old commits harder to read.
   - Human: Confirm. "legacy" is read only. Now the name is "ACS", replace them with "ACS".
+  - Author: "Renaming should not reach /legacy, but the `package <path>` header can change, no
+    problem; for now we can keep renaming for the `incubation.ontructure`."
 
 
 - **Can a client supply its own `IdentitiesSet`?**
@@ -197,6 +199,8 @@ Delete me! I forgot to place the section headers except the "Architecture", so m
 
 - **Are `CONTRADICTS` and `IFOF` set operations or boolean predicates?**
   - Human: Cool names for "OR" variants like "IMPLIES", all are redundant. Keep logic minimal right now.
+  - Author, on `decisions.md` still listing all twelve operators: "Yes, they [the OR variants] are
+    boilerplate, meant to be handled last."
 
 
 ## Docs
