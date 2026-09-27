@@ -6,12 +6,13 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
 
 - This is the plan: we code the classes to design; later we will add the boilerplate, like bulk
   access to columns in many types (int, long, double).
+- We can later organize those [markdowns] into folders. We do not need it right now.
 
 ## Architecture
 
 - Arities are the first type of element; structures are the second.
 - "Component" replaces "Module" as the word for plugins, in every name.
-- I guess we better rename the architecture to "plugin" based, since the core is almost redundant.
+- I guess we better rename the architecture to "plugin" based, since the core can be excluded.
 - The "Structure" interface meant to be the second type of elements (the relations
   around sorts of elements (arity)) in the "OntologyEngineCore".
 - We need to clarify each component is a component, so rename things like "ArityComponent" and
@@ -23,6 +24,34 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
   elements that are not worth removing.
 - The former version's missing features were critical for the application. I need the modularity and
   "Logging, Undo-Redo, ..." at the same time.
+- The core handles creation-addition of plugins, delegations, journal (logging + undo/redo),
+  persistence, filtering + analysis, also system analytics like how much RAM is used by/where, etc.
+- [For `ontructure/`:] the project name became Arity Component System, so we will use "acs_beta"
+  right now.
+- [Under `acs_beta`,] I plan on making a separate file for every top tier interface, ArityComponent
+  variants and StructureComponent variants, and identitySet [`IdentitiesSet`]. Then packages for
+  implementations. I prefer packages of "identifiers", "arity", "structures.<x>ary".
+- [The `OE_` prefix, `OntologyEngineCore` and the package `org.halim.ontology`:] now the name is
+  "ACS", replace them with "ACS".
+- [The ACS rename:] do the one pass before the first push, so every import moves once. *(Claude's
+  wording, confirmed by the author.)*
+- "legacy" is read only. Renaming should not reach /legacy, but the `package <path>` header can
+  change, no problem; for now we can keep renaming for the `incubation.ontructure`.
+- [The `Module` at the end of `SetHierarchyDirectedAcyclicIntGraphModule`:] replace with
+  `Component`.
+- [Catalogs as components, `CatalogComponent`:] I accept it, but we must allow the client to decide
+  to define catalogs without modules. I mean for each Arity we will have a table, and the client
+  must be able to define [the] table itself or use a modular table. Also, for clarity, we will need
+  to name them like "ArityCatalogTable" or "ArityModularCatalogTable" or "ArityCatalogRowComponent".
+- The `Structure` contract holds which arities it spans; removal notification and alike;
+  per-element read and write of its own state; its op codes and codec. *(Old plan's wording,
+  confirmed by the author.)*
+- [Structures referring to their arities by ints, which the core resolves:] this has its own
+  results. We cannot "insert" arities or structures, they become somewhat independent of core (any
+  other core with different structures can accept it), using object references makes them less
+  dependent on the core. So I am open to suggestions, but for now ints are enough.
+- [The old plan's "growth is propagated directly from the arity to everything attached" is
+  declined:] "different arity" == "different thing".
 
 ## Identities and removal
 
@@ -50,6 +79,18 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
 - We need to allow client to skip the validation of identities, when they likely know it.
 - The automatic existence check validates a reference exactly when it leaves the structure holding
   it: returned to a caller, or used to address another arity. If checking is requested by client.
+- I think we do not need to make pending removals; the identity sets handle it.
+- [For forget before capture-back:] identity set must allow a way of capturing the lowest positive
+  excluded value. I mean there is an IntArrayList of excluded [identities]: [its] first element if
+  the list is not empty, or just increasing the borders. So the identities set contract is
+  responsible.
+- We do not need to make a "truncate" right now. But later we can make this. Also, the vacuum (may
+  rename to "compress") actually can simply swap the last few entries with the dead ones and
+  truncate out the dead ones.
+- [Undoing a remove after a vacuum is] out of scope right now; vacuum [is] planned to be the horizon
+  of undo.
+- [Naming the judgment-call existence method so it looks deliberate, like `identityAtUnchecked`:]
+  this naming convention is good, but out of scope; this is boilerplate polishing.
 
 ## Journal and undo
 
@@ -57,11 +98,40 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
 - Some actions recording the change is enough for calculating the undoing.
   Call it "inverse calculatable".
 - Some actions are not undoable, snapshot taking is expensive se we need to allow "break undo history".
+- "Persistence", saving to files, is just writing some data; no need of journal overhead.
+- Sometimes a cluster of operations is [the] steps of a client request, and undoing may take a
+  different approach. The example was: adding a parent may cause many remove parent calls, but
+  requesting undo on those prior to undoing the add parent is auto rejected. We have two options:
+  we can have request resolver functions that call the atomic operations after recording the
+  beginning of the operations to the journal, or making them tell the inverse. [The] first option is
+  likely better, so we are separating the client side of jobs from inside operations.
+- I recently decided the "check and call checkless functions" pattern. Simply, there will be
+  functions that resolve [a] client request into private reckless functions of unit operations.
+- "addParent" under isTight cannot be inverted by undoing all in reversed order; it can be reverted
+  by undoing all in the same order; also, it can be undone by closing the isTight temporarily.
+- [Redo:] simple, re-execute all.
+- [The DAG's free list, `freeSlots` and `multiData` length:] the slot allocation will likely be
+  deterministic, and it feels like it won't matter.
+- They [journal primitives] are meant to be the action and its parameters with an inverse.
+- [The old plan's write barrier is declined; it] needs more details, explained here: for journal
+  actions with checks and multi steps, a record at the beginning and end must be done, [and it]
+  must contain a name for logging and alike; for steps, each must just contain parameters, itself
+  and [its] inverse. More details can be added.
+- A structure registers its op codes and a codec for its journal records. *(Old plan's wording,
+  confirmed by the author.)*
+- An operation declares its own logging mode; the client does not. *(Old plan's wording, confirmed
+  by the author.)*
 
 ## Identity sets
 
 - Add PositiveLong and [Positive]Int, also deleting the narrow variants, to the plan.
 - Right now the identitiesSet doesn't need to hold a "firstIndex"; doesn't really matter though.
+- Some arities may have elements up to a certain number easily computed, like say we have a single
+  layer fully [connected] perceptron: its nodes are one arity, its weights are a different arity,
+  and its count and range can be easily computed, so the client can implement a specific identity
+  set if it wants.
+- Right now the engine accepts such a thing with ease, so we just need to document it. Later we may
+  need to make a few additions for it to work.
 
 ## Filtering
 
@@ -71,6 +141,8 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
 - Right now the filtering service can only provide the logical operators, and filters on data depend
   on the client. This is somewhat intended, since we allowed the data to vary, but some
   filtering modules to simplify the client's experience must be done.
+- Cool names for "OR" variants like "IMPLIES", all are redundant. Keep logic minimal right now.
+- They [the OR variants] are boilerplate, meant to be handled last.
 
 
 
