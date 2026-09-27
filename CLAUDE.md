@@ -110,6 +110,8 @@ their code, with only filler removed.
 **Guards.**
 
 - Doc against doc: `decisions.md` wins. Doc against code: ask the author — the code may be newer.
+- Decision against decision: the newer is correct. Before going on, say which two conflict and which
+  one is taken.
 - About the architecture target, the files in `markdowns/` win over the Java code and its
   documentation.
 - A standing instruction has a scope (which files) and an end. One meant to last goes in this file.
