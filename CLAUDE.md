@@ -110,7 +110,7 @@ their code, with only filler removed.
 **Guards.**
 
 - Doc against doc: `decisions.md` wins. Doc against code: ask the author — the code may be newer.
-- The files in `markdowns/` have higher authority than the documentation in this file.
+- The files in `markdowns/` have higher authority than the documentation in the Java code.
 - A standing instruction has a scope (which files) and an end. One meant to last goes in this file.
 - A changed decision is edited in place and committed; git keeps the old version.
 
