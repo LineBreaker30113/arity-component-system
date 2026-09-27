@@ -52,6 +52,11 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
   dependent on the core. So I am open to suggestions, but for now ints are enough.
 - [The old plan's "growth is propagated directly from the arity to everything attached" is
   declined:] "different arity" == "different thing".
+- Nothing narrows silently: conversion is exact or throws. `UnsupportedOperationException` = wrong
+  type asked; `ArithmeticException` = value does not fit. Floating narrowing rounds instead. *(Old
+  plan's wording, confirmed by the author.)*
+- [Gather, and resolving a catalog's name to its slot:] "scattered" is unlikely for the assumption,
+  and [the] naming method is not necessary right now.
 
 ## Identities and removal
 
@@ -121,6 +126,13 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
   confirmed by the author.)*
 - An operation declares its own logging mode; the client does not. *(Old plan's wording, confirmed
   by the author.)*
+- Cross-cutting concerns come from a journal: undo/redo replay it, logging reads it; one lock at the
+  transaction boundary; multithreading as a single writer with readers on a snapshot. *(Old plan's
+  wording, confirmed by the author.)*
+- [Legacy's `runAtomically`, one lock and one undo entry per client request:] now we will handle
+  this with [the] journal; this is important.
+- [Recording positions, so undo restores the order of parents:] no need, we are recording only
+  relations.
 
 ## Identity sets
 

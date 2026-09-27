@@ -19,16 +19,6 @@ The author has the most authority.
     since the positive byte and short sets are the only positive ones today.
 
 
-- **Ship a dense-range `IdentitiesSet` for append-only arities?**
-  - Claude: yes.
-  - Author: I do not get it, missing context, likely not worth for keeping.
-
-
-- **Gather and name → slot: urgent or deferred?** The old plan marked both "deliberately deferred";
-  both are also among the urgent handoffs.
-  - Author: I do not get it again, let's keep it.
-
-
 ## Filtering
 
 - **Which data-dependent filters does the engine ship?**
@@ -50,11 +40,6 @@ The author has the most authority.
 
 ## Docs
 
-- **Does the quote test cover `README.md`?** Its goal, "what it is not", and application text was
-  migrated by Claude from `GOALS.md`.
-  - Author: I did not get it, if you get it bring it out.
-
-
 - **What licence does the repository carry?** There is no `LICENSE` file and no `<licenses>` block in
   `pom.xml` (checked 2026-09-25), so the default is all rights reserved — which sits badly with a
   README that invites people to reimplement the idea in their own language. The choice also decides
@@ -67,26 +52,13 @@ The author has the most authority.
 I didn't get few parts but didn't find it worth to remove, so I covered them with `(=(<thing>)=)` likely misses context.
 Things added later are in `(!(<thing>)!)`
 
-The settled positions are in `decisions.md`. These wait for Claude to explain the unclear parts.
-
-#### Author confirms:
-
-- Cross-cutting concerns come from a journal: undo/redo replay it, logging reads it; one lock at the
-  transaction boundary (=( (`runAtomically`) )=); multithreading as a single writer with readers on a snapshot.
-
-
-- Nothing narrows silently: conversion is exact or throws. `UnsupportedOperationException` = wrong
-  type asked; `ArithmeticException` = value does not fit. (=(Floating narrowing rounds instead.)=)
-
-- Journal primitives are (=( ints in an `IntArrayList`, not objects; `UndoableAction` only for
-  client-supplied compounds. )=) The author's `(!(…)!)` addition is in `decisions.md` → Journal and undo.
-
-- Record positions, not just identities, so undo restores order. (!(I didn't get it, contextless)!)
+The settled positions are in `decisions.md`.
 
 #### Author declines
 
 
 - Bulk over per-element everywhere; structures must also support range reads. (!(What does it even mean?)!)
+  - Author: Keep this, out of scope, but if there will be a bulk function there needs to be a reason.
 
 
 # Open questions
