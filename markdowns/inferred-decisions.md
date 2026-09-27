@@ -5,8 +5,6 @@ files.
 
 ## Unreviewed
 
-### Identities and removal
-
 ### Urgent work — the old `ARCHITECTURE.md` handoffs
 
 The task wording is Claude's; the facts in it were checked 2026-09-17. *(Author: "The handoffs are
@@ -17,8 +15,6 @@ things that are decided to be done and urgent.")*
   `ArrayList<IntArrayList>` the other, with tombstone lists.
 - Write `package-info.java` for `structures/graphs/` (the author writes it).
 - Resolve `catalogs/LongIntCatalog`, an unreferenced near-duplicate of `IntegerValueCatalog`.
-- Add gather to catalogs: read an arbitrary identity list, not only a contiguous range.
-- Resolve catalog names to slots; nothing does today.
 - DAG tests in `src/test/` (the author writes them). Coverage: encoding transitions, root list after
   every phase, cycle refusal, slot reuse, `isTight` both ways, loose-then-`tighten(ROOT)` equivalence,
   reduction preserving reachability.

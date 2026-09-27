@@ -3,14 +3,6 @@
 Questions viewed by the author that haven't been put to decisions. May have doubts or better naming.
 The author has the most authority.
 
-## Architecture
-
-- **Bring back proxies? If so, at what granularity?**
-  - Author: "If we decide to bring back the proxy, the core may handle the proxies of classes."
-  - Claude: one proxy at the transaction boundary (`runAtomically`), never per method.
-  - Author: Undecided. Is journal enough? Proxies add one layer on each call that slows things down.
-
-
 ## Identity sets and catalogs
 
 
@@ -67,9 +59,6 @@ The step before a decision. Each question lists its options and who holds each. 
 Markdown files.
 
 ## Architecture
-
-- **How does persistence fit into the `Structure` contract?**
-  - Author: "Also, persistence, we forgot to talk about it."
 
 ## Removal and undo
 

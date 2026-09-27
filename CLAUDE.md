@@ -49,7 +49,7 @@ boilerplate."
     there. Accuracy outranks every budget: correct the false premise, keep the caveat, and say the
     budget was blown rather than pad in silence.
 - **One-word corrections.** *fat* — re-sent at half the length, no claim dropped. *thin* — re-sent
-  with what was cut, at the same length. *jargon* — the term defined, and added to Words. The same
+  with what was cut, at the same length. *jargon* — the term defined, and added to `terms.md`. The same
   word twice on the same kind of answer becomes a line in this file.
 - **No reports, briefs, or plans** unless a file is explicitly requested.
 - **Use the author's words.** Answer in the vocabulary the author already uses. A term they do not
@@ -72,6 +72,7 @@ without being asked.
 
 - `markdowns/decisions.md` — the author's words only, the target use case among them. **Wins any
   conflict with another doc.**
+- `markdowns/terms.md` — one-line definitions of terms, looked up by name when met, not read whole.
 - `markdowns/inferred-decisions.md` — every inference, quoting its source. New entries go under
   **Unreviewed**, at the end. The author's review corrects or deletes each one. One the author
   confirms strongly enough, the author claims and moves into `decisions.md`; one the author keeps

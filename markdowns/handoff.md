@@ -22,7 +22,6 @@ about what exists are in `current-state.md`; undecided things are in `questions.
   under a running session breaks every path in use.
 - The urgent code work listed in `inferred-decisions.md` → Urgent work. Still unreviewed, so still
   not started.
-- Review the Unreviewed entries in `inferred-decisions.md`, the 19 term definitions among them.
-- Decide the old plan's nine positions at the end of `questions.md`.
+- The author writes a pseudocode-like journal class, and we improve it from there.
 - Delete `reference/pre-purge-backup.bundle` and `reference/msgfilter.py` once the history rewrite is
   trusted. Both are gitignored, so neither can be published by accident.
