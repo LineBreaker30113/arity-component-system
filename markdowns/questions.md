@@ -37,6 +37,19 @@ The author has the most authority.
   README that invites people to reimplement the idea in their own language. The choice also decides
   what this project may take in from elsewhere, and what others may do with it.
   - Author: That's a real question, I would like a lisence that is like a bomb and forces every one responsible to open source their code. Research this well and later we can discuss.
+  - Claude, researched 2026-09-27: **AGPL-3.0.** A program that links the engine must be licensed
+    as a whole under it (FSF FAQ `#IfLibraryIsGPL`), and a program built to answer users over a
+    network must offer them its source (AGPL §13; FAQ `#AGPLv3InteractingRemotely`). It is the
+    strongest "forces you to open your code" licence that both the FSF and OSI approve, and Codeberg
+    hosts only those.
+    - Runner-up **RPL-1.5**: also reaches internal business use; OSI-approved in 2009, but the FSF
+      calls it nonfree. Not SSPL (OSI: not open source, 2021), not EUPL-1.2 (FSF: it lets
+      recipients relicense under weaker licences).
+    - Limits: Google forbids AGPL code outright; §13 is worded for a *modified* version, and that an
+      app merely using the library counts is the FSF's reading (court rulings not checked); no licence
+      reaches a reimplementation of the idea. fastutil and RoaringBitmap are Apache-2.0, which the FSF
+      and Apache call compatible with GPLv3.
+    - Texts: `reference/licences/`. Left for the author: AGPL or RPL, and "-or-later" or "-only".
 
 
 ## Old plan — confirm, change, or reject

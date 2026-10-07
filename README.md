@@ -105,3 +105,15 @@ there is a result nobody else can easily reproduce. If it loses, that is known e
 
 The engine stands on its own either way and is not justified by the application: a personal
 assistant's corpus is orders of magnitude smaller than the scale these representations target.
+
+## The goal
+
+In the author's words:
+
+> I like the idea of ACS: it will be able to express everything with ease. I wonder if there were AI
+> agents that build or audit it. So I have a scholar system: if I give a few hundred books on the
+> field of CS, it would likely better organize and define CS from the entirety of the professors. So
+> I want to build a system that builds paragraphs of knowledge, and then I will give a massive amount
+> of rigorous books on the fields.
+
+Whatever builds those paragraphs is a client: the engine still supplies no interpretation of its own.
