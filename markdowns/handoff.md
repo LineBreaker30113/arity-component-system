@@ -16,6 +16,9 @@ about what exists are in `current-state.md`; undecided things are in `questions.
 
 ## Decided, not done
 
+- Next session: the author plans the project's goal, from `README.md` → The goal. The Claude chat
+  responses pasted while stating it are kept verbatim, gitignored, in
+  `reference/chats/claude-chat-acs-agent-goal--2026-10-07_1007.md`.
 - Apply `naming-fix.md` once its wording is edited — the two `pom.xml` lines, the two titles, and the
   README subsection on the name — then delete that file.
 - Rename the folder on disk from `OntologyEngine`. The author's to do between sessions: renaming it
