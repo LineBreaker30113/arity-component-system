@@ -9,7 +9,7 @@ Markdown files.
 |---|---|---|
 | Identity representation | `incubation/structurer/sets/` | Negative at byte/short/int/long, positive at byte/short, Roaring. |
 | Data per identity | `incubation/structurer/catalogs/` | Column contract, integral and floating families, lister and chunked storage, six widths. |
-| Arity | `incubation/structurer/ArityModule`, `ModularArityCatalog` | Occupied set plus columns, a cell addressed by `(catalog, identity)`. |
+| Arity | `incubation/structurer/ArityModule`, `ACSE_ModularArityCatalog` | Occupied set plus columns, a cell addressed by `(catalog, identity)`. |
 | Structures | `incubation/structurer/structures/` | One: the DAG. `indexers/` is an empty directory. |
 | Engine | — | Does not exist. `incubation/OntologyEngineCore` was an earlier attempt; its structure list is typed to one class, `BidirectionalIndexingService`. |
 | Cross-cutting concerns | — | Do not exist. |

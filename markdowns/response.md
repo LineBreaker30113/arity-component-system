@@ -223,14 +223,14 @@ incubation/
 - `structurer/` disappears, which ends the structurer / structures / ontructure collision.
 - `sets/` and `catalogs/` leave the arity package: they are layers under it, and structures need
   `IdentitiesSet` too.
-- `PREFERRED_*`, `typeName` and the `exact*` conversions move off `ArityModule` into `catalogs/`, and
+- `PREFERRED_*`, `typeName` and the `exact*` conversions move off `ACSE_ArityComponentBase` into `catalogs/`, and
   `CatalogModuleBase` stops re-declaring the constants and becomes top-level there.
 - The listers move beside the chunked forms in `integer/` and `floating/`. As nested interface members
   they are implicitly public, despite looking package-private.
 - The plan phase is a type — passed, inspected, discarded — beside the structure contract.
 - `structures/indexers/` is empty, so git does not track it; give it a `package-info.java`.
 - Delete `catalogs/LongIntCatalog`, an unreferenced duplicate of `IntegerValueCatalog`.
-- `ModularArityCatalog` is a table named "catalog", where catalog means column — rename candidate.
+- `ACSE_ModularArityCatalog` is a table named "catalog", where catalog means column — rename candidate.
 
 **Sets.** The byte and short widths are deleted, and `IdentitiesSetPositiveInt` and `PositiveLong` are
 written first, since positive exists only at the narrow widths today. `firstIndex` is not needed while
