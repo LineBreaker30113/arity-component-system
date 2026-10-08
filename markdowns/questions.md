@@ -30,28 +30,6 @@ The author has the most authority.
     But that is a topic with a lot of things that can be done. One of most important is that we need to make a temporal "isEnumeratePrefered" method that calculates it using recursion on each filter node. That was the former design in the legace, read and bring it to me for us to discuss.
 
 
-## Docs
-
-- **What licence does the repository carry?** There is no `LICENSE` file and no `<licenses>` block in
-  `pom.xml` (checked 2026-09-25), so the default is all rights reserved — which sits badly with a
-  README that invites people to reimplement the idea in their own language. The choice also decides
-  what this project may take in from elsewhere, and what others may do with it.
-  - Author: That's a real question, I would like a lisence that is like a bomb and forces every one responsible to open source their code. Research this well and later we can discuss.
-  - Claude, researched 2026-09-27: **AGPL-3.0.** A program that links the engine must be licensed
-    as a whole under it (FSF FAQ `#IfLibraryIsGPL`), and a program built to answer users over a
-    network must offer them its source (AGPL §13; FAQ `#AGPLv3InteractingRemotely`). It is the
-    strongest "forces you to open your code" licence that both the FSF and OSI approve, and Codeberg
-    hosts only those.
-    - Runner-up **RPL-1.5**: also reaches internal business use; OSI-approved in 2009, but the FSF
-      calls it nonfree. Not SSPL (OSI: not open source, 2021), not EUPL-1.2 (FSF: it lets
-      recipients relicense under weaker licences).
-    - Limits: Google forbids AGPL code outright; §13 is worded for a *modified* version, and that an
-      app merely using the library counts is the FSF's reading (court rulings not checked); no licence
-      reaches a reimplementation of the idea. fastutil and RoaringBitmap are Apache-2.0, which the FSF
-      and Apache call compatible with GPLv3.
-    - Texts: `reference/licences/`. Left for the author: AGPL or RPL, and "-or-later" or "-only".
-
-
 ## Old plan — confirm, change, or reject
 
 I didn't get few parts but didn't find it worth to remove, so I covered them with `(=(<thing>)=)` likely misses context.
@@ -72,6 +50,15 @@ The step before a decision. Each question lists its options and who holds each. 
 Markdown files.
 
 ## Architecture
+
+- **Which ways of accepting requests may carry the management and loading requests (stop, status,
+  loading a folder, loading a class)?** The author has said they must exist, not who may call them.
+  - Claude: only the way the requester uses on the same machine. A request that names a path lets
+    whoever can send requests run any class file on the disk.
+  - Author: "it must have a way to manage it"; "loading folder and class methods must exist".
+- **What exactly is a "paragraph of knowledge", and how does a paragraph cite its sources and
+  reasoning?**
+  - Author: "We can talk about it later." The three-agent pipeline is under Goal in `decisions.md`.
 
 ## Removal and undo
 

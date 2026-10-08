@@ -2,6 +2,86 @@
 
 The author's words. Rules: `CLAUDE.md` → Markdown files.
 
+## Goal
+
+- ACS is meant to be a database that can be managed with commands. Specifically, the client is meant
+  to start the "ACS engine", then must use the "ACS requester" as: `acsr boot` (starts the acs
+  application), `acsr loadDB ~/main as main` (loads the database in the path main and allows access
+  to it with the name of main), `acsr components main` (shows the components of the database).
+  [The names changed afterwards: see Layers and names.]
+- "acsr" is meant to work by editing, appending [to] a file of requests and prompting the
+  application, which it will read and do.
+- Then we will develop a GUI for that application that uses the terminal input (later we can isolate
+  it from the terminal); also we will build an AI Agent that will use acsr. That is the goal.
+- [Who is it for?] Since this is a good personal project, we can document it for gaining reputation.
+- [What is a "paragraph of knowledge"?] It is more complicated [than a passage from one book, or a
+  paragraph written from several books]. The first agent will build the personal knowledge graph from
+  the books, then an auditing agent will audit it and improve, then a third agent will build a new
+  acs of paragraphs from that first acs, which better describes and [is] copyright free. Also,
+  paragraphs must cite the resources and reasoning to be accurate. We can talk about it later.
+  *(The author wrote "gap" and confirmed "graph".)*
+- [Who builds the structure, and who audits it?] Must allow agents at every step, since I want to
+  automate it. Must allow humans in every step, since I want to study the procedure of developing
+  proper knowledge graphs.
+- [Better than what?] In every aspect.
+- This database architecture is good specifically for RAG, since it is the most expressive by itself.
+
+## Layers and names
+
+*(Names as spoken at the time. The last entry sets the current ones: the library is `acse`, the
+service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mean `acses`; `ACS` and
+`ASC` mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
+
+- If we think about it, it [ACS] is a library. There are four layers: 1 library, 2 database
+  application, 3 requester, 4 GUI or 4 Agent.
+- The ACS is a library, the archiver (hereby "asca") is a database service, [the] requester (hereby
+  "ascar") is an adaptor, [and] the GUI and agents will use the adaptor.
+- Since asca is a service, it must have a way to manage it, while the requests can go through the
+  ascar.
+- The reason we need a separate application to request is because asca needs to load a lot of things
+  to memory in order to make any change, so it will likely not be used as `asca components ~/db3`; in
+  other words, it is likely the asca will be open for a time, so it cannot be used like
+  `asca <command>` unless we make the main function check if the service is already open and move
+  into the "command" mode, which is also a valid approach, but a separate application can serve as a
+  protocol.
+- I realised the idea of the main function of "asca" deciding to act as ascar if there is already an
+  asca process running is actually nice, we can do it to reduce our work.
+- I guess the new plan is to make a parent project that will compile all other projects in order to
+  develop our applications.
+- For now, let's make this project only two modules, ASC [the library] and ASCA [the service] (which
+  can handle requests in many ways).
+- We can also make modules for the OntoDirectory and alike.
+- [Is the GUI OntoDirectory?] Yes, but needs improvements. Also we can make another GUI application
+  that focuses on the RAG structure I planned.
+- My suggestion for the ASCA, it must allow many ways of accepting requests, also it must be modular,
+  being able to load .class files with ease, which is possible since the core is too thin.
+- By "plugins" I meant components like arity, catalog or structure components, since they will have
+  well defined contracts.
+- Loading is simply loading classes as accessible components. Loading a class and using [it] are
+  separate things, so loading folder and class methods must exist.
+- Also if the command `asca boot` becomes the working instance, that command line cannot be used for
+  anything else, so it must launch a separate process of asca.
+- The expected use case is the "acse" [the service] calls will launch [the database engine] if and
+  only if (boot is the command and there is not anyone running), otherwise the acse is a terminal
+  application for bridging client and database engine for requests and responses.
+- ACS is the library, it will not be usable on its own. The ACSE [the service] will implement few of
+  the ACS Components itself, outside of the ACS module.
+- For the naming, acse replaces the acs, and acses replaces the acse. Now it sounds like access, which
+  is cool.
+
+## Licence
+
+- I would like a licence that is like a bomb and forces every one responsible to open source their
+  code.
+- I want people to be allowed to develop open source using this, but it must be commercial for the
+  commercial use.
+- [What is the cost of not using a well-known licence?] If it is near nothing, go with AGPL-3.0-only
+  with a commercial licence. *(Claude's comparison and the result: `inferred-decisions.md` → The
+  licence.)*
+- [AGPL-3.0-only with the Universal FOSS Exception, plus a commercial licence:] Good, I want to use
+  the first suggestion of you.
+- [The Universal FOSS Exception:] Yes, add the exception.
+
 ## Process
 
 - This is the plan: we code the classes to design; later we will add the boilerplate, like bulk
@@ -29,14 +109,14 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
 - The core handles creation-addition of plugins, delegations, journal (logging + undo/redo),
   persistence, filtering + analysis, also system analytics like how much RAM is used by/where, etc.
 - [For `ontructure/`:] the project name became Arity Component System, so we will use "acs_beta"
-  right now.
+  right now. [Since then: "acse replaces the acs", see Layers and names.]
 - [Under `acs_beta`,] I plan on making a separate file for every top tier interface, ArityComponent
   variants and StructureComponent variants, and identitySet [`IdentitiesSet`]. Then packages for
   implementations. I prefer packages of "identifiers", "arity", "structures.<x>ary".
 - [The `OE_` prefix, `OntologyEngineCore` and the package `org.halim.ontology`:] now the name is
-  "ACS", replace them with "ACS".
-- [The ACS rename:] do the one pass before the first push, so every import moves once. *(Claude's
-  wording, confirmed by the author.)*
+  "ACS" [now `acse`], replace them with "ACS" [`acse`].
+- [The ACS rename, now to `acse`:] do the one pass before the first push, so every import moves
+  once. *(Claude's wording, confirmed by the author.)*
 - "legacy" is read only. Renaming should not reach /legacy, but the `package <path>` header can
   change, no problem; for now we can keep renaming for the `incubation.ontructure`.
 - [The `Module` at the end of `SetHierarchyDirectedAcyclicIntGraphModule`:] replace with
@@ -139,6 +219,11 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
   relations.
 - [Over proxies:] yes, journal wins.
 - I plan on making the journal contract alongside the core contract.
+- For every request about ACS, it must be able to store a comment, like the git commit messages, but
+  for every action, because every action is made from a resource and later may be audited, which
+  will require context.
+- The comment will be given by the client, which is "asrc" [the requester], which can only request;
+  steps are the application's responsibility.
 
 ## Identity sets
 
