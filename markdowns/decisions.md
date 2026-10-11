@@ -26,7 +26,41 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
 - [Better than what?] In every aspect.
 - This database architecture is good specifically for RAG, since it is the most expressive by itself.
 
-## Layers and names
+## Vision
+
+- I believe we can represent any system as data about the objects, the structures on them, and
+  procedures about them. ArityComponent is responsible for the data of a group of objects, and the
+  identities set is only responsible [for] matching an identity to memory. The structures are
+  responsible for relations between identities and have nothing to know about data or memory; if
+  [they did], that knowledge would be another arity and the order of the structure would [be]
+  higher. There may be many structures that do the same thing but optimized in another way. The
+  processes [procedures] are behaviors to change data or structure; they depend on some of the data
+  and structure, and when run they change some of the data and some of the structure.
+- My vision likely always was that we can express any database-like system (where data exists and
+  filtering [is] done based on rules) as a few types of beings and structures across them.
+- The structure must know only a dense set of identities each representing a single record, while
+  the data about the identities are handled on tables named Arity. Since moving [the] rest of the
+  records one block left each time we delete a record is unnecessary, the identities set handles
+  identity<->memory mapping, where identity is a single record and memory is the address of memory
+  where data related to it [is] stored.
+- Some of the records actually can be about other records; those relations are a huge part of all
+  the structures.
+- Later I realized the addition of procedures would be cool and allow it to express more things,
+  like feed forward and gradient descent backpropagation.
+- [The NN example:] Two arities, one for (nodes) neurons and the other for the synapses
+  (connections/weights). A structure that maps two identities from [the] arity of neurons to a single
+  identity from [the] arity of synapses. A procedure that firstly clears every non input neuron's
+  value by setting them to the bias (an identity from synapses that has two of the same identity from
+  the neurons arity), then for each of the identities on the synapses arity multiplies the first
+  neuron's value with the weight and adds it to the second neuron it points [to]; also when all the
+  inputs of a neuron [are] calculated, its activation function can be calculated and replace the
+  value on the neuron. There are other ways to describe a NN with this architecture; few of them are
+  a bit better and more descriptive.
+- This architecture can represent easily [a] database or a neural network, which makes me think this
+  can represent anything; more importantly [it] does it with high expressiveness (because of the
+  contracts), so we can mathematically reason about them.
+- My architecture is FCA4J but as [a] database and multi-arity. *(2026-10-10)*
+
 
 *(Names as spoken at the time. The last entry sets the current ones: the library is `acse`, the
 service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mean `acses`; `ACS` and
@@ -141,6 +175,26 @@ service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mea
   plan's wording, confirmed by the author.)*
 - [Gather, and resolving a catalog's name to its slot:] "scattered" is unlikely for the assumption,
   and [the] naming method is not necessary right now.
+- We need to define many Structure Components. A ternary example would be assuming an arity is [the]
+  cartesian [product] of two other arities; another would be assuming an arity is some transitions
+  from the one arity to another.
+- Not all the catalogs are meant to be pure array lists; they can be calculations using the identity
+  in the arity.
+- The structures ensure their rules themselves. *(2026-10-10)*
+- Most importantly, I plan on adding a third type of components, the "procedures", which are
+  functions about ACS that benefit being close to the system core.
+- Procedures may and will change catalog data; it is like their goal, because they are meant to be
+  close to the ACS. We need a way to store changes on catalog data, which is not hard, just extending
+  the arity operations list.
+- [Procedures, only for changes or also for reads:] it must allow a way of reasoning, or at least
+  state they do not otherwise.
+- [The synapse structure:] it is just a type of 2 arity structure where two elements from a single
+  arity [are] matched to a single element on the second arity. All of the neurons on all the layers
+  are placed on arity 1, and every weight is placed on arity 2; [the] structure resembles a category
+  (in [the] mathematical sense), since there [are] two sets and [the] second set binds to [the]
+  cartesian of the first set with [the] first set.
+- There [are] many ways for two arity structures to exist, where a single arity structure is always a
+  type of graph.
 
 ## Identities and removal
 
@@ -151,6 +205,27 @@ service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mea
   behavior is using the arity component like that.
 - When execution (through the multi-arity structures, and maybe few other cases I do not remember
   right now) reaches identities, they check if they exist, when necessary.
+- [On the above:] the important detail is that the structures are also better off not shifting data,
+  so they point at the index rather than the identity; by "they check when necessary" I mean we need
+  to handle this phenomenon.
+- [Index there is the memory address where the record's data sits, which does not shift on removal:]
+  Yes, it is [that], but [it] would not cause any problem; the functions just need to transform the
+  identity number before using it.
+- I have a belief the structures do not need to check if an Identity exists.
+- [Claude's wording, approved:] Make the core the only caller of removals.
+- Structures, if they need to remove an identity on another arity, need to call ArityComponent's
+  remove and [the] forget of [the] core on that identity; that is the recursive step: 0 original
+  arity -> 1 related structures -> 2 start from (0) on each identity needed to [be] removed.
+- Forget needs to be undoable.
+- We will not need a function like "swap" or "captureNotForget" because of what an arity represents;
+  more on that later.
+- [Storing a structure:] recording the relation is enough. Also at the core level storing can be done
+  by temporarily storing, then vacuum, then final storage. [That] is not bound to be the only
+  [sequence]; allow [the] option of direct storing. Also each time [storing] needs to create a new
+  file, so there needs [to be] a pointer.
+- [Calculated arities:] the calculated arities must be dependent on a structure; this is better
+  since being directly dependent [on] another Arity can actually raise errors.
+- [Claude's `long captureIdentity(int arity, String comment)` on the core:] go with it.
 - The removal and binary search [over the hole list] likely will never get that slow.
 - We should allow a judgment call method alongside auto method (does what you say) for the client.
 - Structures are not responsible for the element count; it is just the structure add-on.
@@ -224,6 +299,16 @@ service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mea
   will require context.
 - The comment will be given by the client, which is "asrc" [the requester], which can only request;
   steps are the application's responsibility.
+- While your [Claude's] decision of throwing [when undo is called] during a request is sound, we also
+  need to add an abort option.
+- [Adding identities:] Yes, journal adding identities; I forgot to tell because it is assumable.
+- [`storeAll`:] I have a small feeling it is appropriate here, but databases often use a "journal
+  before" [write-ahead log] type of action; we can do it later.
+- "storeAll" can be a JSON or something better, you can choose; it [is] meant to store every
+  transaction as a log. Just one rule: each transaction is stored [in] its own section, not the list
+  each.
+- [For the "until" methods refusing the wrong direction:] we can add a checkout method for ease of use.
+- [`abortRecordingActivity()`:] approved.
 
 ## Identity sets
 
@@ -235,6 +320,8 @@ service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mea
   set if it wants.
 - Right now the engine accepts such a thing with ease, so we just need to document it. Later we may
   need to make a few additions for it to work.
+- I think we need to find ways to define arity sizes; for example, [in] the "cartesian" instance I
+  told, the arity that represents the cartesians can have its size calculated.
 
 ## Filtering
 

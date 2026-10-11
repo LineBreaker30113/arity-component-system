@@ -71,7 +71,8 @@ only sit in the file the author reviews. Keep the file count low: do not create 
 without being asked.
 
 - `markdowns/decisions.md` — the author's words only, the target use case among them. **Wins any
-  conflict with another doc.**
+  conflict with another doc.** Fundamental decisions only: a command about one class or method stays
+  out.
 - `markdowns/terms.md` — one-line definitions of terms, looked up by name when met, not read whole.
 - `markdowns/inferred-decisions.md` — every inference, quoting its source. New entries go under
   **Unreviewed**, at the end. The author's review corrects or deletes each one. One the author

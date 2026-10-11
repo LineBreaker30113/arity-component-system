@@ -63,3 +63,9 @@ sentence.
 - The full licence is `AGPL-3.0-only WITH Universal-FOSS-exception-1.0` (its SPDX form) plus the
   commercial licence: open-source projects may link ACSE and keep their own licences, closed ones
   comply or pay. *(Author: "yes, add the exception and record it"; the SPDX form is Claude's.)*
+
+### The journal's transactions — read from the chat of 2026-10-11
+
+- A transaction is a client request together with every request nested in it, the thing one undo or
+  redo moves; `units` in `ACSE_JournalBasic` is renamed `transactions` on this reading. *(Author:
+  "each transaction is stored [in] its own section"; "the client … knows only the requests it sends".)*

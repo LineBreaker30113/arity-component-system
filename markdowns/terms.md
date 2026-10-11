@@ -21,4 +21,5 @@ Rules: `CLAUDE.md` → Markdown files.
 - **slot** — a numbered place in an array or list, used instead of a name or an object reference.
 - **snapshot** — a copy of the state, or of a region, kept before a change.
 - **tombstone** — a marker left where an element was removed, so the positions after it do not move.
+- **write-ahead log** — the journal written to disk before a change is applied, so a crash can replay or roll it back.
 - **write barrier** — one private method every mutator calls first, so no journal entry is forgotten.

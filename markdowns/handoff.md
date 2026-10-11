@@ -32,6 +32,10 @@ about what exists are in `current-state.md`; undecided things are in `questions.
   under a running session breaks every path in use.
 - The urgent code work listed in `inferred-decisions.md` → Urgent work. Still unreviewed, so still
   not started.
-- The author writes a pseudocode-like journal class, and we improve it from there.
+- Catalog writes as journaled arity operations, so procedures can change data (`decisions.md` →
+  Architecture). Open: setter shape, and the logging mode for bulk writes.
+- The procedure contract (`decisions.md` → Architecture, Vision).
+- Define more structure components, the cartesian (ternary) and the transitions arity among them
+  (`decisions.md` → Architecture).
 - Delete `reference/pre-purge-backup.bundle` and `reference/msgfilter.py` once the history rewrite is
   trusted. Both are gitignored, so neither can be published by accident.
