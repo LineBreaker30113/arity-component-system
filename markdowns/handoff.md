@@ -37,5 +37,9 @@ about what exists are in `current-state.md`; undecided things are in `questions.
 - The procedure contract (`decisions.md` → Architecture, Vision).
 - Define more structure components, the cartesian (ternary) and the transitions arity among them
   (`decisions.md` → Architecture).
+- The novelty study runs in a separate session the author starts; its launcher is in Claude's folder
+  (see Claude's memory).
+- Delete the old `structurer/structures/graphs/SetHierarchyDirectedAcyclicIntGraphModule` once the
+  author says so; the two `acse_beta` hierarchies replace it.
 - Delete `reference/pre-purge-backup.bundle` and `reference/msgfilter.py` once the history rewrite is
   trusted. Both are gitignored, so neither can be published by accident.

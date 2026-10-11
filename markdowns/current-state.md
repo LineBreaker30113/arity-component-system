@@ -3,38 +3,30 @@
 What exists now, checked against the repo on the date given, and the handoff. Rules: `CLAUDE.md` →
 Markdown files.
 
-## Layers — checked 2026-09-17
+## Layers — checked 2026-10-11
+
+The live work is `incubation/acse_beta/`. `incubation/structurer/` is the previous layout, kept until
+the author says otherwise; nothing in `acse_beta` imports it.
 
 | Layer | Package | State |
 |---|---|---|
-| Identity representation | `incubation/structurer/sets/` | Negative at byte/short/int/long, positive at byte/short, Roaring. |
-| Data per identity | `incubation/structurer/catalogs/` | Column contract, integral and floating families, lister and chunked storage, six widths. |
-| Arity | `incubation/structurer/ArityModule`, `ACSE_ModularArityCatalog` | Occupied set plus columns, a cell addressed by `(catalog, identity)`. |
-| Structures | `incubation/structurer/structures/` | One: the DAG. `indexers/` is an empty directory. |
-| Engine | — | Does not exist. `incubation/OntologyEngineCore` was an earlier attempt; its structure list is typed to one class, `BidirectionalIndexingService`. |
-| Cross-cutting concerns | — | Do not exist. |
-| New home | `incubation/ontructure/` | Only the author's staged `package-info.java`. |
+| Identity sets | `acse_beta/sets/` | Negative at byte/short/int/long, positive at byte/short, Roaring. `lowestFree()`: fast on `NegativeInt`, a counting default elsewhere. |
+| Catalog rows | `acse_beta/catalogs/` | Row contract `ACSE_ArityCatalogRowBase`; stored integer and floating rows, chunked; calculated rows `FilePathCatalogRow` and `HashedFilePathCatalogRow`. No setters yet. |
+| Arity | `ACSE_ArityComponentBase`, `ACSE_ModularArityCatalog` | Occupied set plus rows; adding and removing rows and identities is journaled. `removeIf` and `registerIf` are for the core only. |
+| Structures | `acse_beta/structures/unary/` | `TightSetHierarchyDirectedAcyclicIntGraphComponent` (always reduced) and `FolderHierarchyDirectedAcyclicIntGraphComponent` (single parent). Both journal their steps and save the relation as (element, parent) pairs. |
+| Core | `ACSE_Core`, `ACSE_CoreBasic` | Components by slot, a removed slot left empty; `delegateRemoval` with the forget recursion; `captureIdentity`. Every request takes a comment. |
+| Journal | `ACSE_Journal`, `ACSE_JournalBasic` | Transactions of nested requests; undo, redo, waypoints, `checkout`, abort; `storeAll` writes JSON Lines. |
+| Procedures, persistence, filtering, `acses` | — | Do not exist. |
 
-## The DAG — checked 2026-09-17
+## Legacy features not yet in incubation — checked 2026-10-11
 
-`structures/graphs/SetHierarchyDirectedAcyclicIntGraphModule`: a set hierarchy over int identities.
-One int per element holds a single parent inline; a second parent or any child gives the element a
-`multiData` entry. The root is element 0, and its children live in slot 0. Every `addParent` walks the
-element's descendants to refuse a cycle; under `isTight` it also keeps the parent set reduced and
-tightens the element's descendants.
+Locking, persistence sessions, filtering, analytics, in-place walking, and the service layer.
+Undo/redo and logging now exist as the journal.
 
-Not checked: whether loading with `isTight` off, then calling `tighten(ROOT)` once, gives the same
-parent sets as loading with it on. It is on the DAG test list.
+## Tests — measured 2026-10-11
 
-## Legacy features not yet in incubation — checked 2026-09-17
-
-Locking, undo/redo, logging, persistence sessions, filtering, analytics, in-place walking, and the
-service layer over them.
-
-## Tests
-
-`mvn test`: 182 tests, 0 failures (legacy suite plus `OEIntSetListerTest`), measured 2026-09-09.
-Nothing under `src/test/` exercises `structurer/structures/` (checked 2026-09-17).
+`mvn test`: 202 tests, 0 failures. Nothing under `src/test/` exercises `acse_beta`; Claude's
+throwaway checks of it live outside the repo (see Claude's memory).
 
 ## Former handoff — 2026-09-18
 
@@ -50,3 +42,6 @@ Repository state, 2026-09-18: committed through `10aa948`, working tree clean, n
 pushed. History was rewritten this day — the study inventory and a third-party paper were purged from
 every commit, and three commit messages that named the studied projects were reworded. The only copy
 of the pre-purge history is that bundle.
+
+Repository state, 2026-10-11: committed through `3df5498` on `incubation/int-set-algebra`, no remote,
+nothing pushed; `.idea/inspectionProfiles/` and `.idea/prettier.xml` untracked.
