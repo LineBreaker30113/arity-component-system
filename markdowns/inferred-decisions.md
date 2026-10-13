@@ -69,3 +69,36 @@ sentence.
 - A transaction is a client request together with every request nested in it, the thing one undo or
   redo moves; `units` in `ACSE_JournalBasic` is renamed `transactions` on this reading. *(Author:
   "each transaction is stored [in] its own section"; "the client … knows only the requests it sends".)*
+
+### Persistence and descriptions — read from the chat of 2026-10-11 to 2026-10-13
+
+- Every stored class declares `public static <its class> loadFrom(ACSE_Core, ACSE_Journal,
+  DataInputStream)`; the contracts keep only `saveTo`, and a load finds the method by name.
+  *(Author: "make a public static method".)*
+- `indexer.bin` names the core's class and every class the folder's files use, numbered; a file
+  writes a part's number, not its name. *(Author: "an indexer.bin that tells each class"; chose "Every
+  class used" for "What should indexer.bin hold?".)*
+- An arity's catalog rows and identity set go inside the arity's file, and every generation is kept.
+  *(Author chose "Inside the arity's file" and "Keep all".)*
+- A left-out component or row loads back empty; an identity set cannot be left out, so its arity
+  fails the store; `store` returns the warnings as a list. *(Author: "Leave it out … Just warn about
+  it", choosing the option that said an identity set can't be left out.)*
+- Each generation's `classes.jar` holds every class the folder uses, and what those reach from the
+  same places, except the contracts (the engine's public interfaces), the JDK and the libraries.
+  *(Author: "even the base classes will move to the target work space"; "acses only knows the
+  contracts".)*
+- A load takes every class the folder's jar holds from that jar, and only the rest from the program;
+  no class files are compared. *(Author: "data base is the authority about implementation"; "We do not
+  need to compare class files, do we?")*
+- The core is built through its public no-argument constructor, then `load(folder)`;
+  `ACSE_PersistenceManager.loadCore(folder)` does both. *(Author: "Rest can be confirmed", on Claude's
+  list.)*
+- The root holds `acse-persistence.data` - "ACSE", the format, the manager's class name, then the
+  manager's own data, for the basic manager the generation number - and `acse-persistence.jar`;
+  without the jar, `open` uses the program's manager. *(Author: "make it acse-persistence.bin as
+  binary"; "the acse-persistence.data (hereby, for less confusion)". The fallback is Claude's.)*
+- The journal's booleans use `java.util.BitSet` with a count, not Roaring: they are dense and added in
+  order. *(Author: "we need to use bitset or roaring bitset".)*
+- Descriptions live outside the journal: undo leaves them alone, a removed component keeps its own,
+  and class descriptions are keyed by class name. *(Author: "no need of journalling"; "represent them
+  in the easiest way".)*

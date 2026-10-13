@@ -28,6 +28,13 @@ about what exists are in `current-state.md`; undecided things are in `questions.
   the name — then delete that file.
 - `acses` is decided and not started: `boot` launches a separate process, any other command bridges
   to it, and loading-folder and loading-class methods must exist (`decisions.md` → Layers and names).
+  Creating a database copies `acse-persistence.jar` and the base classes from the device config, builds
+  an empty core and stores it; loading opens the folder's manager and records the core under
+  `--calledBy <name>`, else the folder's name (`decisions.md` → Persistence). The library side exists.
+- The author reviews the persistence dependency direction: `ACSE_PersistenceManager` (the contract)
+  no longer refers to `ACSE_PersistenceManagerBasic`; the streams reach it through the contract's
+  `ClassNumbering` and `PartBuilding` interfaces.
+- Update `current-state.md` for that work. It also says 202 tests; `mvn test` runs 182 (2026-10-13).
 - Rename the folder on disk from `OntologyEngine`. The author's to do between sessions: renaming it
   under a running session breaks every path in use.
 - The urgent code work listed in `inferred-decisions.md` → Urgent work. Still unreviewed, so still

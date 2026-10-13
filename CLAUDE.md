@@ -1,7 +1,7 @@
 # OntologyEngine
 
 A classification engine built on abstract mathematics — set algebra over int identities, aimed at
-formal concept analysis. Java 21, Maven, `fastutil` as the only hard runtime dependency.
+formal concept analysis. Java 21, Maven, `fastutil` and `RoaringBitmap` as the only runtime dependencies.
 
 ## Working relationship
 

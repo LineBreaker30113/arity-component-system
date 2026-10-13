@@ -80,3 +80,20 @@ Markdown files.
 ## Old plan — confirm, change, or reject
 
 Positions of the old `ARCHITECTURE.md`, written largely by Claude.
+
+
+## Journal
+
+- **Should the journal get a "not undoable, can be ignored" step?**
+  - Author: "until we had "0" as "Not undoable", and the one left open was "-128", what about we
+    adding a "Not undoable, can be ignored."?" … "I still didn't decide on the "Break undo history",
+    I just have an suggestion of an improvement."
+  - Claude: use -128, the one byte with no inverse: undo and redo skip it, and undo history stays
+    intact. About two lines in the journal.
+
+## acses
+
+- **What is acses's device config called, and what does it hold?**
+  - Author: "by copying from the device config or equals"; "from device config file (or whatever it
+    is called)".
+  - Claude: it holds `acse-persistence.jar` and the base classes' jar that a new database starts from.
