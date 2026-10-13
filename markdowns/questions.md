@@ -32,7 +32,6 @@ The author has the most authority.
 
 ## Old plan — confirm, change, or reject
 
-I didn't get few parts but didn't find it worth to remove, so I covered them with `(=(<thing>)=)` likely misses context.
 Things added later are in `(!(<thing>)!)`
 
 The settled positions are in `decisions.md`.
@@ -60,10 +59,6 @@ Markdown files.
   reasoning?**
   - Author: "We can talk about it later." The three-agent pipeline is under Goal in `decisions.md`.
 
-## Removal and undo
-
-## Journal
-
 ## Identity sets and catalogs
 
 - **How is a calculated arity's size defined, as for the cartesian arity?**
@@ -72,15 +67,6 @@ Markdown files.
   - Claude: by how full the product is. Full and fixed: identity = a·|B| + b, size |A|·|B|. Full and
     growing: a fixed stride for B in place of |B|, holes where B is short. Sparse: mint a pair
     identity only when the pair exists, with a ternary structure holding (pair, a, b).
-
-## Filtering
-
-## Docs
-
-## Old plan — confirm, change, or reject
-
-Positions of the old `ARCHITECTURE.md`, written largely by Claude.
-
 
 ## Journal
 

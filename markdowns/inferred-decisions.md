@@ -13,11 +13,9 @@ things that are decided to be done and urgent.")*
 - Design the binary structure (class ↔ element indexer) in `structures/indexers/`. Read
   `legacy/core/segments/manager/DoubleArrayedIndexer` first: `ArrayList<BitSet>` one way,
   `ArrayList<IntArrayList>` the other, with tombstone lists.
-- Write `package-info.java` for `structures/graphs/` (the author writes it).
 - Resolve `catalogs/LongIntCatalog`, an unreferenced near-duplicate of `IntegerValueCatalog`.
 - DAG tests in `src/test/` (the author writes them). Coverage: encoding transitions, root list after
-  every phase, cycle refusal, slot reuse, `isTight` both ways, loose-then-`tighten(ROOT)` equivalence,
-  reduction preserving reachability.
+  every phase, cycle refusal, slot reuse, reduction preserving reachability.
 
 ### The goal, the layers and the names — read from the chat of 2026-10-07/08
 
@@ -102,3 +100,11 @@ sentence.
 - Descriptions live outside the journal: undo leaves them alone, a removed component keeps its own,
   and class descriptions are keyed by class name. *(Author: "no need of journalling"; "represent them
   in the easiest way".)*
+
+### The renames and the modules — read from the chat of 2026-10-13
+
+- The first ACSES is the library: the project ACS holds two modules, `acse` and `acses`. *(Author:
+  "the ACSES will be a (maven) module of this project, and ACSES will also be another sub module".)*
+- "Rename all" says which renames, not when: they wait for the messy version's upload like the
+  modules, so nothing is renamed before the first push. *(Author: "Rename all."; "Do not do it yet. I
+  want to upload the messy version of this code base first for keeping its identity.")*

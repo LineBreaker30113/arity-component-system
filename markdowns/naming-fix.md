@@ -2,7 +2,6 @@
 
 Staging file, written 2026-09-25. Everything below was applied, then reverted out of `README.md`,
 `CLAUDE.md` and `pom.xml` so the author can edit the wording here first. Nothing is in effect.
-`questions.md` keeps the open question about the names inside `src/`.
 
 ## pom.xml
 
@@ -49,8 +48,7 @@ Staging file, written 2026-09-25. Everything below was applied, then reverted ou
 
 - `.idea/compiler.xml` still names the module `ontology-engine`; IntelliJ rewrites that file when the
   module is renamed there.
-- Every `OntologyEngineCore` mention in `markdowns/` is the class, not the project. The class is part
-  of the open question in `questions.md`.
+- Every `OntologyEngineCore` mention in `markdowns/` is the class, not the project.
 - `legacy/`: renaming inside it only makes the old commits harder to read.
 - The folder on disk, `.../OntologyEngine`, is the author's to rename after a session ends — renaming
   it under a running session breaks every path in use.

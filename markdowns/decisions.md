@@ -61,10 +61,12 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
   contracts), so we can mathematically reason about them.
 - My architecture is FCA4J but as [a] database and multi-arity. *(2026-10-10)*
 
+## Layers and names
 
-*(Names as spoken at the time. The last entry sets the current ones: the library is `acse`, the
-service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mean `acses`; `ACS` and
-`ASC` mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
+*(Names as spoken at the time. The entry "For the naming, acse replaces the acs" sets the current
+ones: the library is `acse`, the service program is `acses`; since 2026-10-13, ACS names the project
+holding both. Before that entry, `asca`, `ASCA` and the service `acse` mean `acses`; `ACS` and `ASC`
+mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 
 - If we think about it, it [ACS] is a library. There are four layers: 1 library, 2 database
   application, 3 requester, 4 GUI or 4 Agent.
@@ -102,6 +104,10 @@ service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mea
   the ACS Components itself, outside of the ACS module.
 - For the naming, acse replaces the acs, and acses replaces the acse. Now it sounds like access, which
   is cool.
+- [Every rename the handoff lists:] rename all. *(2026-10-13)*
+- I will keep the name ACS for this project, the ACSES will be a (maven) module of this project, and
+  ACSES will also be another sub module. Do not do it yet. I want to upload the messy version of this
+  code base first for keeping its identity.
 
 ## Licence
 
@@ -115,6 +121,10 @@ service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mea
 - [AGPL-3.0-only with the Universal FOSS Exception, plus a commercial licence:] Good, I want to use
   the first suggestion of you.
 - [The Universal FOSS Exception:] Yes, add the exception.
+- The exception is Oracle's Universal FOSS Exception, Version 1.0, referred to by name and by Oracle's
+  link, which Oracle allows when referring to it, rather than an equivalent of our own: `LICENSE`
+  holds the AGPL text alone, `NOTICE` the rest. *(Claude's wording; the author: "Do what you want,
+  likely you know the legal side better than me.")* *(2026-10-13)*
 
 ## Process
 
@@ -128,6 +138,8 @@ service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mea
 
 - Arities are the first type of element; structures are the second.
 - "Component" replaces "Module" as the word for plugins, in every name.
+- No more "Module", we already settled to "Component", so "Modular" becomes "Composable"; just be
+  clear what composable means. *(2026-10-13)*
 - I guess we better rename the architecture to "plugin" based, since the core can be excluded.
 - The "Structure" interface meant to be the second type of elements (the relations
   around sorts of elements (arity)) in the "OntologyEngineCore".
@@ -150,7 +162,8 @@ service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mea
 - [The `OE_` prefix, `OntologyEngineCore` and the package `org.halim.ontology`:] now the name is
   "ACS" [now `acse`], replace them with "ACS" [`acse`].
 - [The ACS rename, now to `acse`:] do the one pass before the first push, so every import moves
-  once. *(Claude's wording, confirmed by the author.)*
+  once. *(Claude's wording, confirmed by the author.)* [Since then: the messy version is uploaded
+  first, see Layers and names.]
 - "legacy" is read only. Renaming should not reach /legacy, but the `package <path>` header can
   change, no problem; for now we can keep renaming for the `incubation.ontructure`.
 - [The `Module` at the end of `SetHierarchyDirectedAcyclicIntGraphModule`:] replace with
@@ -159,6 +172,7 @@ service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mea
   to define catalogs without modules. I mean for each Arity we will have a table, and the client
   must be able to define [the] table itself or use a modular table. Also, for clarity, we will need
   to name them like "ArityCatalogTable" or "ArityModularCatalogTable" or "ArityCatalogRowComponent".
+  [Since then: "Modular" becomes "Composable".]
 - The `Structure` contract holds which arities it spans; removal notification and alike;
   per-element read and write of its own state; its op codes and codec. *(Old plan's wording,
   confirmed by the author.)*
@@ -311,6 +325,18 @@ service program is `acses`. Before it, `asca`, `ASCA` and the service `acse` mea
 - [`abortRecordingActivity()`:] approved.
 - For the boolean data of the journal we need to use bitset or roaring bitset, since [an] actual boolean
   array costs about 1 byte instead of 1 bit. *(2026-10-12)*
+- [Catalog setters:] it is meant to be logged, and instead of storing [the] former change with the new
+  one we can simply store the difference. If the client wants to store former and new versions for
+  higher clarity, they can implement the Journal themselves, or we can make a separate Journal
+  implementation that stores that way. *(2026-10-13)*
+- [Since `new - old` does not restore a double exactly:] your [Claude's] "old ^ new" method [over the
+  raw bits] solves the current problem with the journal.
+- [The setter shape, and the logging mode for bulk writes:] not open, simply log the change using the
+  method you gave [`old ^ new`].
+- We can make the journal's creation independent of the core: `indexer.bin` names the journal's class
+  beside the core's, a load builds the journal from that class through the folder's jar as it builds
+  the core, and the core takes that journal instead of building `ACSE_JournalBasic` itself. *(Claude's
+  wording, confirmed by the author.)*
 
 ## Descriptions
 

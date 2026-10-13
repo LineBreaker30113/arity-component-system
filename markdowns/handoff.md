@@ -5,48 +5,41 @@ about what exists are in `current-state.md`; undecided things are in `questions.
 
 ## Before publishing
 
-- Apply the licence (`decisions.md` → Licence): a `LICENSE` file with the AGPL-3.0 text and the
-  Universal FOSS Exception, a `<licenses>` block in `pom.xml`, and a README line saying a commercial
-  licence is available. Before the first outside contribution, a contributor agreement.
-- Oracle's page says nothing about reusing the exception's text: ask Oracle, or have the lawyer who
-  drafts the commercial licence write an equivalent.
-- Do every rename first. Renaming packages and classes after the first push churns a public history;
-  before it, it costs nothing. Now also: ACS → `acse`, the two modules `acse` and `acses` under one
-  parent project, and the move of `src/` and `pom.xml` into the library's module folder.
-- Choose the host and the repository name. GitHub, GitLab, Codeberg, or self-hosted Forgejo.
-- Re-run the scan that was clean on 2026-09-18: `git ls-files` carries only this project's own work,
-  and no tracked file holds a credential, a home path or an email.
+The first push is the messy version as it is, to keep its identity (`decisions.md` → Layers and
+names).
+
+- The licence is set: `LICENSE` holds the AGPL-3.0 text alone, so hosts label it; `NOTICE` states
+  version 3 only, the Universal FOSS Exception by Oracle's link, and the commercial licence; `pom.xml`
+  has a `<licenses>` block. Left: a README line saying a commercial licence is available (the
+  author's), and a contributor agreement before the first outside contribution.
+- The scan was clean on 2026-10-13 (`current-state.md` → Repository): `git ls-files` carries only this
+  project's own work, and no tracked file holds a credential, a home path or an email. Claude re-runs
+  it before the push if anything is committed after it.
+- The author decides whether `.mcp.json` and `src/main/java/Main.java` stay tracked for the push.
 
 ## Decided, not done
 
-- The goal is recorded in `decisions.md` → Goal (2026-10-08). `README.md` → The application and The
-  goal predate it and are the author's to rewrite (the README is handwritten); `decisions.md` wins
-  until then. The Claude chat responses pasted while stating the goal are kept verbatim, gitignored,
-  in `reference/chats/claude-chat-acs-agent-goal--2026-10-07_1007.md`.
-- Apply `naming-fix.md` once its wording is edited — now for the new names (`acse`, `acses`, "Arity
-  Component System Engine"): the two `pom.xml` lines, the two titles, and the README subsection on
-  the name — then delete that file.
-- `acses` is decided and not started: `boot` launches a separate process, any other command bridges
-  to it, and loading-folder and loading-class methods must exist (`decisions.md` → Layers and names).
-  Creating a database copies `acse-persistence.jar` and the base classes from the device config, builds
-  an empty core and stores it; loading opens the folder's manager and records the core under
+- After the first push, every rename: the `OE_` prefix, `OntologyEngineCore` and the package
+  `org.halim.ontology` become `acse`; `naming-fix.md` names the project, which keeps the name ACS,
+  then that file is deleted; and the parent project ACS takes the modules `acse` and `acses`, with
+  `src/` and `pom.xml` moving into the library's module (`decisions.md` → Layers and names).
+- The commercial licence's text, drafted by a lawyer before it is sold.
+- `README.md` → The application and The goal were written before the goal was stated (`decisions.md`
+  → Goal, 2026-10-08): they present OntoDirectory's filing-based RAG, not the database service with
+  requests, a GUI and the agent pipeline. Rewriting them is the author's (the README is handwritten);
+  where they differ, `decisions.md` wins. The Claude chat responses pasted while stating the goal are
+  kept verbatim, gitignored, in `reference/chats/claude-chat-acs-agent-goal--2026-10-07_1007.md`.
+- `acses`, later: `boot` launches a separate process, any other command bridges to it, and
+  loading-folder and loading-class methods must exist (`decisions.md` → Layers and names). Creating a
+  database copies `acse-persistence.jar` and the base classes from the device config, builds an empty
+  core and stores it; loading opens the folder's manager and records the core under
   `--calledBy <name>`, else the folder's name (`decisions.md` → Persistence). The library side exists.
-- The author reviews the persistence dependency direction: `ACSE_PersistenceManager` (the contract)
-  no longer refers to `ACSE_PersistenceManagerBasic`; the streams reach it through the contract's
-  `ClassNumbering` and `PartBuilding` interfaces.
-- Update `current-state.md` for that work. It also says 202 tests; `mvn test` runs 182 (2026-10-13).
-- Rename the folder on disk from `OntologyEngine`. The author's to do between sessions: renaming it
-  under a running session breaks every path in use.
-- The urgent code work listed in `inferred-decisions.md` → Urgent work. Still unreviewed, so still
-  not started.
-- Catalog writes as journaled arity operations, so procedures can change data (`decisions.md` →
-  Architecture). Open: setter shape, and the logging mode for bulk writes.
-- The procedure contract (`decisions.md` → Architecture, Vision).
-- Define more structure components, the cartesian (ternary) and the transitions arity among them
-  (`decisions.md` → Architecture).
-- The novelty study runs in a separate session the author starts; its launcher is in Claude's folder
+- Later: the urgent code work in `inferred-decisions.md` → Urgent work (unreviewed, so not started),
+  the procedure contract (`decisions.md` → Architecture, Vision), and more structure components, the
+  cartesian (ternary) and the transitions arity among them (`decisions.md` → Architecture).
+- The folder on disk need not be renamed for pushing. If it is renamed, between sessions, Claude
+  updates everything that points at its path (listed in Claude's memory).
+- The novelty study is running in another session (2026-10-13); its launcher is in Claude's folder
   (see Claude's memory).
-- Delete the old `structurer/structures/graphs/SetHierarchyDirectedAcyclicIntGraphModule` once the
-  author says so; the two `acse_beta` hierarchies replace it.
-- Delete `reference/pre-purge-backup.bundle` and `reference/msgfilter.py` once the history rewrite is
-  trusted. Both are gitignored, so neither can be published by accident.
+- Delete `reference/pre-purge-backup.bundle` and `reference/msgfilter.py` once the author has checked
+  the history rewrite. Both are gitignored, so neither can be published by accident.
