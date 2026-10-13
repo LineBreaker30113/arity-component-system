@@ -123,3 +123,9 @@ In the author's words:
 > of rigorous books on the fields.
 
 Whatever builds those paragraphs is a client: the engine still supplies no interpretation of its own.
+
+## Licence
+
+GNU Affero General Public License, version 3 only, with the Universal FOSS Exception, Version 1.0:
+see [LICENSE](LICENSE) and [NOTICE](NOTICE). A commercial licence is also offered for use that does
+not meet those terms; contact the copyright holder.
