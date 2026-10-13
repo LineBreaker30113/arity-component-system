@@ -1,5 +1,11 @@
 # Ontology Engine
 
+To understand the evolution of the project, the steps are:
+The "legacy" package, was the old package I used for a single version of that goal.
+The "incubation" package is meant to be an empty improved architecture of it.
+The "incubation.structurer" was the first serious try.
+The "incubation.acse_beta" is the target of the project.
+
 **A library for building arbitrary mathematical structures over N sorts of integer-identified
 entities, supplying no interpretation of its own.** The engine mints identities, stores columns of
 data against them, and maintains whatever relations a client declares between them. Meaning is the
