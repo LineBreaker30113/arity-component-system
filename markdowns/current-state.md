@@ -32,10 +32,10 @@ throwaway checks of it live outside the repo (see Claude's memory).
 
 ## Repository — checked 2026-10-13
 
-On `incubation/int-set-algebra`, with this session's work committed, and `main` fast-forwarded to
-it. The remote `origin` is https://github.com/LineBreaker30113/arity-component-system.git, which the
-author created; nothing is pushed. The pre-purge bundle was deleted on 2026-10-13, so no copy of the
-history before the rewrite is kept.
+On `incubation/int-set-algebra`, with `main` at the same commit. `main` is pushed to `origin`,
+https://github.com/LineBreaker30113/arity-component-system.git: public, `main` its default branch,
+and GitHub detects the licence as AGPL-3.0 from `LICENSE`. The other local branches are not pushed.
+The pre-purge bundle was deleted on 2026-10-13, so no copy of the history before the rewrite is kept.
 
 Scan of the tracked tree and of the whole history: no email, home path or secret in any line ever
 added, and every commit carries the GitHub noreply address. The only home-style paths are `~/main` and

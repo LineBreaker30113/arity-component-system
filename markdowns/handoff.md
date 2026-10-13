@@ -1,30 +1,17 @@
 # Handoff
 
-Work decided to be done and not done yet, and what has to happen before the first publish. Facts
-about what exists are in `current-state.md`; undecided things are in `questions.md`.
-
-## Before publishing
-
-The first push is the messy version as it is, to keep its identity (`decisions.md` → Layers and
-names). It waits for the author's README edits; Claude then commits them, re-runs the scan, and
-pushes `main`.
-
-- The licence is set: `LICENSE` holds the AGPL-3.0 text alone, so hosts label it; `NOTICE` states
-  version 3 only, the Universal FOSS Exception by Oracle's link, and the commercial licence; `pom.xml`
-  has a `<licenses>` block. Left: a README line saying a commercial licence is available (the
-  author's), and a contributor agreement before the first outside contribution.
-- The scan was clean on 2026-10-13 (`current-state.md` → Repository): `git ls-files` carries only this
-  project's own work, and no tracked file holds a credential, a home path or an email. Claude re-runs
-  it before the push if anything is committed after it.
-- The author decides whether `.mcp.json` and `src/main/java/Main.java` stay tracked for the push.
+Work decided to be done and not done yet. Facts about what exists are in `current-state.md`;
+undecided things are in `questions.md`. The messy version was pushed on 2026-10-13 (`current-state.md`
+→ Repository).
 
 ## Decided, not done
 
-- After the first push, every rename: the `OE_` prefix, `OntologyEngineCore` and the package
+- Now that the messy version is pushed, every rename: the `OE_` prefix, `OntologyEngineCore` and the package
   `org.halim.ontology` become `acse`; `naming-fix.md` names the project, which keeps the name ACS,
   then that file is deleted; and the parent project ACS takes the modules `acse` and `acses`, with
   `src/` and `pom.xml` moving into the library's module (`decisions.md` → Layers and names).
-- The commercial licence's text, drafted by a lawyer before it is sold.
+- The commercial licence's text, drafted by a lawyer before it is sold, and a contributor agreement
+  before the first outside contribution.
 - `README.md` → The application and The goal were written before the goal was stated (`decisions.md`
   → Goal, 2026-10-08): they present OntoDirectory's filing-based RAG, not the database service with
   requests, a GUI and the agent pipeline. Rewriting them is the author's (the README is handwritten);
