@@ -1,0 +1,16 @@
+ACS - Arity Component System
+Copyright (C) 2026 Abdülhalim ESEN
+
+ACS is free software: you can redistribute it and/or modify it under the terms
+of the GNU Affero General Public License, version 3 only, as published by the
+Free Software Foundation (see LICENSE), with the additional permission of the
+Universal FOSS Exception, Version 1.0, granted under section 7 of that license.
+The exception's terms are published by Oracle, and archived by SPDX, at:
+
+    https://oss.oracle.com/licenses/universal-foss-exception/
+    https://spdx.org/licenses/Universal-FOSS-exception-1.0.html
+
+ACS is also offered under a commercial license, for use that does not meet the
+terms above. To obtain one, contact the copyright holder.
+
+SPDX-License-Identifier: AGPL-3.0-only WITH Universal-FOSS-exception-1.0

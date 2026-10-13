@@ -15,6 +15,15 @@
         no meaning to; classes form a multiple-parent hierarchy. Extracted from OntoDirectory.
     </description>
 
+    <licenses>
+        <license>
+            <name>GNU Affero General Public License v3.0 only, with the Universal FOSS Exception v1.0</name>
+            <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>The exception: https://oss.oracle.com/licenses/universal-foss-exception/ (see NOTICE). A commercial license is also offered.</comments>
+        </license>
+    </licenses>
+
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
