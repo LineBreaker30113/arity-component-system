@@ -5,12 +5,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Keeps a core's stores under a folder and loads the current one back. The folder's {@value #POINTER}
@@ -18,9 +20,10 @@ import java.util.List;
  * folder's {@value #MANAGER} holds that class, so {@link #open} builds the manager that made a folder from
  * the folder alone; the rest of the file is that manager's.
  * <p>
- * A stored folder is the authority on implementations: {@link #loadCore} builds the core its indexer
- * names from the folder's own jar, and every class the folder names through it, so a program loading
- * a folder needs only the contracts - the engine's public interfaces - the JDK and the libraries.
+ * A stored folder is the authority on implementations: {@link #loadCore} builds the core and the journal
+ * its indexer names from the folder's own jar, and every class the folder names through the core, so a
+ * program loading a folder needs only the contracts - the engine's public interfaces - the JDK and the
+ * libraries.
  * <p>
  * The static methods are what every {@code saveTo} and static {@code loadFrom} share. A part is written as
  * its class's number in the folder's indexer, then its own data, and rebuilt by that class's
@@ -42,8 +45,8 @@ String MANAGER = "acse-persistence.jar";
 String INDEXER = "indexer.bin";
 /** The jar of the classes a stored folder needs, beside its data. */
 String CLASSES = "classes.jar";
-/** "ACSE", then the format, so a file another program made is refused rather than misread. */
-int MAGIC = 0x41435345, FORMAT = 1;
+/** "ACSE", then the format, so a file another program made is refused rather than misread. Format 2 put the journal's class in the indexer. */
+int MAGIC = 0x41435345, FORMAT = 2;
 
 
 /** Stores the core as the folder's new current store; gives back the store's warnings. */
@@ -77,23 +80,42 @@ static ACSE_PersistenceManager open(Path folder) throws IOException {
 }
 
 /**
- * Builds the core a stored folder's indexer names, through that class's public no-argument constructor,
- * then fills it from the folder. The core comes from the folder's jar, and with it every class the
- * folder names, since the core's load finds them through the core's own class loader.
+ * Builds the core a stored folder's indexer names, with the journal it names beside it, then fills the
+ * core from the folder. Both come from the folder's jar - the core through its public constructor
+ * taking a {@code Function<ACSE_Core, ACSE_Journal>}, the journal through its public
+ * {@code (ACSE_Core)} constructor, which that function calls - and with them every class the folder
+ * names, since the core's load finds them through the core's own class loader.
  * */
 static ACSE_Core loadCore(Path folder) throws IOException {
 	Path indexer = folder.resolve(INDEXER);
-	String name;
-	try(DataInputStream dis = new DataInputStream(new BufferedInputStream(Files.newInputStream(indexer)))) { name = readHeader(dis, indexer); }
+	String name, journalName;
+	try(DataInputStream dis = new DataInputStream(new BufferedInputStream(Files.newInputStream(indexer)))) {
+		name = readHeader(dis, indexer);
+		journalName = readString(dis);
+	}
 	Path jar = folder.resolve(CLASSES);
 	ClassLoader program = ACSE_PersistenceManager.class.getClassLoader();
 	ClassLoader loader = Files.exists(jar) ? new StoredClassLoader(jar.toUri().toURL(), program) : program;
+	Constructor<?> journal = journalConstructor(journalName, loader, indexer);
+	Function<ACSE_Core, ACSE_Journal> building = forCore -> {
+		try { return (ACSE_Journal) journal.newInstance(forCore); }
+		catch(ReflectiveOperationException e) { throw new IllegalStateException("cannot build the journal " + journalName, e); }
+	};
 	Object core;
-	try { core = Class.forName(name, true, loader).getConstructor().newInstance(); }
-	catch(ReflectiveOperationException | LinkageError e) { throw new IOException("cannot build the core " + name + " through a public no-argument constructor", e); }
+	try { core = Class.forName(name, true, loader).getConstructor(Function.class).newInstance(building); }
+	catch(ReflectiveOperationException | LinkageError e) { throw new IOException("cannot build the core " + name + " through a public constructor taking its journal's factory", e); }
 	if(!(core instanceof ACSE_Core built)) { throw new IOException(indexer + " names " + name + ", which is no core"); }
 	built.load(folder);
 	return built;
+}
+
+/** The journal class's public {@code (ACSE_Core)} constructor, refusing a class that is no journal. */
+private static Constructor<?> journalConstructor(String name, ClassLoader loader, Path indexer) throws IOException {
+	try {
+		Class<?> journal = Class.forName(name, true, loader);
+		if(!ACSE_Journal.class.isAssignableFrom(journal)) { throw new IOException(indexer + " names " + name + ", which is no journal"); }
+		return journal.getConstructor(ACSE_Core.class);
+	} catch(ReflectiveOperationException | LinkageError e) { throw new IOException("cannot build the journal " + name + " through a public (ACSE_Core) constructor", e); }
 }
 
 /** What every root file and indexer starts with: "ACSE", the format, and the class that wrote it. */

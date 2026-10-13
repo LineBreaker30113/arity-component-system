@@ -84,6 +84,25 @@ public interface ACSE_ArityCatalogRowBase {
 
 
     /**
+     * The writes, the other side of the views: one value at an identity this column already reaches,
+     * exact or refused the way a read is - refusal by type is {@link UnsupportedOperationException},
+     * refusal by value is {@link ArithmeticException}. Only the two numeric families are written, since
+     * they are the only ones stored; Java widens an int or a float argument on the way in.
+     * <p>
+     * Nothing here grows the column. Lifecycle stays with {@link #ensureCapacity}, which the arity drives
+     * for every column at once, so a write cannot leave one column reaching further than the rest. Nor is
+     * anything journaled: a column is storage, and the arity holding it records each write.
+     */
+    default void setLongFor(long identity, long value) {
+        throw cannotAnswer("a written long");
+    }
+
+    default void setDoubleFor(long identity, double value) {
+        throw cannotAnswer("a written double");
+    }
+
+
+    /**
      * The range views, the column form of the enclosing interface's. Same bargain: the defaults are the
      * per-element loop, and what they are worth is that a storage form can override them and copy whole
      * runs of its own array instead.

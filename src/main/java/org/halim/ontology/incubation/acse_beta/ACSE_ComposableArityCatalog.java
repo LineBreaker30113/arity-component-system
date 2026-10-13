@@ -8,11 +8,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * The arity whose columns really are objects: a list of {@link ACSE_ArityCatalogRowBase}, addressed by the
- * slot they sit at. This is the general case, the one that takes any storage form the catalogs
- * package offers and mixes widths and types freely in one arity.
+ * slot they sit at. That is what composable means here: the arity is put together from catalog rows,
+ * each its own object, added and removed one at a time through the journal, rather than written as
+ * one class with its columns as fields. This is the general case, the one that takes any storage form
+ * the catalogs package offers and mixes widths and types freely in one arity.
  * <p>
  * What it costs is the thing {@link ACSE_ArityComponentBase} exists to let a client avoid. Every read is two
  * hops - table to row, row to storage - and the second is an interface call at a site that
@@ -23,13 +26,13 @@ import java.util.ArrayList;
  * <p>
  * The bulk copies below are where the two hops stop mattering: each forwards the whole range to the
  * row's own copy, so the pair of dispatches is paid once for the range rather than once for every
- * element. That is the only reason a modular arity can be read at speed at all, and it is why the
+ * element. That is the only reason a composable arity can be read at speed at all, and it is why the
  * overrides are here rather than left to the interface defaults - the defaults would loop on
  * {@link #getIntFor}, which is exactly the two hops again.
  * <p>
  * Nothing here is multi thread safe.
  * */
-public class ACSE_ModularArityCatalog implements ACSE_ArityComponentBase {
+public class ACSE_ComposableArityCatalog implements ACSE_ArityComponentBase {
 
 /** Which identities exist. The columns are total over it; none of them decides membership. */
 public IdentitiesSet occupied;
@@ -40,11 +43,11 @@ public ArrayList<ACSE_ArityCatalogRowBase> catalogRows;
  * */
 public long lastIndex = -1;
 public final ACSE_Journal journal;
-final int[] params = new int[2];
+final int[] params = new int[5];
 
-static final byte IDENTITY = 1, CATALOG = 2;
+static final byte IDENTITY = 1, CATALOG = 2, WRITE = 3;
 
-public ACSE_ModularArityCatalog(IdentitiesSet occupied, ACSE_Journal journal) {
+public ACSE_ComposableArityCatalog(IdentitiesSet occupied, ACSE_Journal journal) {
 	this.occupied = occupied;
 	this.catalogRows = new ArrayList<>();
 	this.journal = journal;
@@ -111,6 +114,70 @@ public void registerIf(int identity, String comment) {
 	complete(request);
 }
 
+/**
+ * The checked request around a column's unjournaled write: refused before anything is recorded when
+ * the column holds no numbers or the identity is past the arity's reach, then recorded as the
+ * difference of the stored bits, which undo and redo both apply as it is. A write that changed
+ * nothing records no step.
+ * */
+@Override
+public void setLongFor(int catalog, long identity, long value, String comment) {
+	ACSE_ArityCatalogRowBase row = writable(catalog, identity, "a written long");
+	long old = bitsOf(row, identity);
+	int request = journal.beginRecordingActivity(this, "setLongFor", params, comment);
+	try { row.setLongFor(identity, value); }
+	catch(RuntimeException | Error e) { journal.abortRecordingActivity(); throw e; }
+	recordWrite(catalog, identity, old ^ bitsOf(row, identity));
+	complete(request);
+}
+
+@Override
+public void setDoubleFor(int catalog, long identity, double value, String comment) {
+	ACSE_ArityCatalogRowBase row = writable(catalog, identity, "a written double");
+	long old = bitsOf(row, identity);
+	int request = journal.beginRecordingActivity(this, "setDoubleFor", params, comment);
+	try { row.setDoubleFor(identity, value); }
+	catch(RuntimeException | Error e) { journal.abortRecordingActivity(); throw e; }
+	recordWrite(catalog, identity, old ^ bitsOf(row, identity));
+	complete(request);
+}
+
+/** The column, checked before anything is recorded: present, numeric, and reaching the identity. */
+ACSE_ArityCatalogRowBase writable(int catalog, long identity, String asked) {
+	ACSE_ArityCatalogRowBase row = catalogRows.get(catalog);
+	if(row == null) { throw new IllegalStateException("catalog " + catalog + " is removed"); }
+	int type = row.getPreferredType();
+	if(type != PREFERRED_INTEGER && type != PREFERRED_LONGI && type != PREFERRED_FLOATING) { throw cannotAnswer(catalog, asked); }
+	Objects.checkIndex(identity, lastIndex + 1);
+	return row;
+}
+
+/** [catalog, identity, difference], the two longs as high and low ints. */
+void recordWrite(int catalog, long identity, long difference) {
+	if(difference == 0) { return; }
+	params[0] = catalog;
+	params[1] = (int) (identity >>> 32);
+	params[2] = (int) identity;
+	params[3] = (int) (difference >>> 32);
+	params[4] = (int) difference;
+	journal.recordActivityStep(WRITE, 5);
+}
+
+/** The stored value as bits: a double's raw bits on a floating column, so a NaN or a -0.0 survives; the value itself on an integral one. */
+static long bitsOf(ACSE_ArityCatalogRowBase row, long identity) {
+	return row.getPreferredType() == PREFERRED_FLOATING ? Double.doubleToRawLongBits(row.getDoubleFor(identity)) : row.getLongFor(identity);
+}
+
+/** Applies a recorded difference. One step serves undo and redo alike, since {@code bits ^ d ^ d} is {@code bits}. */
+void flip(int catalog, long identity, long difference) {
+	ACSE_ArityCatalogRowBase row = catalogRows.get(catalog);
+	long bits = bitsOf(row, identity) ^ difference;
+	if(row.getPreferredType() == PREFERRED_FLOATING) { row.setDoubleFor(identity, Double.longBitsToDouble(bits)); }
+	else { row.setLongFor(identity, bits); }
+}
+
+static long join(int high, int low) { return (long) high << 32 | Integer.toUnsignedLong(low); }
+
 void putCatalogRow(int catalog, ACSE_ArityCatalogRowBase row) {
 	if(lastIndex >= 0) { row.ensureCapacity(lastIndex); }
 	if(catalog == catalogRows.size()) { catalogRows.add(row); }
@@ -129,6 +196,7 @@ public void doTraceableStep(byte stepPair, int[] params, int index) {
 		case -IDENTITY -> occupied.unsign(params[index]);
 		case CATALOG -> putCatalogRow(params[index], (ACSE_ArityCatalogRowBase) journal.getObject(params[index + 1]));
 		case -CATALOG -> catalogRows.set(params[index], null);
+		case WRITE, -WRITE -> flip(params[index], join(params[index + 1], params[index + 2]), join(params[index + 3], params[index + 4]));
 		default -> throw new IllegalArgumentException("no step " + stepPair);
 	}
 }
@@ -177,9 +245,9 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote, each part through its own class. */
-public static ACSE_ModularArityCatalog loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static ACSE_ComposableArityCatalog loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
 	long lastIndex = dis.readLong();
-	ACSE_ModularArityCatalog arity = new ACSE_ModularArityCatalog(ACSE_PersistenceManager.readPart(dis, IdentitiesSet.class, core, journal), journal);
+	ACSE_ComposableArityCatalog arity = new ACSE_ComposableArityCatalog(ACSE_PersistenceManager.readPart(dis, IdentitiesSet.class, core, journal), journal);
 	arity.lastIndex = lastIndex;
 	for(int catalog = 0, count = dis.readInt(); catalog < count; catalog++) {
 		arity.catalogRows.add(ACSE_PersistenceManager.readPart(dis, ACSE_ArityCatalogRowBase.class, core, journal));

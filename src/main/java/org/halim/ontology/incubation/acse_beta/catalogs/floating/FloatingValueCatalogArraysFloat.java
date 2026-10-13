@@ -76,6 +76,10 @@ public void setDataRaw(long identity, double value) {
 	data.get(chunking.chunkOf(identity))[chunking.offsetOf(identity)] = (float) value;
 }
 
+/** The contract's write, rounding as {@link #setData} does, and leaving growth to the arity. */
+@Override
+public void setDoubleFor(long identity, double value) { setDataRaw(identity, value); }
+
 
 
 /**

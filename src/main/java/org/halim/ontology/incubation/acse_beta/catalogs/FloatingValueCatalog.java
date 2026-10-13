@@ -43,6 +43,12 @@ default int getIntFor(long identity) {
 	return ACSE_ArityComponentBase.exactInt(getData(identity));
 }
 
+/** The reverse of {@link #getLongFor}: a long is written only when it has an exact double. */
+@Override
+default void setLongFor(long identity, long value) {
+	setDoubleFor(identity, ACSE_ArityComponentBase.exactDouble(value));
+}
+
 
 class FloatingValueCatalogListerDouble implements FloatingValueCatalog {
 	
@@ -55,7 +61,12 @@ class FloatingValueCatalogListerDouble implements FloatingValueCatalog {
 	public double getData(long identity) {
 		return data.getDouble((int) identity);
 	}
-	
+
+	@Override
+	public void setDoubleFor(long identity, double value) {
+		data.set((int) identity, value);
+	}
+
 	
 	/** The flat list is the storage, so reaching an identity is just making the list that long. */
 	@Override
@@ -124,7 +135,13 @@ class FloatingValueCatalogListerFloat implements FloatingValueCatalog {
 	public double getData(long identity) {
 		return data.getFloat((int) identity);
 	}
-	
+
+	/** Narrows by rounding, as this variant's writes do. */
+	@Override
+	public void setDoubleFor(long identity, double value) {
+		data.set((int) identity, (float) value);
+	}
+
 	
 	/** The flat list is the storage, so reaching an identity is just making the list that long. */
 	@Override

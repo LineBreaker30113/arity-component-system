@@ -70,6 +70,10 @@ public void setDataRaw(long identity, long value) {
 	data.get(chunking.chunkOf(identity))[chunking.offsetOf(identity)] = value;
 }
 
+/** The contract's write, which leaves growth to the arity: the slot must already be addressable. */
+@Override
+public void setLongFor(long identity, long value) { setDataRaw(identity, value); }
+
 
 
 /**

@@ -261,14 +261,14 @@ static void syncDirectory(Path directory) throws IOException {
 
 
 /**
- * Writes the folder's jar: the core's class, every class the table names, and every class they reach
- * from the same places - the engine, a plugin's folder or jar, an earlier folder's jar - except the
- * contracts, which the loading program supplies; the JDK and libraries such as fastutil stay out too.
- * The first copy met of a class is the one kept.
+ * Writes the folder's jar: the roots - the core's class and its journal's - every class the table
+ * names, and every class they reach from the same places - the engine, a plugin's folder or jar, an
+ * earlier folder's jar - except the contracts, which the loading program supplies; the JDK and
+ * libraries such as fastutil stay out too. The first copy met of a class is the one kept.
  * */
-static void storeClasses(Path folder, Class<?> core, ClassTable table) throws IOException {
+static void storeClasses(Path folder, ClassTable table, Class<?>... roots) throws IOException {
 	ArrayDeque<Class<?>> pending = new ArrayDeque<>(table.classes);
-	pending.addFirst(core);
+	for(int i = roots.length - 1; i >= 0; i--) { pending.addFirst(roots[i]); }
 	HashSet<String> origins = new HashSet<>();
 	origins.add(originOf(ACSE_Core.class));
 	for(Class<?> cls : pending) { origins.add(originOf(cls)); }

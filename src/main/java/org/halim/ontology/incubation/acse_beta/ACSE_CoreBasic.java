@@ -15,11 +15,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 /** Components by slot, with their addition and removal journaled. Nothing here is multi thread safe. */
 public class ACSE_CoreBasic implements ACSE_Core, ACSE_DescriptionManager {
 
-public final ACSE_Journal journal = new ACSE_JournalBasic(this);
+/** Built for this core by the factory a constructor is given, so its class is the caller's choice; a load's is the one the folder's indexer names. */
+public final ACSE_Journal journal;
 final ArrayList<ACSE_ArityComponentBase> arities = new ArrayList<>();
 final ArrayList<ACSE_StructureComponentBase> structures = new ArrayList<>();
 final int[] params = new int[2];
@@ -42,6 +44,17 @@ static final byte ARITY = 1, STRUCTURE = 2;
 static final String INDEXER = ACSE_PersistenceManager.INDEXER, DESCRIPTIONS = "core.bin", JOURNAL_LOG = "journal.jsonl";
 
 
+/** A core recording into the basic journal. */
+public ACSE_CoreBasic() { this(ACSE_JournalBasic::new); }
+
+/**
+ * A core recording into the journal {@code journal} builds for it. The journal comes as a factory
+ * rather than finished, because it holds the core it records for; {@link ACSE_PersistenceManager#loadCore}
+ * passes one that builds the class a folder's indexer names.
+ * */
+public ACSE_CoreBasic(Function<ACSE_Core, ACSE_Journal> journal) { this.journal = journal.apply(this); }
+
+
 @Override
 public int getArityCount() { return arities.size(); }
 
@@ -56,7 +69,7 @@ public ACSE_StructureComponentBase getStructure(int structure) { return structur
 
 
 @Override
-public void addArity(String description, String comment) { addArity(new ACSE_ModularArityCatalog(new IdentitiesSetNegativeInt(-1), journal), description, comment); }
+public void addArity(String description, String comment) { addArity(new ACSE_ComposableArityCatalog(new IdentitiesSetNegativeInt(-1), journal), description, comment); }
 
 @Override
 public void addArity(ACSE_ArityComponentBase acseArityComponent, String description, String comment) { addComponent(arities, acseArityComponent, arityDescriptions, description, ARITY, "addArity", comment); }
@@ -64,10 +77,10 @@ public void addArity(ACSE_ArityComponentBase acseArityComponent, String descript
 @Override
 public int addCatalogRow(int arity, ACSE_ArityCatalogRowBase row, String description, String comment) {
 	ACSE_ArityComponentBase target = arities.get(arity);
-	if(!(target instanceof ACSE_ModularArityCatalog modular)) {
+	if(!(target instanceof ACSE_ComposableArityCatalog composable)) {
 		throw new UnsupportedOperationException("arity " + arity + " is " + (target == null ? "removed" : target.getClass().getSimpleName() + ", which takes no catalog rows"));
 	}
-	int catalog = modular.addCatalogRow(row, comment);
+	int catalog = composable.addCatalogRow(row, comment);
 	catalogRowDescriptions.put(rowKey(arity, catalog), description);
 	return catalog;
 }
@@ -200,7 +213,7 @@ public List<String> store(Path folder) throws IOException {
 	ACSE_PersistenceManagerBasic.write(folder.resolve(DESCRIPTIONS), table, this::writeDescriptions);
 	ACSE_PersistenceManagerBasic.write(folder.resolve(JOURNAL_LOG), table, dos -> { journal.storeAll(dos); return true; });
 	ACSE_PersistenceManagerBasic.write(folder.resolve(INDEXER), table, dos -> writeIndexer(dos, table, aritySlots, structureSlots));
-	ACSE_PersistenceManagerBasic.storeClasses(folder, getClass(), table);
+	ACSE_PersistenceManagerBasic.storeClasses(folder, table, getClass(), journal.getClass());
 	ACSE_PersistenceManagerBasic.syncDirectory(folder);
 	return table.warnings;
 }
@@ -265,19 +278,22 @@ void checkBetweenRequests(String action) {
 	if(journal.isRecordingActivity()) { throw new IllegalStateException(action + " runs between requests, and one is open"); }
 }
 
-/** The contract's header naming this core's class, every class the folder's files name, then each slot's class by its number, -1 for an emptied or left-out slot. */
+/** The contract's header naming this core's class, its journal's class, every class the folder's files name, then each slot's class by its number, -1 for an emptied or left-out slot. */
 boolean writeIndexer(DataOutputStream dos, ACSE_PersistenceManagerBasic.ClassTable table, IntArrayList aritySlots, IntArrayList structureSlots) throws IOException {
 	ACSE_PersistenceManager.writeHeader(dos, getClass());
+	ACSE_PersistenceManager.writeString(dos, journal.getClass().getName());
 	ACSE_PersistenceManagerBasic.writeClasses(dos, table);
 	writeSlots(dos, aritySlots);
 	writeSlots(dos, structureSlots);
 	return true;
 }
 
-/** Refuses a folder whose core is another class: its classes would not be this core's. */
+/** Refuses a folder whose core or journal is another class: its classes would not be this core's, nor its journal this one. */
 Class<?>[] readIndexer(DataInputStream dis, Path indexer, ClassLoader loader, IntArrayList aritySlots, IntArrayList structureSlots) throws IOException {
 	String core = ACSE_PersistenceManager.readHeader(dis, indexer);
 	if(!core.equals(getClass().getName())) { throw new IOException(indexer + " belongs to the core " + core + ", not " + getClass().getName()); }
+	String recorder = ACSE_PersistenceManager.readString(dis);
+	if(!journal.getClass().getName().equals(recorder)) { throw new IOException(indexer + " names the journal " + recorder + ", this core's is " + journal.getClass().getName()); }
 	Class<?>[] classes = ACSE_PersistenceManagerBasic.readClasses(dis, loader);
 	readSlots(dis, aritySlots, classes.length);
 	readSlots(dis, structureSlots, classes.length);

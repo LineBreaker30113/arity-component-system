@@ -50,6 +50,12 @@ default double getDoubleFor(long identity) {
 	return ACSE_ArityComponentBase.exactDouble(getData(identity));
 }
 
+/** The reverse of {@link #getDoubleFor}: a double is written only when it is an exact long. */
+@Override
+default void setDoubleFor(long identity, double value) {
+	setLongFor(identity, ACSE_ArityComponentBase.exactLong(value));
+}
+
 
 /**
  * An integral catalog whose values are known to fit in an int, which is what
@@ -97,7 +103,12 @@ class IntegerValueCatalogListerLong implements IntegerValueCatalog {
 	public long getData(long identity) {
 		return data.getLong((int) identity);
 	}
-	
+
+	@Override
+	public void setLongFor(long identity, long value) {
+		data.set((int) identity, value);
+	}
+
 	
 	/** The flat list is the storage, so reaching an identity is just making the list that long. */
 	@Override
@@ -155,7 +166,12 @@ class IntegerValueCatalogListerInt implements IntSizedIntegerValueCatalog {
 	public int getIntData(long identity) {
 		return data.getInt((int) identity);
 	}
-	
+
+	@Override
+	public void setLongFor(long identity, long value) {
+		data.set((int) identity, ACSE_ArityComponentBase.exactInt(value));
+	}
+
 	
 	/** The flat list is the storage, so reaching an identity is just making the list that long. */
 	@Override
@@ -213,7 +229,12 @@ class IntegerValueCatalogListerShort implements IntSizedIntegerValueCatalog {
 	public int getIntData(long identity) {
 		return data.getShort((int) identity);
 	}
-	
+
+	@Override
+	public void setLongFor(long identity, long value) {
+		data.set((int) identity, ACSE_ArityComponentBase.exactShort(value));
+	}
+
 	
 	/** The flat list is the storage, so reaching an identity is just making the list that long. */
 	@Override
@@ -275,7 +296,12 @@ class IntegerValueCatalogListerByte implements IntSizedIntegerValueCatalog {
 	public int getIntData(long identity) {
 		return data.getByte((int) identity);
 	}
-	
+
+	@Override
+	public void setLongFor(long identity, long value) {
+		data.set((int) identity, ACSE_ArityComponentBase.exactByte(value));
+	}
+
 	
 	/** The flat list is the storage, so reaching an identity is just making the list that long. */
 	@Override

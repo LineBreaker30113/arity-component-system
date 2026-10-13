@@ -101,6 +101,18 @@ default boolean getBooleanFor(int catalog, long identity) { throw cannotAnswer(c
 default Object getObjectFor(int catalog, long identity) { throw cannotAnswer(catalog, "Object"); }
 
 /**
+ * The writes, journaled: the value lands in {@code catalog} at {@code identity}, exact or refused like
+ * a read, and only within the identities the arity already reaches - a write never grows a column,
+ * since growth is the arity's and happens for every column at once.
+ * <p>
+ * The journal keeps the difference, {@code old ^ new} over the stored bits, rather than the two
+ * values: one long whatever the width, exact for a double where {@code new - old} is not, and the
+ * same step both undoes and redoes. A table that takes no writes keeps these defaults, which refuse.
+ * */
+default void setLongFor(int catalog, long identity, long value, String comment) { throw cannotAnswer(catalog, "a written long"); }
+default void setDoubleFor(int catalog, long identity, double value, String comment) { throw cannotAnswer(catalog, "a written double"); }
+
+/**
  * The column as an object, for the table that has one. A table storing its columns as fields does
  * not, and refuses - which is the honest answer rather than a wrapper minted per call, since the
  * whole point of that table is that no such object exists.
