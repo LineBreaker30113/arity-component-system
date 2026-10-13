@@ -6,7 +6,8 @@ about what exists are in `current-state.md`; undecided things are in `questions.
 ## Before publishing
 
 The first push is the messy version as it is, to keep its identity (`decisions.md` → Layers and
-names).
+names). It waits for the author's README edits; Claude then commits them, re-runs the scan, and
+pushes `main`.
 
 - The licence is set: `LICENSE` holds the AGPL-3.0 text alone, so hosts label it; `NOTICE` states
   version 3 only, the Universal FOSS Exception by Oracle's link, and the commercial licence; `pom.xml`
@@ -41,5 +42,5 @@ names).
   updates everything that points at its path (listed in Claude's memory).
 - The novelty study is running in another session (2026-10-13); its launcher is in Claude's folder
   (see Claude's memory).
-- Delete `reference/pre-purge-backup.bundle` and `reference/msgfilter.py` once the author has checked
-  the history rewrite. Both are gitignored, so neither can be published by accident.
+- Delete `reference/msgfilter.py` once the author says so; it is gitignored, so it cannot be published
+  by accident. The pre-purge bundle was deleted on 2026-10-13.
