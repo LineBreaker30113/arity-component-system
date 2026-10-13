@@ -1,5 +1,8 @@
 package org.halim.ontology.incubation.acse_beta;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 /**
  * One value per identity - a column - and the half of the contract that does not depend on what the
  * value is. This is what a column looks like when it is genuinely its own object; the enclosing
@@ -48,6 +51,15 @@ public interface ACSE_ArityCatalogRowBase {
      * Lowers the ceiling to {@code capacity} and gives back what sat above it.
      */
     void truncate(long capacity);
+
+
+    /**
+     * Writes the column's values, or what it calculates them from, so that the class's
+     * {@code public static loadFrom(ACSE_Core, ACSE_Journal, DataInputStream)} rebuilds the same column;
+     * the core and the journal are there for a column calculated from other components. The arity
+     * holding it calls this, inside the arity's own file.
+     */
+    boolean saveTo(DataOutputStream dos) throws IOException;
 
 
     default int getIntFor(long identity) {

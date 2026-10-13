@@ -3,6 +3,9 @@ package org.halim.ontology.incubation.acse_beta;
 import org.halim.ontology.incubation.acse_beta.ACSE_ArityCatalogRowBase;
 import org.halim.ontology.incubation.acse_beta.sets.IdentitiesSet;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 /**
  * An arity seen as one object: the identities that exist, and every column hanging off them. A cell
  * is addressed by {@code (catalog, identity)} - the catalog is the column, the identity is the row -
@@ -71,6 +74,15 @@ boolean ensureCapacity(long identity);
 
 /** Lowers the ceiling to {@code capacity} in every column and gives back what sat above it. */
 void truncate(long capacity);
+
+/**
+ * Writes everything this arity holds - which identities exist, and every column - so that the class's
+ * {@code public static loadFrom(ACSE_Core, ACSE_Journal, DataInputStream)} rebuilds the same arity,
+ * outside the journal. Java cannot require that static method here, so {@link ACSE_PersistenceManager}
+ * looks it up. One file per arity; its columns go inside it. False when it cannot be stored, and the
+ * whole store fails.
+ * */
+boolean saveTo(DataOutputStream dos) throws IOException;
 
 /** Can use integers carefreely. */
 public static final int PREFERRED_INTEGER = -1;

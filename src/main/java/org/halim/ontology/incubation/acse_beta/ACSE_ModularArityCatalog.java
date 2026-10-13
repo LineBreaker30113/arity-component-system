@@ -4,6 +4,9 @@ import org.halim.ontology.incubation.acse_beta.ACSE_ArityCatalogRowBase;
 import org.halim.ontology.incubation.acse_beta.ACSE_ArityComponentBase;
 import org.halim.ontology.incubation.acse_beta.sets.IdentitiesSet;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -155,6 +158,33 @@ public boolean ensureCapacity(long identity) {
 public void truncate(long capacity) {
 	for(ACSE_ArityCatalogRowBase row : catalogRows) { if(row != null) { row.truncate(capacity); } }
 	lastIndex = Math.max(capacity, -1);
+}
+
+
+/** The reach, the identity set by class and data, then each column the same way, a removed or left-out one as no class. */
+@Override
+public boolean saveTo(DataOutputStream dos) throws IOException {
+	dos.writeLong(lastIndex);
+	if(!ACSE_PersistenceManager.writeClass(dos, occupied)) {
+		throw new IOException(occupied.getClass().getName() + " declares no public static loadFrom, and an arity cannot be stored without its identity set");
+	}
+	if(!occupied.saveTo(dos)) { return false; }
+	dos.writeInt(catalogRows.size());
+	for(ACSE_ArityCatalogRowBase row : catalogRows) {
+		if(ACSE_PersistenceManager.writeClass(dos, row) && !row.saveTo(dos)) { return false; }
+	}
+	return true;
+}
+
+/** Rebuilds what {@link #saveTo} wrote, each part through its own class. */
+public static ACSE_ModularArityCatalog loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+	long lastIndex = dis.readLong();
+	ACSE_ModularArityCatalog arity = new ACSE_ModularArityCatalog(ACSE_PersistenceManager.readPart(dis, IdentitiesSet.class, core, journal), journal);
+	arity.lastIndex = lastIndex;
+	for(int catalog = 0, count = dis.readInt(); catalog < count; catalog++) {
+		arity.catalogRows.add(ACSE_PersistenceManager.readPart(dis, ACSE_ArityCatalogRowBase.class, core, journal));
+	}
+	return arity;
 }
 
 

@@ -1,8 +1,13 @@
 package org.halim.ontology.incubation.acse_beta.sets;
 
+import org.halim.ontology.incubation.acse_beta.ACSE_Core;
+import org.halim.ontology.incubation.acse_beta.ACSE_Journal;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -86,6 +91,7 @@ public IdentitiesSetNegativeInt(long lastIndex) {
 }
 
 
+
 @Override
 public long identityAt(long index) {
 	long size = spanCount();
@@ -121,6 +127,30 @@ public long size() {
 @Override
 public LongListerIterator identityIteritor() {
 	return new Cursor();
+}
+
+
+/** The bounds and the holes - the representation itself, so a dense set stays three fields wide on disk too. */
+@Override
+public boolean saveTo(DataOutputStream dos) throws IOException {
+	dos.writeLong(firstIndex);
+	dos.writeLong(lastIndex);
+	dos.writeInt(exclusionList.size());
+	for(int p = 0; p < exclusionList.size(); p++) { dos.writeLong(holeAt(p)); }
+	return true;
+}
+
+/** Rebuilds what {@link #saveTo} wrote, refusing a hole that would break the invariants above rather than holding it. */
+public static IdentitiesSetNegativeInt loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+	long first = dis.readLong(), last = dis.readLong();
+	IdentitiesSetNegativeInt set = new IdentitiesSetNegativeInt(first, last);
+	for(int p = 0, count = dis.readInt(); p < count; p++) {
+		long hole = dis.readLong();
+		long below = p == 0 ? first : set.holeAt(p - 1);
+		if(hole <= below || hole >= last) { throw new IOException("hole " + hole + " is not strictly between " + below + " and " + last); }
+		set.exclusionList.add(set.narrow(hole));
+	}
+	return set;
 }
 
 

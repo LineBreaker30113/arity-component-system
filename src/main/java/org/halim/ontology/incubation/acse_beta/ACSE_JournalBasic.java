@@ -1,12 +1,13 @@
 package org.halim.ontology.incubation.acse_beta;
 
-import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Objects;
 
 /**
  * Requests and their steps in flat lists. A client request and every request nested in it form one
@@ -19,7 +20,9 @@ final ACSE_Core core;
 
 /** Steps as [pair, count, params...]. */
 final IntArrayList data = new IntArrayList();
-final BooleanArrayList booleans = new BooleanArrayList();
+/** A bit per value rather than a byte. A bit set cannot tell a trailing false from no value, so the count is kept beside it. */
+final BitSet booleans = new BitSet();
+int booleanCount;
 final ArrayList<Object> objects = new ArrayList<>();
 /** [dataStart, request] per run of steps by one request; a new run opens whenever the recording request changes. */
 final IntArrayList segments = new IntArrayList();
@@ -61,7 +64,7 @@ public int beginRecordingActivity(TraceableForUndoingRedoing actor, String metho
 	requests.add(segmentCount() - 1);
 	requests.add(actorId);
 	requests.add(parent);
-	requests.add(booleans.size());
+	requests.add(booleanCount);
 	requests.add(objects.size());
 	texts.add(methodName);
 	texts.add(comment);
@@ -93,7 +96,7 @@ public int abortRecordingActivity() {
 	try { for(int segment = segmentCount() - 1; segment >= firstSegment; segment--) { replaySegment(segment, true); } }
 	finally { replaying = false; }
 	data.size(dataStart);
-	booleans.size(field(request, BOOLEANS));
+	truncateBooleans(field(request, BOOLEANS));
 	objects.subList(field(request, OBJECTS), objects.size()).clear();
 	segments.size(2 * firstSegment);
 	requests.size(FIELDS * request);
@@ -104,6 +107,9 @@ public int abortRecordingActivity() {
 	else { openSegment(openRequests.topInt()); }
 	return request;
 }
+
+@Override
+public boolean isRecordingActivity() { return !openRequests.isEmpty(); }
 
 @Override
 public void recordActivityStep(byte stepPair, int paramCount) {
@@ -124,8 +130,8 @@ public void recordActivityStep(byte stepPair, int paramCount) {
 @Override
 public int recordBoolean(boolean value) {
 	checkOpen();
-	booleans.add(value);
-	return booleans.size() - 1;
+	booleans.set(booleanCount, value);
+	return booleanCount++;
 }
 
 @Override
@@ -136,7 +142,7 @@ public int recordObject(Object value) {
 }
 
 @Override
-public boolean getBoolean(int index) { return booleans.getBoolean(index); }
+public boolean getBoolean(int index) { return booleans.get(Objects.checkIndex(index, booleanCount)); }
 
 @Override
 public Object getObject(int index) { return objects.get(index); }
@@ -283,9 +289,9 @@ void appendTransaction(StringBuilder line, int transaction) {
 		line.append("]}");
 	}
 	int booleansStart = field(firstRequest, BOOLEANS);
-	int booleansEnd = endRequest < requestCount() ? field(endRequest, BOOLEANS) : booleans.size();
+	int booleansEnd = endRequest < requestCount() ? field(endRequest, BOOLEANS) : booleanCount;
 	line.append("],\"booleans\":[");
-	for(int i = booleansStart; i < booleansEnd; i++) { comma(line, i - booleansStart); line.append(booleans.getBoolean(i)); }
+	for(int i = booleansStart; i < booleansEnd; i++) { comma(line, i - booleansStart); line.append(booleans.get(i)); }
 	int objectsStart = field(firstRequest, OBJECTS);
 	int objectsEnd = endRequest < requestCount() ? field(endRequest, OBJECTS) : objects.size();
 	line.append("],\"objects\":[");
@@ -353,7 +359,7 @@ void dropRedo() {
 	int firstRequest = transactions.getInt(done);
 	int firstSegment = field(firstRequest, SEGMENT);
 	data.size(segments.getInt(2 * firstSegment));
-	booleans.size(field(firstRequest, BOOLEANS));
+	truncateBooleans(field(firstRequest, BOOLEANS));
 	objects.subList(field(firstRequest, OBJECTS), objects.size()).clear();
 	segments.size(2 * firstSegment);
 	requests.size(FIELDS * firstRequest);
@@ -364,6 +370,11 @@ void dropRedo() {
 int transactionOf(int request) {
 	if(request < 0 || request >= requestCount()) { throw new IndexOutOfBoundsException("request " + request + ", count " + requestCount()); }
 	return field(request, TRANSACTION);
+}
+
+void truncateBooleans(int count) {
+	booleans.clear(count, booleanCount);
+	booleanCount = count;
 }
 
 int field(int request, int field) { return requests.getInt(FIELDS * request + field); }

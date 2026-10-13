@@ -5,6 +5,9 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import org.roaringbitmap.longlong.Roaring64Bitmap;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 
@@ -147,6 +150,26 @@ default Roaring64Bitmap getAsRoaringBitset() {
 	Roaring64Bitmap bitmap = new Roaring64Bitmap();
 	for(long i = 0, n = size(); i < n; i++) { bitmap.addLong(identityAt(i)); }
 	return bitmap;
+}
+
+
+/**
+ * Writes the identities so that the class's {@code public static loadFrom(ACSE_Core, ACSE_Journal,
+ * DataInputStream)} rebuilds the same set. The default writes the count and then every identity, which
+ * is the right size for a sparse set, and {@link #loadInto} reads it back; a representation with a
+ * smaller form - a range and its holes, a compressed bitmap - overrides this and reads its own.
+ * */
+default boolean saveTo(DataOutputStream dos) throws IOException {
+	long size = size();
+	dos.writeLong(size);
+	for(long i = 0; i < size; i++) { dos.writeLong(identityAt(i)); }
+	return true;
+}
+
+/** Registers into an empty set what the default {@link #saveTo} wrote, and gives the set back: the static loadFrom of a set that keeps the default. */
+static <S extends IdentitiesSet> S loadInto(S set, DataInputStream dis) throws IOException {
+	for(long i = 0, size = dis.readLong(); i < size; i++) { set.register(dis.readLong()); }
+	return set;
 }
 
 

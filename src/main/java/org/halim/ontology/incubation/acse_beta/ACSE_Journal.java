@@ -11,6 +11,8 @@ int beginRecordingActivity(TraceableForUndoingRedoing actor, String methodName, 
 int completeRecordingActivity();
 /** Undoes what the innermost open request recorded, nested requests included, and closes it. */
 int abortRecordingActivity();
+/** Whether a request is open, so what must run between requests - storing, loading - can refuse. */
+boolean isRecordingActivity();
 /** paramCount states how many first elements of the paramsMemory must be copied. */
 void recordActivityStep(byte stepPair, int paramCount);
 /** Returns the index to pass among a step's params. */

@@ -1,5 +1,8 @@
 package org.halim.ontology.incubation.acse_beta.catalogs;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -55,6 +58,55 @@ protected abstract A copyOf(A chunk, int length);
 
 /** Zeroes {@code [from, to)} of a block. */
 protected abstract void clear(A chunk, int from, int to);
+
+/** Writes the first {@code length} elements of a block, in order. */
+protected abstract void write(DataOutputStream dos, A chunk, int length) throws IOException;
+
+/** Reads {@code length} elements into the start of a block. */
+protected abstract void read(DataInputStream dis, A chunk, int length) throws IOException;
+
+
+/**
+ * The chunking, the reach, then every addressable element chunk by chunk. Only what is addressable is
+ * written - the slack the tail grew into is not data - so the file is the size of the values.
+ * */
+public boolean saveTo(DataOutputStream dos) throws IOException {
+	writeChunking(dos, chunking);
+	dos.writeLong(lastIndex);
+	for(int chunk = 0, count = chunking.chunkCount(lastIndex); chunk < count; chunk++) {
+		write(dos, data.get(chunk), chunking.lengthOf(chunk, lastIndex));
+	}
+	return true;
+}
+
+/**
+ * The rest of what {@link #saveTo} wrote, after the chunking a subclass's static {@code loadFrom} read
+ * with {@link #readChunking} to construct this catalog. A stored column needs neither the core nor the
+ * journal.
+ * */
+protected void readValues(DataInputStream dis) throws IOException {
+	long reach = dis.readLong();
+	if(reach >= 0) { ensureCapacity(reach); }
+	for(int chunk = 0, count = chunking.chunkCount(reach); chunk < count; chunk++) {
+		read(dis, data.get(chunk), chunking.lengthOf(chunk, reach));
+	}
+}
+
+/** The two chunkings this package has, by kind and length. Any other is refused rather than stored as something else. */
+protected static void writeChunking(DataOutputStream dos, LongChunkInt chunking) throws IOException {
+	if(chunking instanceof LongChunkInt.LongChunkIntPowerOfTwo powerOfTwo) { dos.writeByte(0); dos.writeInt(powerOfTwo.bits); }
+	else if(chunking instanceof LongChunkInt.LongChunkIntUniform uniform) { dos.writeByte(1); dos.writeInt(uniform.size); }
+	else { throw new IOException(chunking + " is not a chunking this package can store"); }
+}
+
+protected static LongChunkInt readChunking(DataInputStream dis) throws IOException {
+	byte kind = dis.readByte();
+	return switch(kind) {
+		case 0 -> new LongChunkInt.LongChunkIntPowerOfTwo(dis.readInt());
+		case 1 -> new LongChunkInt.LongChunkIntUniform(dis.readInt());
+		default -> throw new IOException("chunking kind " + kind);
+	};
+}
 
 
 public boolean ensureCapacity(long capacity) {

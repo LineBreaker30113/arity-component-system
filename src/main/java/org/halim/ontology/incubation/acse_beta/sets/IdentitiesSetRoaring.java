@@ -1,10 +1,15 @@
 package org.halim.ontology.incubation.acse_beta.sets;
 
+import org.halim.ontology.incubation.acse_beta.ACSE_Core;
+import org.halim.ontology.incubation.acse_beta.ACSE_Journal;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import org.roaringbitmap.longlong.LongConsumer;
 import org.roaringbitmap.longlong.Roaring64Bitmap;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,8 +42,7 @@ import java.util.NoSuchElementException;
  * rather than stored - which also keeps this class out of the question of how the bitmap underneath
  * orders a value with its top bit set.
  * <p>
- * Not multi thread safe. Note that RoaringBitmap is an <em>optional</em> dependency in {@code
- * pom.xml}: a consumer who does not declare it cannot load this class.
+ * Not multi thread safe.
  * */
 public class IdentitiesSetRoaring extends Roaring64Bitmap implements IdentitiesSet {
 
@@ -63,6 +67,20 @@ public IdentitiesSetRoaring getCopy() {
 	IdentitiesSetRoaring result = new IdentitiesSetRoaring();
 	result.or(this);
 	return result;
+}
+
+
+/** Roaring's portable form, the one its format specification fixes across languages, so the file is the bitmap. */
+@Override
+public boolean saveTo(DataOutputStream dos) throws IOException {
+	serializePortable(dos);
+	return true;
+}
+
+public static IdentitiesSetRoaring loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+	IdentitiesSetRoaring set = new IdentitiesSetRoaring();
+	set.deserializePortable(dis);
+	return set;
 }
 
 

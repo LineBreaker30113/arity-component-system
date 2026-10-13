@@ -5,7 +5,13 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import org.halim.ontology.incubation.acse_beta.ACSE_ArityCatalogRowBase;
+import org.halim.ontology.incubation.acse_beta.ACSE_Core;
+import org.halim.ontology.incubation.acse_beta.ACSE_Journal;
 import org.halim.ontology.incubation.acse_beta.ACSE_ArityComponentBase;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 
 /**
@@ -107,6 +113,23 @@ class IntegerValueCatalogListerLong implements IntegerValueCatalog {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
 	}
 
+	/** The length, then every value. */
+	@Override
+	public boolean saveTo(DataOutputStream dos) throws IOException {
+		dos.writeInt(data.size());
+		for(int i = 0; i < data.size(); i++) { dos.writeLong(data.getLong(i)); }
+		return true;
+	}
+
+	/** Rebuilds what {@link #saveTo} wrote. */
+	public static IntegerValueCatalogListerLong loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+		IntegerValueCatalogListerLong catalog = new IntegerValueCatalogListerLong();
+		int size = dis.readInt();
+		catalog.data = new LongArrayList(size);
+		for(int i = 0; i < size; i++) { catalog.data.add(dis.readLong()); }
+		return catalog;
+	}
+
 
 	/**
 	 * The flat list is the storage, so the whole range is one run and there is no chunk split to pay
@@ -148,6 +171,23 @@ class IntegerValueCatalogListerInt implements IntSizedIntegerValueCatalog {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
 	}
 
+	/** The length, then every value. */
+	@Override
+	public boolean saveTo(DataOutputStream dos) throws IOException {
+		dos.writeInt(data.size());
+		for(int i = 0; i < data.size(); i++) { dos.writeInt(data.getInt(i)); }
+		return true;
+	}
+
+	/** Rebuilds what {@link #saveTo} wrote. */
+	public static IntegerValueCatalogListerInt loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+		IntegerValueCatalogListerInt catalog = new IntegerValueCatalogListerInt();
+		int size = dis.readInt();
+		catalog.data = new IntArrayList(size);
+		for(int i = 0; i < size; i++) { catalog.data.add(dis.readInt()); }
+		return catalog;
+	}
+
 
 	/**
 	 * The flat list is the storage, so the whole range is one run and there is no chunk split to pay
@@ -187,6 +227,23 @@ class IntegerValueCatalogListerShort implements IntSizedIntegerValueCatalog {
 	@Override
 	public void truncate(long capacity) {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
+	}
+
+	/** The length, then every value. */
+	@Override
+	public boolean saveTo(DataOutputStream dos) throws IOException {
+		dos.writeInt(data.size());
+		for(int i = 0; i < data.size(); i++) { dos.writeShort(data.getShort(i)); }
+		return true;
+	}
+
+	/** Rebuilds what {@link #saveTo} wrote. */
+	public static IntegerValueCatalogListerShort loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+		IntegerValueCatalogListerShort catalog = new IntegerValueCatalogListerShort();
+		int size = dis.readInt();
+		catalog.data = new ShortArrayList(size);
+		for(int i = 0; i < size; i++) { catalog.data.add(dis.readShort()); }
+		return catalog;
 	}
 
 
@@ -232,6 +289,24 @@ class IntegerValueCatalogListerByte implements IntSizedIntegerValueCatalog {
 	@Override
 	public void truncate(long capacity) {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
+	}
+
+	/** The length, then every value. */
+	@Override
+	public boolean saveTo(DataOutputStream dos) throws IOException {
+		dos.writeInt(data.size());
+		dos.write(data.elements(), 0, data.size());
+		return true;
+	}
+
+	/** Rebuilds what {@link #saveTo} wrote. */
+	public static IntegerValueCatalogListerByte loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+		IntegerValueCatalogListerByte catalog = new IntegerValueCatalogListerByte();
+		int size = dis.readInt();
+		byte[] values = new byte[size];
+		dis.readFully(values);
+		catalog.data = ByteArrayList.wrap(values);
+		return catalog;
 	}
 
 

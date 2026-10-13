@@ -1,10 +1,15 @@
 package org.halim.ontology.incubation.acse_beta.catalogs.integer;
 
+import org.halim.ontology.incubation.acse_beta.ACSE_Core;
+import org.halim.ontology.incubation.acse_beta.ACSE_Journal;
 import org.halim.ontology.incubation.acse_beta.catalogs.ChunkedCatalogBase;
 import org.halim.ontology.incubation.acse_beta.catalogs.LongChunkInt;
 import org.halim.ontology.incubation.acse_beta.ACSE_ArityComponentBase;
 import org.halim.ontology.incubation.acse_beta.catalogs.IntegerValueCatalog.IntSizedIntegerValueCatalog;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -36,6 +41,17 @@ protected int lengthOf(int[] chunk) { return chunk.length; }
 protected int[] copyOf(int[] chunk, int length) { return Arrays.copyOf(chunk, length); }
 @Override
 protected void clear(int[] chunk, int from, int to) { Arrays.fill(chunk, from, to, (int) 0); }
+@Override
+protected void write(DataOutputStream dos, int[] chunk, int length) throws IOException { for(int i = 0; i < length; i++) { dos.writeInt(chunk[i]); } }
+@Override
+protected void read(DataInputStream dis, int[] chunk, int length) throws IOException { for(int i = 0; i < length; i++) { chunk[i] = dis.readInt(); } }
+
+/** Rebuilds what {@link #saveTo} wrote. */
+public static IntegerValueCatalogArraysInt loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+	IntegerValueCatalogArraysInt catalog = new IntegerValueCatalogArraysInt(readChunking(dis));
+	catalog.readValues(dis);
+	return catalog;
+}
 
 
 @Override

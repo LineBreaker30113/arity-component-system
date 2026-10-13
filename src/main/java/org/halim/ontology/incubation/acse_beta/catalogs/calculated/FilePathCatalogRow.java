@@ -1,6 +1,13 @@
 package org.halim.ontology.incubation.acse_beta.catalogs.calculated;
 
 import org.halim.ontology.incubation.acse_beta.ACSE_ArityCatalogRowBase;
+import org.halim.ontology.incubation.acse_beta.ACSE_Core;
+import org.halim.ontology.incubation.acse_beta.ACSE_Journal;
+import org.halim.ontology.incubation.acse_beta.ACSE_PersistenceManager;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 /**
  * A file path per identity, calculated from its eight hex digits {@code abcdefgh} as
@@ -17,6 +24,19 @@ public final String extension;
 public FilePathCatalogRow(String path, String extension) {
 	this.path = path;
 	this.extension = extension;
+}
+
+/** The path and the extension, which are all this row is. */
+@Override
+public boolean saveTo(DataOutputStream dos) throws IOException {
+	ACSE_PersistenceManager.writeString(dos, path);
+	ACSE_PersistenceManager.writeString(dos, extension);
+	return true;
+}
+
+public static FilePathCatalogRow loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+	String path = ACSE_PersistenceManager.readString(dis);
+	return new FilePathCatalogRow(path, ACSE_PersistenceManager.readString(dis));
 }
 
 @Override

@@ -3,7 +3,13 @@ package org.halim.ontology.incubation.acse_beta.catalogs;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import org.halim.ontology.incubation.acse_beta.ACSE_ArityCatalogRowBase;
+import org.halim.ontology.incubation.acse_beta.ACSE_Core;
+import org.halim.ontology.incubation.acse_beta.ACSE_Journal;
 import org.halim.ontology.incubation.acse_beta.ACSE_ArityComponentBase;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 
 /**
@@ -65,6 +71,23 @@ class FloatingValueCatalogListerDouble implements FloatingValueCatalog {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
 	}
 
+	/** The length, then every value. */
+	@Override
+	public boolean saveTo(DataOutputStream dos) throws IOException {
+		dos.writeInt(data.size());
+		for(int i = 0; i < data.size(); i++) { dos.writeLong(Double.doubleToRawLongBits(data.getDouble(i))); }
+		return true;
+	}
+
+	/** Rebuilds what {@link #saveTo} wrote. */
+	public static FloatingValueCatalogListerDouble loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+		FloatingValueCatalogListerDouble catalog = new FloatingValueCatalogListerDouble();
+		int size = dis.readInt();
+		catalog.data = new DoubleArrayList(size);
+		for(int i = 0; i < size; i++) { catalog.data.add(Double.longBitsToDouble(dis.readLong())); }
+		return catalog;
+	}
+
 
 	/**
 	 * The flat list is the storage, so the whole range is one run and there is no chunk split to pay
@@ -115,6 +138,23 @@ class FloatingValueCatalogListerFloat implements FloatingValueCatalog {
 	@Override
 	public void truncate(long capacity) {
 		data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
+	}
+
+	/** The length, then every value. */
+	@Override
+	public boolean saveTo(DataOutputStream dos) throws IOException {
+		dos.writeInt(data.size());
+		for(int i = 0; i < data.size(); i++) { dos.writeInt(Float.floatToRawIntBits(data.getFloat(i))); }
+		return true;
+	}
+
+	/** Rebuilds what {@link #saveTo} wrote. */
+	public static FloatingValueCatalogListerFloat loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+		FloatingValueCatalogListerFloat catalog = new FloatingValueCatalogListerFloat();
+		int size = dis.readInt();
+		catalog.data = new FloatArrayList(size);
+		for(int i = 0; i < size; i++) { catalog.data.add(Float.intBitsToFloat(dis.readInt())); }
+		return catalog;
 	}
 
 

@@ -1,9 +1,14 @@
 package org.halim.ontology.incubation.acse_beta.catalogs.floating;
 
+import org.halim.ontology.incubation.acse_beta.ACSE_Core;
+import org.halim.ontology.incubation.acse_beta.ACSE_Journal;
 import org.halim.ontology.incubation.acse_beta.catalogs.ChunkedCatalogBase;
 import org.halim.ontology.incubation.acse_beta.catalogs.FloatingValueCatalog;
 import org.halim.ontology.incubation.acse_beta.catalogs.LongChunkInt;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -35,6 +40,18 @@ protected int lengthOf(double[] chunk) { return chunk.length; }
 protected double[] copyOf(double[] chunk, int length) { return Arrays.copyOf(chunk, length); }
 @Override
 protected void clear(double[] chunk, int from, int to) { Arrays.fill(chunk, from, to, (double) 0); }
+/** Raw bits, so even a NaN's payload comes back as it went. */
+@Override
+protected void write(DataOutputStream dos, double[] chunk, int length) throws IOException { for(int i = 0; i < length; i++) { dos.writeLong(Double.doubleToRawLongBits(chunk[i])); } }
+@Override
+protected void read(DataInputStream dis, double[] chunk, int length) throws IOException { for(int i = 0; i < length; i++) { chunk[i] = Double.longBitsToDouble(dis.readLong()); } }
+
+/** Rebuilds what {@link #saveTo} wrote. */
+public static FloatingValueCatalogArraysDouble loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+	FloatingValueCatalogArraysDouble catalog = new FloatingValueCatalogArraysDouble(readChunking(dis));
+	catalog.readValues(dis);
+	return catalog;
+}
 
 
 @Override

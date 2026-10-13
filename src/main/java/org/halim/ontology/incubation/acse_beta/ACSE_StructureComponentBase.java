@@ -1,7 +1,6 @@
 package org.halim.ontology.incubation.acse_beta;
 
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -11,7 +10,11 @@ int getArityCount();
 int getArityIdentity(int index);
 boolean isRelatedArity(int identity);
 
-boolean loadFrom(DataInputStream dis) throws IOException;
+/**
+ * Writes the arity slots it spans and the relation, so that the class's {@code public static
+ * loadFrom(ACSE_Core, ACSE_Journal, DataInputStream)} rebuilds the same structure, attached to the core,
+ * outside the journal. One file per structure.
+ * */
 boolean saveTo(DataOutputStream dos) throws IOException;
 
 /**

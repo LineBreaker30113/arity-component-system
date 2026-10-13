@@ -230,7 +230,7 @@ boolean unlinkUnchecked(int element, int parent) {
 }
 
 
-/** The edges as (element, parent) pairs, so the file carries the relation and not this encoding. */
+/** The arity slot, then the edges as (element, parent) pairs, so the file carries the relation and not this encoding. */
 @Override
 public boolean saveTo(DataOutputStream dos) throws IOException {
 	IntArrayList edges = new IntArrayList();
@@ -239,23 +239,22 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 		edges.add(element);
 		edges.add(parentOf(element));
 	}
+	dos.writeInt(arity);
 	dos.writeInt(hierarchy.size());
 	dos.writeInt(edges.size() / 2);
 	for(int i = 0; i < edges.size(); i++) { dos.writeInt(edges.getInt(i)); }
 	return true;
 }
 
-/** Replaces the graph with the file's, outside the journal. */
-@Override
-public boolean loadFrom(DataInputStream dis) throws IOException {
-	int size = dis.readInt();
-	clear();
-	ensureCapacity(size - 1);
+/** Rebuilds what {@link #saveTo} wrote, attached to the core, outside the journal. */
+public static FolderHierarchyDirectedAcyclicIntGraphComponent loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+	FolderHierarchyDirectedAcyclicIntGraphComponent graph = new FolderHierarchyDirectedAcyclicIntGraphComponent(core, journal, dis.readInt());
+	graph.ensureCapacity(dis.readInt() - 1);
 	for(int i = 0, count = dis.readInt(); i < count; i++) {
 		int element = dis.readInt();
-		linkUnchecked(element, dis.readInt());
+		graph.linkUnchecked(element, dis.readInt());
 	}
-	return true;
+	return graph;
 }
 
 

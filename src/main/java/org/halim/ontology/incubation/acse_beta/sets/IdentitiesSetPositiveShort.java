@@ -1,9 +1,13 @@
 package org.halim.ontology.incubation.acse_beta.sets;
 
+import org.halim.ontology.incubation.acse_beta.ACSE_Core;
+import org.halim.ontology.incubation.acse_beta.ACSE_Journal;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -81,6 +85,11 @@ public IdentitiesSetPositiveShort(long firstIndex, long lastIndex) {
 }
 public IdentitiesSetPositiveShort(long lastIndex) {
 	this(0, lastIndex);
+}
+
+/** Rebuilds what the default {@link IdentitiesSet#saveTo} wrote. */
+public static IdentitiesSetPositiveShort loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+	return IdentitiesSet.loadInto(new IdentitiesSetPositiveShort(), dis);
 }
 
 
