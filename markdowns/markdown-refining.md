@@ -43,6 +43,12 @@ implement everything good and related into the refining .md?"). The author's rul
    rewritten file; it is applied item by item. A conflict is answered before its item is applied.
    *(ACE: one full rewrite cut 18,282 tokens of context to 122 and lost accuracy)*
 
+### Questions to the author
+
+- Every question quotes each entry in full, says in plain words what it is about with an example,
+  and says what the file keeps and loses under each option. *(The author, on the pilot's questions:
+  "This shows me the fact the agents do not give enough detail."; "Once again, I didn't get it.")*
+
 ### Runs
 
 - Several independent runs in fresh contexts, at least one on a different model. A label stands
