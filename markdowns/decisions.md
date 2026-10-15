@@ -32,18 +32,20 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
 - I believe we can represent any system as data about the objects, the structures on them, and
   procedures about them. ArityComponent is responsible for the data of a group of objects, and the
   identities set is only responsible [for] matching an identity to memory. The structures are
-  responsible for relations between identities and have nothing to know about data or memory; if
-  [they did], that knowledge would be another arity and the order of the structure would [be]
+  responsible for relations between identities and have nothing to know about data or record data;
+  if [they did], that knowledge would be another arity and the order of the structure would [be]
   higher. There may be many structures that do the same thing but optimized in another way. The
   processes [procedures] are behaviors to change data or structure; they depend on some of the data
-  and structure, and when run they change some of the data and some of the structure.
+  and structure, and when run they change some of the data and some of the structure. *(The author
+  wrote "memory" and replaced it with "record data", 2026-10-15.)*
 - My vision likely always was that we can express any database-like system (where data exists and
   filtering [is] done based on rules) as a few types of beings and structures across them.
-- The structure must know only a dense set of identities each representing a single record, while
-  the data about the identities are handled on tables named Arity. Since moving [the] rest of the
-  records one block left each time we delete a record is unnecessary, the identities set handles
-  identity<->memory mapping, where identity is a single record and memory is the address of memory
-  where data related to it [is] stored.
+- The structure must know only a mostly contiguous set of identities each representing a single
+  record, while the data about the identities are handled on tables named Arity. Since moving [the]
+  rest of the records one block left each time we delete a record is unnecessary, the identities set
+  handles identity<->memory mapping, where identity is a single record and memory is the address of
+  memory where data related to it [is] stored. *(The author wrote "dense", meaning "mostly full with
+  few gaps", 2026-10-15.)*
 - Some of the records actually can be about other records; those relations are a huge part of all
   the structures.
 - Later I realized the addition of procedures would be cool and allow it to express more things,
@@ -84,8 +86,6 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
   that focuses on the RAG structure I planned.
 - My suggestion for the ASCA, it must allow many ways of accepting requests, also it must be modular,
   being able to load .class files with ease, which is possible since the core is too thin.
-- By "plugins" I meant components like arity, catalog or structure components, since they will have
-  well defined contracts.
 - Loading is simply loading classes as accessible components. Loading a class and using [it] are
   separate things, so loading folder and class methods must exist.
 - [Which ways of accepting requests may carry the management and loading requests:] right now there
@@ -226,7 +226,9 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 
 ## Identities and removal
 
-- I plan on using [the vacuum idea] where the index of an identity is converted to identity at the
+*("vacuum" in this section is renamed to "compacten" at the author's request, 2026-10-15.)*
+
+- I plan on using the compacten idea where the index of an identity is converted to identity at the
   ArityModule's identitiesSet.
 - If the identity number rather than the index is given (which is handled by the identities set of
   the ArityComponent), it auto skips the removed ones; we just need to specify that the intended
@@ -256,7 +258,7 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 - We will not need a function like "swap" or "captureNotForget" because of what an arity represents;
   more on that later.
 - [Storing a structure:] recording the relation is enough. Also at the core level storing can be
-  done by temporarily storing, then vacuum, then final storage. [That] is not bound to be the only
+  done by temporarily storing, then compacten, then final storage. [That] is not bound to be the only
   [sequence]; allow [the] option of direct storing.
 - [Calculated arities:] the calculated arities must be dependent on a structure; this is better
   since being directly dependent [on] another Arity can actually raise errors.
@@ -265,11 +267,11 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 - We should allow a judgment call method alongside auto method (does what you say) for the client.
 - Structures are not responsible for the element count; it is just the structure add-on.
 - Consider there is an indexer (2-arity structure) that reached a dead
-  identity, it should not vacuum it alone. That would be harmful.
-- I think the vacuum will be a rare call, on storing to disk and reloading from it.
+  identity, it should not compacten it alone. That would be harmful.
+- I think the compacten will be a rare call, on storing to disk and reloading from it.
 - We must make a "forget" call that removes the associated data (like the connections on the indexer)
   but doesn't shift all the identities. Delegations over that call will be handled by the core.
-- No structure vacuums a dead identity it reaches on its own.
+- No structure compactens a dead identity it reaches on its own.
 - Bulk catalog reads intersect the range with the occupied set once, then read, instead of checking
   each element.
 - We need to allow client to skip the validation of identities, when they likely know it.
@@ -280,11 +282,11 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
   excluded value. I mean there is an IntArrayList of excluded [identities]: [its] first element if
   the list is not empty, or just increasing the borders. So the identities set contract is
   responsible.
-- We do not need to make a "truncate" right now. But later we can make this. Also, the vacuum (may
+- We do not need to make a "truncate" right now. But later we can make this. Also, the compacten (may
   rename to "compress") actually can simply swap the last few entries with the dead ones and
   truncate out the dead ones.
-- [Undoing a remove after a vacuum is] out of scope right now; vacuum [is] planned to be the horizon
-  of undo.
+- [Undoing a remove after a compacten is] out of scope right now; compacten [is] planned to be the
+  horizon of undo.
 - [Naming the judgment-call existence method so it looks deliberate, like `identityAtUnchecked`:]
   this naming convention is good, but out of scope; this is boilerplate polishing.
 
@@ -460,8 +462,6 @@ accepted.")*
 
 - **Ontology** — the philosophical sense: any classification or representation of elements as beings.
   Not OWL, RDF, or a reasoner.
-- **Entity / identity** — a bare non-negative `int` or `long`, minted densely from 0, unique within its
-  arity. Carries uniqueness only.
 - **Arity** (noun) — one identity space: the occupied set plus its columns. As a number, how many
   identity spaces a structure spans.
 - **Catalog** — one value per identity; a column. Total: an unwritten slot reads as zero, not absent.
@@ -469,10 +469,11 @@ accepted.")*
 - **Component** — an arity, structure or procedure the core holds (`ArityComponent`,
   `StructureComponent`).
 - The identity is [the] element identity; it is represented by an int named value, [and] its index
-  is [the] number of identities that have less value than its. Hereby Identity or index represents
-  nothing, and [the] names are "Identity's uniqueness index" (iui for short) and "Identity's memory
-  value" (imv for short). To memorize them easily we record the notation "iui <= imv". Structures use
-  the imv since it is stable, and sets map the iui to imv since iui is the actual identity. Vacuum
+  is [the] number of identities that have less value than its. We no longer use the words "identity"
+  or "index", since they are not distinctive enough; [the] names are "Identity's uniqueness index"
+  (iui for short) and "Identity's memory value" (imv for short). To memorize them easily we record
+  the notation "iui <= imv". Structures use the imv since it is stable, and sets map the iui to imv
+  since iui is the actual identity. Vacuum
   (hereby compacten) makes all the iui equal their imv. *(2026-10-15)* *(The author wrote "compress"
   and corrected it to "compacten".)*
 - Hereby we use "compacten" (even if illegal grammatically), which stands for removing unnecessary
@@ -482,8 +483,7 @@ accepted.")*
 
 Claude's wording, from `GOALS.md`; same source as Words.
 
-- **Identities are dense and local to an arity**, minted from 0, so their values stay small. Ends if
-  identities become global across arities or carry generation counters.
+- **iui are dense and imv are local to an arity**, minted from 0, so their values stay small.
 - **Edits may be slow; reads may not.** Write time is spent to buy read speed or exactness.
 - **Modularity the fullest** The engine must be able to express anything.
 - [The DAG is] optimized for the case where the leaves are more than branch nodes, and parent*child

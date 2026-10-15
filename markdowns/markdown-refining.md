@@ -54,7 +54,10 @@ implement everything good and related into the refining .md?"). The author's rul
 - Several independent runs in fresh contexts, at least one on a different model. A label stands
   when most runs agree; otherwise the pair is asked about. *(Kim et al. 2025: one model's runs share
   errors; mixing models helped every debate method in "Stop Overvaluing Multi-Agent Debate")*
-- The number of runs and the agreement threshold are not set by the author yet.
+- The author: "I want a run on [the] latest Opus, another on the older Opus, and three Sonnet runs
+  (each [a] different version), also one Haiku run. [It] must also do some weighing on them. You said
+  Opus have cut the most aggressively, I liked that part." *(2026-10-15)*
+- The weights and the threshold they must reach are not set by the author yet.
 
 ### Checks by code
 
