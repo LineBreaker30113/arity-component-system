@@ -1,6 +1,6 @@
 # Current state
 
-What exists now, checked against the repo on the date given, and the handoff. Rules: `CLAUDE.md` →
+What exists now, checked against the repo on the date given, and the former handoff. Rules: `CLAUDE.md` →
 Markdown files.
 
 ## Layers — checked 2026-10-13
@@ -11,8 +11,8 @@ the author says otherwise; nothing in `acse_beta` imports it.
 | Layer | Package | State |
 |---|---|---|
 | Identity sets | `acse_beta/sets/` | Negative at byte/short/int/long, positive at byte/short, Roaring. `lowestFree()`: fast on `NegativeInt`, a counting default elsewhere. |
-| Catalog rows | `acse_beta/catalogs/` | Row contract `ACSE_ArityCatalogRowBase`; stored integer and floating rows, chunked; calculated rows `FilePathCatalogRow` and `HashedFilePathCatalogRow`. Stored rows take `setLongFor` and `setDoubleFor`, exact or refused, never growing; calculated rows refuse. |
-| Arity | `ACSE_ArityComponentBase`, `ACSE_ComposableArityCatalog` | Occupied set plus rows; adding and removing rows and identities is journaled, and so is a write (`setLongFor`, `setDoubleFor`), as `old ^ new` over the stored bits, within the arity's reach. `removeIf` and `registerIf` are for the core only. |
+| Catalog rows | `acse_beta/catalogs/` | Row contract `ACS_ArityCatalogRowBase`; stored integer and floating rows, chunked; calculated rows `FilePathCatalogRow` and `HashedFilePathCatalogRow`. Stored rows take `setLongFor` and `setDoubleFor`, exact or refused, never growing; calculated rows refuse. |
+| Arity | `ACS_ArityComponentBase`, `ACSE_ComposableArityCatalog` | Occupied set plus rows; adding and removing rows and identities is journaled, and so is a write (`setLongFor`, `setDoubleFor`), as `old ^ new` over the stored bits, within the arity's reach. `removeIf` and `registerIf` are for the core only. |
 | Structures | `acse_beta/structures/unary/` | `TightSetHierarchyDirectedAcyclicIntGraphComponent` (always reduced) and `FolderHierarchyDirectedAcyclicIntGraphComponent` (single parent). Both journal their steps and save the relation as (element, parent) pairs. |
 | Core | `ACSE_Core`, `ACSE_CoreBasic` | Components by slot, a removed slot left empty; `delegateRemoval` with the forget recursion; `captureIdentity`; `store` and `load` of a folder, between requests. Every request takes a comment. `ArityComponentSystem_Core_Deprecated` is an older interface nothing uses. |
 | Journal | `ACSE_Journal`, `ACSE_JournalBasic` | Transactions of nested requests; undo, redo, waypoints, `checkout`, abort; `storeAll` writes JSON Lines. The core builds its journal from a factory, the basic one by default. An aborted client request still loses the undone transactions its start dropped. |
@@ -30,21 +30,28 @@ exist as the journal; storing and restoring, as folder persistence (2026-10-13).
 `mvn test`: 182 tests, 0 failures. Nothing under `src/test/` exercises `acse_beta`; Claude's
 throwaway checks of it live outside the repo (see Claude's memory).
 
-## Repository — checked 2026-10-13
+## Repository — checked 2026-10-14
 
-On `incubation/int-set-algebra`, with `main` at the same commit. `main` is pushed to `origin`,
-https://github.com/LineBreaker30113/arity-component-system.git: public, `main` its default branch,
-and GitHub detects the licence as AGPL-3.0 from `LICENSE`. The other local branches are not pushed.
-The pre-purge bundle was deleted on 2026-10-13, so no copy of the history before the rewrite is kept.
+On `incubation/int-set-algebra`, with `main` at the same commit, `a856b45`. `main` is pushed to
+`origin`, https://github.com/LineBreaker30113/arity-component-system.git: public, `main` its default
+branch, and GitHub detects the licence as AGPL-3.0 from `LICENSE`. The other local branches are not
+pushed. The pre-purge bundle was deleted on 2026-10-13, so no copy of the history before the rewrite
+is kept.
 
-Scan of the tracked tree and of the whole history: no email, home path or secret in any line ever
-added, and every commit carries the GitHub noreply address. The only home-style paths are `~/main` and
-`~/db3`, examples inside the author's commands under Goal. Tracked but not project work: `.mcp.json`,
-Claude Code's local link to IntelliJ, and `src/main/java/Main.java`, IntelliJ's template.
+`markdowns/novelty-study.md` is published since `a856b45` (2026-10-14) and linked from the README.
+Its working files are in `reference/novelty/`, gitignored: `novelty-study-2.md` (the later passes),
+`checkpoints.md`, `search-log.md` and `novelty-handoff.md`.
+
+Scan of the tracked tree and of all 44 commits, every one on `main`: no email, home path or secret in
+any line ever added, and every commit carries the GitHub noreply address. The only home-style paths
+are `~/main` and `~/db3`, examples inside the author's commands in `decisions.md` (Goal; Layers and
+names). Tracked but not project work: `.mcp.json`, Claude Code's local link to IntelliJ, and
+`src/main/java/Main.java`, IntelliJ's template.
 
 ## Former handoff — 2026-09-18
 
-Kept as the record of where that session left things. The live one is `handoff.md`.
+Kept as the record of where that session left things. The live one is in `inferred-decisions.md` →
+Unreviewed → Handoff.
 
 - The urgent code work: `inferred-decisions.md` → Urgent work, not yet reviewed.
 - The author reviews the Unreviewed entries, the 19 term definitions among them, and decides the old

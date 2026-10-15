@@ -50,11 +50,6 @@ Markdown files.
 
 ## Architecture
 
-- **Which ways of accepting requests may carry the management and loading requests (stop, status,
-  loading a folder, loading a class)?** The author has said they must exist, not who may call them.
-  - Claude: only the way the requester uses on the same machine. A request that names a path lets
-    whoever can send requests run any class file on the disk.
-  - Author: "it must have a way to manage it"; "loading folder and class methods must exist".
 - **What exactly is a "paragraph of knowledge", and how does a paragraph cite its sources and
   reasoning?**
   - Author: "We can talk about it later." The three-agent pipeline is under Goal in `decisions.md`.
@@ -76,10 +71,3 @@ Markdown files.
     I just have an suggestion of an improvement."
   - Claude: use -128, the one byte with no inverse: undo and redo skip it, and undo history stays
     intact. About two lines in the journal.
-
-## acses
-
-- **What is acses's device config called, and what does it hold?**
-  - Author: "by copying from the device config or equals"; "from device config file (or whatever it
-    is called)".
-  - Claude: it holds `acse-persistence.jar` and the base classes' jar that a new database starts from.

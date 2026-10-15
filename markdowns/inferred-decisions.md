@@ -3,7 +3,7 @@
 Decisions Claude read into the author's words, each quoting its source. Rules: `CLAUDE.md` → Markdown
 files.
 
-## Unreviewed
+# Confirmed 
 
 ### Urgent work — the old `ARCHITECTURE.md` handoffs
 
@@ -16,6 +16,14 @@ things that are decided to be done and urgent.")*
 - Resolve `catalogs/LongIntCatalog`, an unreferenced near-duplicate of `IntegerValueCatalog`.
 - DAG tests in `src/test/` (the author writes them). Coverage: encoding transitions, root list after
   every phase, cycle refusal, slot reuse, reduction preserving reachability.
+- Here are the author's statements:
+  - Catalog components to handle data stored in files, in many ways. 
+    Like a catalog component instance serving as multiple components (rows) that store all the data
+    on the files. A catalog row storing every column's data on a single file. And many other.
+  - An Indexer that uses RoaringBitset where each possible connection maps to an index and it's existence
+    on the RoaringBitset claiming if the connection exists.
+
+## Unreviewed
 
 ### The goal, the layers and the names — read from the chat of 2026-10-07/08
 
@@ -108,3 +116,39 @@ sentence.
 - "Rename all" says which renames, not when: they wait for the messy version's upload like the
   modules, so nothing is renamed before the first push. *(Author: "Rename all."; "Do not do it yet. I
   want to upload the messy version of this code base first for keeping its identity.")*
+
+### Handoff — work decided to be done and not done, moved from `handoff.md` on 2026-10-14
+
+Claude's wording, moved unchanged when `handoff.md` was deleted; only the last entry gained its quote.
+
+- Now that the messy version is pushed, every rename: the `OE_` prefix becomes `ACS_`, and
+  `OntologyEngineCore` and the package `org.halim.ontology` become `acse`; `naming-fix.md` names the project, which keeps the name ACS,
+  and the file stays; and the parent project ACS takes the modules `acse` and `acses`, with
+  `src/` and `pom.xml` moving into the library's module (`decisions.md` → Layers and names).
+- The commercial licence's text, drafted by a lawyer before it is sold, and a contributor agreement
+  before the first outside contribution.
+- `README.md` → The application and The goal were written before the goal was stated (`decisions.md`
+  → Goal, 2026-10-08): they present OntoDirectory's filing-based RAG, not the database service with
+  requests, a GUI and the agent pipeline. Rewriting them is the author's (the README is handwritten);
+  where they differ, `decisions.md` wins. The Claude chat responses pasted while stating the goal are
+  kept verbatim, gitignored, in `reference/chats/claude-chat-acs-agent-goal--2026-10-07_1007.md`.
+- `acses`, later: `boot` launches a separate process, any other command bridges to it, and
+  loading-folder and loading-class methods must exist (`decisions.md` → Layers and names). Creating a
+  database copies `acse-persistence.jar` and the base classes from the ACSES application's own side
+  (a config folder is optional), builds an empty core and stores it; loading opens the folder's manager and records the core under
+  `--calledBy <name>`, else the folder's name (`decisions.md` → Persistence). The library side exists.
+- Later: the urgent code work in `inferred-decisions.md` → Urgent work (unreviewed, so not started),
+  the procedure contract (`decisions.md` → Architecture, Vision), and more structure components, the
+  cartesian (ternary) and the transitions arity among them (`decisions.md` → Architecture).
+- The folder on disk need not be renamed for pushing. If it is renamed, between sessions, Claude
+  updates everything that points at its path (listed in Claude's memory).
+- The novelty study is running in another session (2026-10-13); its launcher is in Claude's folder
+  (see Claude's memory).
+- Delete `reference/msgfilter.py` once the author says so; it is gitignored, so it cannot be published
+  by accident. The pre-purge bundle was deleted on 2026-10-13.
+- Introduce the "String" type to the catalogs, a string subversion of the Object one. The allowed
+  types are not in one place: the constants (`ACS_ArityComponentBase:90`, copied at
+  `ACS_ArityCatalogRowBase:26`), `typeName`, one default accessor per type in both bases, and the
+  journaled writes' type check and `bitsOf` (`ACSE_ComposableArityCatalog:151`, `:168`). *(Author,
+  2026-10-14: "Right now we have object as a valid catalog option, we still need to make a string
+  subversion of it. The problem with it is the allowed types of those catalogs are not in one place".)*

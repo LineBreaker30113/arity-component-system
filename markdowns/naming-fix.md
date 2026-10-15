@@ -1,7 +1,9 @@
 # Naming fix — Ontology Engine → Arity Component System
 
 Staging file, written 2026-09-25. Everything below was applied, then reverted out of `README.md`,
-`CLAUDE.md` and `pom.xml` so the author can edit the wording here first. Nothing is in effect.
+`CLAUDE.md` and `pom.xml` so the author can edit the wording here first. In `README.md`, the title is
+in effect since 2026-10-14, and of the subsection only its "says what it is" paragraph, in "Where
+this came from" (2026-10-15); the `pom.xml` and `CLAUDE.md` parts are not.
 
 ## pom.xml
 
@@ -55,4 +57,4 @@ Staging file, written 2026-09-25. Everything below was applied, then reverted ou
 
 ## To apply
 
-Say so, and this goes back into the three files as edited here, then `naming-fix.md` is deleted.
+Say so, and this goes back into the three files as edited here. This file stays afterwards.

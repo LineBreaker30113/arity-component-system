@@ -1,51 +1,106 @@
-# Ontology Engine
+# Arity Component System
 
-To understand the evolution of the project and navigate the code base, the steps are:
-```markdown
-1. The "legacy" package, was the old package I used for a single version of that goal.
-2. The "incubation" package is meant to be an empty canvas fora an improved architecture of it.
-3. The "incubation.structurer" was the first serious try.
-4. The "incubation.acse_beta" is the target of the project.
+*Formerly Ontology Engine.*
+
+**ACS (Arity Component System) is a system, as its name states, for building arbitrary mathematical
+structures over N sorts of integer-identified entities, supplying no interpretation of its own. ACSE
+is its implementation, and ACSES uses it for a database service.**
+
+## Vision
+
+Any system can be represented as data about the objects, the structures on them, and procedures
+about them:
+
+- **Arities** hold the data of a group of objects: one table per sort of record, with its catalog
+  rows as columns. A row can be stored, or calculated from the identity.
+- **Identity sets** only match an identity to memory. Each record is a dense integer identity, so
+  deleting a record never moves the rest.
+- **Structures** hold the relations between identities, over one arity or several, and know nothing
+  about data or memory. Many structures may do the same thing, each optimized another way; they keep
+  their rules themselves, and an arity can take part in several at once.
+- **Procedures** (planned) are behaviors: they depend on some of the data and structure, and when
+  run they change some of it. They must be clear enough to be reasoned about automatically.
+
+A neural network, for example, is two arities, neurons and synapses (weights), and a procedure that
+sets every non-input neuron to its bias (a synapse from the neuron to itself), adds each synapse's
+weight times its first neuron's value to its second neuron, and applies a neuron's activation once
+its inputs are done.
+
+The same architecture represents a database as easily, which suggests it can represent anything,
+and with high expressiveness, because of the contracts, so the result can be reasoned about
+mathematically. In short: FCA4J (a Java library for formal concept analysis), but as a database and
+multi-arity. An "N arity structure builder", or "Structure of Arrays" builder.
+
+## Goal
+
+An ACS database is managed with commands. ACSES is one program: `acses boot` starts the service if
+none is running, and every other command is a request to the running one, failing fast if there is
+none.
+
+```
+acses boot                # start the service
+acses loadDB ~/main       # load the database in ~/main, named "main" after its folder
+acses components main     # list its components
 ```
 
-**A library for building arbitrary mathematical structures over N sorts of integer-identified
-entities, supplying no interpretation of its own.** The engine mints identities, stores columns of
-data against them, and maintains whatever relations a client declares between them. Meaning is the
-client's.
+Requests come from a terminal, a GUI, or an AI agent, and each carries a comment, like a commit
+message: every change is made from a resource and may later be audited.
 
-A self-contained package of code for building any structure mathematically possible on N sorts of
-entities. Do not confuse with the name "Ontology": unlike other tools named "Ontology", this one does
-not extract ontology from the data and is not for building the ontology from the data. Not OWL, not
-RDF, not a reasoner — no semantics are extracted, assumed or supplied. It is a performant way of
-representing ontology on a computer: it stores entity sets and the relations between them in a
-compressed form, and leaves every interpretation to the client.
+The agents build knowledge from books:
 
-This package is meant to allow any combination of mathematical structures on any arity.
+1. The first agent builds a personal knowledge graph from the books.
+2. An auditing agent audits and improves it.
+3. A third agent builds a new ACS of paragraphs from the first, one that describes better and is
+   copyright free. Paragraphs cite their resources and reasoning.
 
-All handwritten because the topic is abstract.
+Agents must be allowed at every step, to automate it; humans too, to study how proper knowledge
+graphs are developed. The GUI is OntoDirectory, the sibling project, once improved; another GUI may
+focus on the RAG structure. The architecture suits RAG specifically, since it is the most expressive
+by itself.
 
-## The general shape
+Where it started, in the author's words:
 
-- **Sets.** Elements are represented as bare integer identities starting from 0.
-- **Catalogs.** Data bound to a set, for each element or not, any way of getting it.
-- **Structures.** Data about structure, can be for any number of sets, can have any rule.
+> I like the idea of ACS: it will be able to express everything with ease. I wonder if there were AI
+> agents that build or audit it. So I have a scholar system: if I give a few hundred books on the
+> field of CS, it would likely better organize and define CS from the entirety of the professors. So
+> I want to build a system that builds paragraphs of knowledge, and then I will give a massive amount
+> of rigorous books on the fields.
 
-| Example             | Form                                                              | Arity    |
-|---------------------|-------------------------------------------------------------------|----------|
-| the class hierarchy | a graph over that set, rules decide whether it's a tree or a DAG  | one set  |
-| classes ↔ elements  | an indexer — many-to-many, with several possible implementations  | two sets |
-| a binary relation   | a set of ordered pairs, one element from each set                 | two sets |
+## The products
 
-Relations are additive: a set can carry several, of different arities, at once.
+#### ACSE (Arity Component System Engine)
 
-That's "N arity structure builder", or "Structure of Arrays" builder.
+An engine that has the responsibilities isolated into atomic interface contracts.
+Has the journaling mechanism for undo/redo, checkout, and logging. While the easy and boilerplate
+part of the ACSE is not developed, the engine inside is robust enough to quickly index/search
+between 2^28 files of records using only about a few GiB of RAM memory.
+
+#### ACSES (ACSE Service)
+
+A terminal based database management application that utilizes the ACSE for creating
+and managing databases in any folder. The database structure is very adaptable to the point it can
+completely quit being an ACS. Creation of a database is done by copying the base classes of the ACSE
+to the database, after that the ACSES doesn't care if the database uses those classes or not and it
+only checks if the contracts (defined by interfaces) are satisfied. The ACSES can load any database
+folder: it opens the folder's persistence manager, which builds the core from the classes in the
+folder's own jar, so the database, not the ACSES, is the authority about implementation. The ACSES
+does not exist yet; the library side of creating and loading does.
+
+## Navigating the code
+
+To understand the evolution of the project and navigate the code base, the steps are:
+
+1. The "legacy" package was the old package I used for a single version of that goal.
+2. The "incubation" package is meant to be an empty canvas for an improved architecture of it.
+3. The "incubation.structurer_depr" was the first serious try.
+4. The "incubation.acse" is the target of the project.
 
 ## What it aims to be
 
 **Optimized.** Fast enough that the only thing which would dramatically beat it on your workload is
 something over-engineered for your one niche case.
 
-**Extensible.** Features attach rather than being cut in. The architecture leaves plugin space by
+**Composable.** Features attach rather than being cut in. The architecture leaves plugin space by
 design, so capabilities can ship as addons instead of as core.
 
 **Universal.** Every use case these terms cover, not a chosen subset of them.
@@ -56,12 +111,13 @@ beings, not one schema language's idea of it.
 **Management.** Persistence, reading, writing, analysing. The whole lifecycle, not just the query
 side.
 
-**Self-contained.** Carries its own needs. One runtime dependency, droppable into any project.
+**Self-contained.** Carries its own needs. Two runtime dependencies, fastutil and RoaringBitmap;
+droppable into any project.
 
 ## What it is not
 
 - Not OWL, RDF, or a reasoner. No semantics are extracted, assumed, or supplied.
-- Not an ontology learner. It does not mine structure out of data.
+- Not an ontology learner. It does not mine structure out of data; agents that do are clients.
 - Not an ECS, though it converges on the archetype / structure-of-arrays layout. The aim is to pass
   the arity-2 ceiling ECS engines stop at — flecs packs exactly two participants into one 64-bit id.
 - Not a general graph library. Structures are over identity sets, not over objects.
@@ -77,54 +133,15 @@ called "Onto Directory".
 
 While improving the architecture by separating the concerns and responsibilities into interfaces I
 called "Segmentations", the AI chatbot told me the names of the segments I develop in formal
-mathematics. For example the DAG was formerly called "Hierarchy", and the File Catalog was formerly
+mathematics. For example the DAG was called "Hierarchy", and the File Catalog was formerly
 called "Element Data". And I realized everything I develop can be represented as a list of sets of
 data plus modules to utilize them. This project is meant to allow building any kind of structure like
-lego blocks, with ease.
+blocks, with ease.
 
-It assumes no topology about the classification, neither the definition of classes nor of elements.
-It just holds integers as identities for classes and elements, and indexes classes to elements using
-an indexer, of which the user can choose any variant.
-
-## Client side
-
-You can use this engine in any programming language: give the code in this repo to your AI agent and
-have it rewrite the engine for you (mostly it can).
-
-## The application
-
-The engine is a substrate. The application it is built toward: **OntoDirectory**, the sibling
-project, is a file manager where a person curates an ontology by organizing and tagging their own
-archive. That curated structure becomes the retrieval backbone for a RAG over paragraphs of facts,
-with an **ingest agent** that digests PDFs into the store and an **answer agent** that responds from
-it. Target use: a personal learning assistant; the same store works as durable agent memory.
-
-Why it is interesting: published graph-RAG systems pay an LLM to *invent* their graph, and that
-extraction is the field's central cost. Here the ontology is curated, personal and free — a side
-effect of filing. Ontology-grounded RAG work reports large gains from schema-first retrieval but
-assumes an institutional domain ontology; nobody else has the user's own hand-curated hierarchy as
-the schema. That is a product position, not a research one.
-
-## The question that decides it
-
-Take a few hundred pages actually being studied, and test whether retrieval grounded in the
-hand-curated hierarchy beats plain hybrid vector search on questions actually asked. If it wins,
-there is a result nobody else can easily reproduce. If it loses, that is known early and cheaply.
-
-The engine stands on its own either way and is not justified by the application: a personal
-assistant's corpus is orders of magnitude smaller than the scale these representations target.
-
-## The goal
-
-In the author's words:
-
-> I like the idea of ACS: it will be able to express everything with ease. I wonder if there were AI
-> agents that build or audit it. So I have a scholar system: if I give a few hundred books on the
-> field of CS, it would likely better organize and define CS from the entirety of the professors. So
-> I want to build a system that builds paragraphs of knowledge, and then I will give a massive amount
-> of rigorous books on the fields.
-
-Whatever builds those paragraphs is a client: the engine still supplies no interpretation of its own.
+**Arity Component System** says what it is. An *arity* is one identity space — the occupied set plus
+its columns. A *component* is a plugin the core holds and drives. The *system* is the core and the
+components together. It is also the answer to the line above about ECS: same archetype layout,
+without the arity-2 ceiling.
 
 ## Novelty study
 

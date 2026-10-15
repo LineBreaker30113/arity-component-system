@@ -6,10 +6,11 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
 
 - ACS is meant to be a database that can be managed with commands. Specifically, the client is meant
   to start the "ACS engine", then must use the "ACS requester" as: `acses boot` (starts the acs
-  application), `acses loadDB ~/main as main` (loads the database in the path main and allows access
-  to it with the name of main), `acses components main` (shows the components of the database).
-  [The names changed afterwards: see Layers and names.] *(The author wrote "acsr"; renamed to
-  "acses" at the author's request.)*
+  application), `acses loadDB ~/main --calledBy main` (loads the database in the path main and allows
+  access to it with the name of main), `acses components main` (shows the components of the
+  database). [The names changed afterwards: see Layers and names.] *(The author wrote "acsr"; renamed
+  to "acses" at the author's request. The author wrote "as main"; changed to "--calledBy main" at the
+  author's request, 2026-10-15, to match Persistence.)*
 - Then we will develop a GUI for that application that uses the terminal input (later we can isolate
   it from the terminal); also we will build an AI Agent that will use acses. That is the goal.
   *(The author wrote "acsr"; renamed to "acses" at the author's request.)*
@@ -48,14 +49,13 @@ The author's words. Rules: `CLAUDE.md` → Markdown files.
 - Later I realized the addition of procedures would be cool and allow it to express more things,
   like feed forward and gradient descent backpropagation.
 - [The NN example:] Two arities, one for (nodes) neurons and the other for the synapses
-  (connections/weights). A structure that maps two identities from [the] arity of neurons to a single
-  identity from [the] arity of synapses. A procedure that firstly clears every non input neuron's
-  value by setting them to the bias (an identity from synapses that has two of the same identity from
-  the neurons arity), then for each of the identities on the synapses arity multiplies the first
-  neuron's value with the weight and adds it to the second neuron it points [to]; also when all the
-  inputs of a neuron [are] calculated, its activation function can be calculated and replace the
-  value on the neuron. There are other ways to describe a NN with this architecture; few of them are
-  a bit better and more descriptive.
+  (connections/weights). A procedure that firstly clears every non input neuron's value by setting
+  them to the bias (an identity from synapses that has two of the same identity from the neurons
+  arity), then for each of the identities on the synapses arity multiplies the first neuron's value
+  with the weight and adds it to the second neuron it points [to]; also when all the inputs of a
+  neuron [are] calculated, its activation function can be calculated and replace the value on the
+  neuron. There are other ways to describe a NN with this architecture; few of them are a bit better
+  and more descriptive.
 - This architecture can represent easily [a] database or a neural network, which makes me think this
   can represent anything; more importantly [it] does it with high expressiveness (because of the
   contracts), so we can mathematically reason about them.
@@ -124,7 +124,6 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
   licence.)*
 - [AGPL-3.0-only with the Universal FOSS Exception, plus a commercial licence:] Good, I want to use
   the first suggestion of you.
-- [The Universal FOSS Exception:] Yes, add the exception.
 - The exception is Oracle's Universal FOSS Exception, Version 1.0, referred to by name and by Oracle's
   link, which Oracle allows when referring to it, rather than an equivalent of our own: `LICENSE`
   holds the AGPL text alone, `NOTICE` the rest. *(Claude's wording; the author: "Do what you want,
@@ -140,24 +139,29 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 
 ## Architecture
 
-- Arities are the first type of element; structures are the second.
-- "Component" replaces "Module" as the word for plugins, in every name.
+- Arities are the first type of element.
 - No more "Module", we already settled to "Component", so "Modular" becomes "Composable"; just be
   clear what composable means. *(2026-10-13)*
-- I guess we better rename the architecture to "plugin" based, since the core can be excluded.
+- Composable is the system's vocabulary; plugin based is an architecture we left because [the] core
+  is too thin for calling those components as plugin[s]. *(2026-10-15)*
 - The "Structure" interface meant to be the second type of elements (the relations
   around sorts of elements (arity)) in the "OntologyEngineCore".
 - We need to clarify each component is a component, so rename things like "ArityComponent" and
   "StructureComponent".
-- The delegation-like actions should be done there [in the core].
+- The core handles the data base side; even though the components are able to delegate themselves,
+  they must pass it through the core for the future plans. *(2026-10-15)*
+- Right now the core is almost redundant since arities and structures can work on their own, but for
+  the future purposes core stays; it also makes the code more organized. The ACS doesn't have a core,
+  the ACSE has the core. *(2026-10-15)*
 - The core must also have contracts about delegation; we can (right now) declare an interface [for
   them].
 - The ontructure package can be renamed but must be used, because incubation contains many unwanted
   elements that are not worth removing.
 - The former version's missing features were critical for the application. I need the modularity and
   "Logging, Undo-Redo, ..." at the same time.
-- The core handles creation-addition of plugins, delegations, journal (logging + undo/redo),
+- The core handles creation-addition of components, delegations, journal (logging + undo/redo),
   persistence, filtering + analysis, also system analytics like how much RAM is used by/where, etc.
+  *(The author wrote "plugins"; renamed to "components" at the author's request.)*
 - [For `ontructure/`:] the project name became Arity Component System, so we will use "acs_beta"
   right now. [Since then: "acse replaces the acs", see Layers and names.]
 - [Under `acs_beta`,] I plan on making a separate file for every top tier interface, ArityComponent
@@ -178,15 +182,18 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
   must be able to define [the] table itself or use a modular table. Also, for clarity, we will need
   to name them like "ArityCatalogTable" or "ArityModularCatalogTable" or "ArityCatalogRowComponent".
   [Since then: "Modular" becomes "Composable".]
-- The `Structure` contract holds which arities it spans; removal notification and alike;
-  per-element read and write of its own state; its op codes and codec. *(Old plan's wording,
-  confirmed by the author.)*
+- The `Structure` contract holds which arities it spans; removal notification and alike; per-element
+  read and write of its own state. *(Old plan's wording, confirmed by the author.)*
 - [The] Structure contract must allow a way of storing and loading the data via data streams; the
   core can manage files and alike.
 - [Structures referring to their arities by ints, which the core resolves:] this has its own
   results. We cannot "insert" arities or structures, they become somewhat independent of core (any
   other core with different structures can accept it), using object references makes them less
   dependent on the core. So I am open to suggestions, but for now ints are enough.
+- One idea raises: the components can use object pointers to each other instead of ints. We do not go
+  with that idea because the journalling side must be handled with the core, but more importantly, in
+  the future we may want to add features that reason about the multiple of arity, structure and
+  procedure instances. *(2026-10-15)*
 - [The old plan's "growth is propagated directly from the arity to everything attached" is
   declined:] "different arity" == "different thing".
 - Nothing narrows silently: conversion is exact or throws. `UnsupportedOperationException` = wrong
@@ -207,6 +214,8 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
   the arity operations list.
 - [Procedures, only for changes or also for reads:] it must allow a way of reasoning, or at least
   state they do not otherwise.
+- The procedures must be so clear they can be automatically reasoned with our ACS system.
+  *(2026-10-15)*
 - [The synapse structure:] it is just a type of 2 arity structure where two elements from a single
   arity [are] matched to a single element on the second arity. All of the neurons on all the layers
   are placed on arity 1, and every weight is placed on arity 2; [the] structure resembles a category
@@ -231,17 +240,24 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
   Yes, it is [that], but [it] would not cause any problem; the functions just need to transform the
   identity number before using it.
 - I have a belief the structures do not need to check if an Identity exists.
-- [Claude's wording, approved:] Make the core the only caller of removals.
+- Core is the only caller of removal requests (from outside), and arity is the one removing, that also
+  delegates the message through the core. *(2026-10-15)*
 - Structures, if they need to remove an identity on another arity, need to call ArityComponent's
-  remove and [the] forget of [the] core on that identity; that is the recursive step: 0 original
-  arity -> 1 related structures -> 2 start from (0) on each identity needed to [be] removed.
+  remove on that identity; that is the recursive step: 0 original arity -> 1 related structures -> 2
+  start from (0) on each identity needed to [be] removed.
+- Arity removes the identity and calls the core forget for delegating it. *(2026-10-15)*
+- The component will depend less on the core; arities remove their elements on their own.
+  *(2026-10-15)*
+- Structures are responsible for representing the data optimally for memory and time, while the imv
+  values can be removed or structures around them change. *(2026-10-15)*
+- Journalling removed the necessity of separating forgetting from removal, so hereby data is
+  forgotten (but journalled) the moment an element is removed. *(2026-10-15)*
 - Forget needs to be undoable.
 - We will not need a function like "swap" or "captureNotForget" because of what an arity represents;
   more on that later.
-- [Storing a structure:] recording the relation is enough. Also at the core level storing can be done
-  by temporarily storing, then vacuum, then final storage. [That] is not bound to be the only
-  [sequence]; allow [the] option of direct storing. Also each time [storing] needs to create a new
-  file, so there needs [to be] a pointer.
+- [Storing a structure:] recording the relation is enough. Also at the core level storing can be
+  done by temporarily storing, then vacuum, then final storage. [That] is not bound to be the only
+  [sequence]; allow [the] option of direct storing.
 - [Calculated arities:] the calculated arities must be dependent on a structure; this is better
   since being directly dependent [on] another Arity can actually raise errors.
 - [Claude's `long captureIdentity(int arity, String comment)` on the core:] go with it.
@@ -253,9 +269,6 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 - I think the vacuum will be a rare call, on storing to disk and reloading from it.
 - We must make a "forget" call that removes the associated data (like the connections on the indexer)
   but doesn't shift all the identities. Delegations over that call will be handled by the core.
-- Importantly, if a removed identity gets captured back, a forget call must run on it prior to capture.
-- The forget is necessary at the capture back because the data of the former identity is still there.
-- Make "Vacuum is the undo horizon." is the currently used solution.
 - No structure vacuums a dead identity it reaches on its own.
 - Bulk catalog reads intersect the range with the occupied set once, then read, instead of checking
   each element.
@@ -263,7 +276,7 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 - The automatic existence check validates a reference exactly when it leaves the structure holding
   it: returned to a caller, or used to address another arity. If checking is requested by client.
 - I think we do not need to make pending removals; the identity sets handle it.
-- [For forget before capture-back:] identity set must allow a way of capturing the lowest positive
+- [Capturing back:] identity set must allow a way of capturing the lowest positive
   excluded value. I mean there is an IntArrayList of excluded [identities]: [its] first element if
   the list is not empty, or just increasing the borders. So the identities set contract is
   responsible.
@@ -295,7 +308,6 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 - [Redo:] simple, re-execute all.
 - [The DAG's free list, `freeSlots` and `multiData` length:] the slot allocation will likely be
   deterministic, and it feels like it won't matter.
-- They [journal primitives] are meant to be the action and its parameters with an inverse.
 - [The old plan's write barrier is declined; it] needs more details, explained here: for journal
   actions with checks and multi steps, a record at the beginning and end must be done, [and it]
   must contain a name for logging and alike; for steps, each must just contain parameters, itself
@@ -335,8 +347,8 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
   one we can simply store the difference. If the client wants to store former and new versions for
   higher clarity, they can implement the Journal themselves, or we can make a separate Journal
   implementation that stores that way. *(2026-10-13)*
-- [Since `new - old` does not restore a double exactly:] your [Claude's] "old ^ new" method [over the
-  raw bits] solves the current problem with the journal.
+- Decided to store `new ^ old` for catalog rows that do not change in the number of bits.
+  *(2026-10-15)*
 - [The setter shape, and the logging mode for bulk writes:] not open, simply log the change using the
   method you gave [`old ^ new`].
 - We can make the journal's creation independent of the core: `indexer.bin` names the journal's class
@@ -390,7 +402,7 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 - Now the new plan is acses will work as a bootstrapper when loading databases, I mean even the base
   classes will move to the target workspace; the acses will be responsible for loading them using the
   convention.
-- The acses is thin: if there is already a process of acses running it will only be a requester.
+- The acses is thin.
 - When requested to load a database, acses will use only classes from the database; acses only knows
   the contracts, so [the] database is the authority about implementation.
 - When acses is going to create a new database, the acses will provide the base class files only
@@ -416,8 +428,7 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 
 ## Identity sets
 
-- Add PositiveLong *[since then out of the MVP, see below]* and [Positive]Int, also deleting the
-  narrow variants, to the plan.
+- Add [Positive]Int, also deleting the narrow variants, to the plan.
 - Right now the identitiesSet doesn't need to hold a "firstIndex"; doesn't really matter though.
 - Some arities may have elements up to a certain number easily computed, like say we have a single
   layer fully [connected] perceptron: its nodes are one arity, its weights are a different arity,
@@ -428,6 +439,7 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 - I think we need to find ways to define arity sizes; for example, [in] the "cartesian" instance I
   told, the arity that represents the cartesians can have its size calculated.
 - Longs for identities are out of [the] MVP. *(2026-10-14)*
+- [May identities be long?] Long imv is out of scope, but yes they can. *(2026-10-15)*
 
 ## Filtering
 
@@ -454,7 +466,17 @@ accepted.")*
   identity spaces a structure spans.
 - **Catalog** — one value per identity; a column. Total: an unwritten slot reads as zero, not absent.
 - **Structure** — data about relations, over one arity or several, under any rule.
-- **Component** — a plugin the core holds (`ArityComponent`, `StructureComponent`).
+- **Component** — an arity, structure or procedure the core holds (`ArityComponent`,
+  `StructureComponent`).
+- The identity is [the] element identity; it is represented by an int named value, [and] its index
+  is [the] number of identities that have less value than its. Hereby Identity or index represents
+  nothing, and [the] names are "Identity's uniqueness index" (iui for short) and "Identity's memory
+  value" (imv for short). To memorize them easily we record the notation "iui <= imv". Structures use
+  the imv since it is stable, and sets map the iui to imv since iui is the actual identity. Vacuum
+  (hereby compacten) makes all the iui equal their imv. *(2026-10-15)* *(The author wrote "compress"
+  and corrected it to "compacten".)*
+- Hereby we use "compacten" (even if illegal grammatically), which stands for removing unnecessary
+  space consumption without changing the structure of data. *(2026-10-15)*
 
 ## Target use case
 

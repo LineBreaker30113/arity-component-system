@@ -79,14 +79,19 @@ without being asked.
   confirms strongly enough, the author claims and moves into `decisions.md`; one the author keeps
   but still doubts moves above that heading. Treat entries above it as correct; build nothing on
   unreviewed ones.
+  It also holds the handoff, work decided to be done and not done, under Unreviewed → Handoff.
 - `markdowns/questions.md` — open questions, each with its options and who holds each. A suggestion
   that answers no question is not recorded. A settled question leaves the file.
-- `markdowns/handoff.md` — work decided to be done and not done, and what must happen before the
-  first publish.
 - `markdowns/current-state.md` — facts about what exists, checked against the repo and dated, and the
   former handoffs kept as a record.
 - `markdowns/response.md` — long answers that read badly in the terminal. It exists so the author can
   read them rendered in IntelliJ; that is its only purpose. Never a source.
+- `markdowns/novelty-study.md` — Claude's prior-art and novelty study, linked from the README and
+  pushed for now, in the hope an advisor will see it. When a later study proves one of its claims
+  false, Claude fixes the claim in place and lists the fix in the revision note at its top. Its
+  working files, the handoff among them, stay unpublished in `reference/novelty/`.
+- `markdowns/markdown-refining.md` — for refining the markdowns; this file holds the fundamentals.
+  Claude uses it when the author wants a refined markdown file.
 - `CLAUDE.md` — how we work. Other files do not restate its rules.
 - `README.md` — goal, what it is not, the application.
 - Claude's memory, outside the repo — pointers only.
@@ -119,6 +124,20 @@ their code, with only filler removed.
 - A standing instruction has a scope (which files) and an end. One meant to last goes in this file.
 - A changed decision is edited in place and committed; git keeps the old version.
 
+**record-decision.** How any agent brings a new decision into `decisions.md`. The author: "Agent must
+scan entire decisions to find "common, complement, contradict" things and then propose me a better
+definition."
+
+- Quote the author's statement first, under the quote test.
+- Scan all of `decisions.md`, every section, in one run, for entries that share its terms or answer
+  the same question. Label each Commons, Complements or Conflicts.
+- Propose the better definition: one entry joining the statement with its Commons and Complements,
+  in the author's words where they serve. List the entries it replaces and what each loses.
+- Ask each conflict as `markdown-refining.md` → Questions to the author says: numbered options, each
+  entry quoted in full, what the file keeps and loses under each option.
+- Write nothing until the author answers. The approved entry goes in its section, dated; Claude's
+  wording in it is marked *(Claude's wording, confirmed by the author.)*; the replaced entries leave.
+
 ## Layout
 
 - `src/main/java/org/halim/ontology/incubation/` — **the live work.** A clean restart. Everything
@@ -135,7 +154,7 @@ their code, with only filler removed.
 ## Build
 
 ```
-mvn test        # surefire; OEIntSetListerTest is the main incubation suite
+mvn test        # surefire; ACS_IntSetListerTest is the main incubation suite
 mvn -q compile
 ```
 
@@ -149,5 +168,7 @@ Observed from the source. Match them; do not "fix" them.
 - Package-private by default. Fields and helper methods usually carry no access modifier.
 - Javadoc is prose about **invariants and trade-offs**, not parameter lists — it explains why a
   representation costs what it costs. Match that register if asked to write one.
-- `OE_` prefixes the incubation core types (`OE_IntSet`, `OE_Catalog`).
+- `ACS_` prefixes the interfaces (`ACS_IntSet`, `ACS_ArityComponentBase`); the database-side ones
+  (the core, the journal, the persistence manager, the description manager) and the engine's
+  classes keep `ACSE_`.
 - `fastutil` primitives (`IntArrayList`) over boxed collections.
