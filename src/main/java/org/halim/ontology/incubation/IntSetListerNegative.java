@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
  *   <li>neither bound is itself a hole, so the first element is always {@code firstIndex} and the
  *       last is always {@code lastIndex}. An empty set is {@code firstIndex > lastIndex}.</li>
  * </ul>
- * Not multi thread safe, and every {@link OE_IntSet} handed out by {@link #getSet()} is a view over
+ * Not multi thread safe, and every {@link ACS_IntSet} handed out by {@link #getSet()} is a view over
  * the same state - mutating through one is visible through all of them.
  *
  * Simple, took me few minutes, but better than RoaringBitset for few specific use, plus .
@@ -64,7 +64,7 @@ public IntSetListerNegative(int lastIndex) {
 }
 
 
-public static class NegativeDataIntSet implements OE_IntSet {
+public static class NegativeDataIntSet implements ACS_IntSet {
 	
 	IntSetListerNegative data;
 	public NegativeDataIntSet(IntSetListerNegative data) {
@@ -117,7 +117,7 @@ public static class NegativeDataIntSet implements OE_IntSet {
 	}
 }
 
-OE_IntSet getSet() {
+ACS_IntSet getSet() {
 	return new NegativeDataIntSet(this);
 }
 
@@ -125,7 +125,7 @@ OE_IntSet getSet() {
 /**
  * Walks the iteration order, and is the one place that turns an element index back into a value.
  * */
-private final class Cursor implements OE_IntSet.IntListerIterator {
+private final class Cursor implements ACS_IntSet.IntListerIterator {
 	
 	int cursor;
 	int lastReturned = -1;

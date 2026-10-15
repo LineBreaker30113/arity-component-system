@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class OntologyEngineCore {
 
-ArrayList<OE_IntSet> entityClusters;
+ArrayList<ACS_IntSet> entityClusters;
 
 ArrayList<BidirectionalIndexingService> indexingServices;
 

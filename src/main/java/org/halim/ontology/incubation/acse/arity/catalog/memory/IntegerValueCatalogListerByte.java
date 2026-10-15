@@ -1,0 +1,79 @@
+package org.halim.ontology.incubation.acse.arity.catalog.memory;
+
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
+import org.halim.ontology.incubation.acse.ACSE_Core;
+import org.halim.ontology.incubation.acse.ACSE_Journal;
+import org.halim.ontology.incubation.acse.arity.ACS_ArityComponentBase;
+import org.halim.ontology.incubation.acse.arity.catalog.IntegerValueCatalog.IntSizedIntegerValueCatalog;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+
+public class IntegerValueCatalogListerByte implements IntSizedIntegerValueCatalog {
+
+/** One byte a slot, packed - the list is the storage. */
+@Override
+public double getEstimatedBytesPerIdentity() { return 1; }
+public ByteArrayList data = new ByteArrayList();
+
+@Override
+public int getIntData(long identity) {
+	return data.getByte((int) identity);
+}
+
+@Override
+public void setLongFor(long identity, long value) {
+	data.set((int) identity, ACS_ArityComponentBase.exactByte(value));
+}
+
+
+/** The flat list is the storage, so reaching an identity is just making the list that long. */
+@Override
+public boolean ensureCapacity(long identity) {
+	int want = Math.toIntExact(identity + 1);
+	if(data.size() >= want) { return false; }
+	data.size(want);
+	return true;
+}
+
+@Override
+public void truncate(long capacity) {
+	data.size(capacity < 0 ? 0 : Math.toIntExact(capacity + 1));
+}
+
+/** The length, then every value. */
+@Override
+public boolean saveTo(DataOutputStream dos) throws IOException {
+	dos.writeInt(data.size());
+	dos.write(data.elements(), 0, data.size());
+	return true;
+}
+
+/** Rebuilds what {@link #saveTo} wrote. */
+public static IntegerValueCatalogListerByte loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+	IntegerValueCatalogListerByte catalog = new IntegerValueCatalogListerByte();
+	int size = dis.readInt();
+	byte[] values = new byte[size];
+	dis.readFully(values);
+	catalog.data = ByteArrayList.wrap(values);
+	return catalog;
+}
+
+
+/**
+ * The flat list is the storage, so the whole range is one run and there is no chunk split to pay
+ * for. This is the case the per-element default is worst against - the loop it replaces was all
+ * dispatch and no work.
+ * */
+@Override
+public void copyIntsInto(long from, long to, int[] dest, int offset) {
+	byte[] elements = data.elements();
+	int at = Math.toIntExact(from);
+	int end = Math.toIntExact(to);
+	if(end > data.size()) { throw new IndexOutOfBoundsException("identity " + (end - 1) + " is past this catalog"); }
+	while(at < end) { dest[offset++] = elements[at++]; }
+}
+
+}

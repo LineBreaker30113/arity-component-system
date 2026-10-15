@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
 /**
  * A set of ints stored positively: {@code inclusionList} holds the elements themselves, sorted
  * ascending with no duplicates. The mirror image of {@link IntSetListerNegative}, which lists what
- * the set leaves out instead - same {@link OE_IntSet} contract over either, so the pair is meant to be
+ * the set leaves out instead - same {@link ACS_IntSet} contract over either, so the pair is meant to be
  * swapped for one another as a set's density changes.
  * <p>
  * Memory is proportional to the number of elements, so this is the representation to reach for when
@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
  * One invariant holds at all times, and everything below leans on it: {@code inclusionList} is
  * sorted ascending with no duplicates. An empty set is an empty list.
  * <p>
- * Not multi thread safe, and every {@link OE_IntSet} handed out by {@link #getSet()} is a view over
+ * Not multi thread safe, and every {@link ACS_IntSet} handed out by {@link #getSet()} is a view over
  * the same state - mutating through one is visible through all of them.
  * */
 public class IntSetListerPositive {
@@ -57,8 +57,8 @@ public IntSetListerPositive(int lastIndex) {
 }
 
 
-OE_IntSet getSet() {
-	return new OE_IntSet() {
+ACS_IntSet getSet() {
+	return new ACS_IntSet() {
 		@Override
 		public int get(int i) {
 			int size = count();
@@ -108,7 +108,7 @@ OE_IntSet getSet() {
  * Walks the iteration order. The list is already in that order, so the cursor is an index into it
  * and nothing has to be translated.
  * */
-private final class Cursor implements OE_IntSet.IntListerIterator {
+private final class Cursor implements ACS_IntSet.IntListerIterator {
 	
 	int cursor;
 	int lastReturned = -1;
