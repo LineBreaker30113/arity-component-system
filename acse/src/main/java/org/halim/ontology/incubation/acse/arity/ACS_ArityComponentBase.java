@@ -97,7 +97,6 @@ public static final int PREFERRED_FLOATING = 0;
 public static final int PREFERRED_BOOL = 1;
 public static final int PREFERRED_OBJECT = 2;
 
-
 default int getIntFor(int catalog, long identity) { throw cannotAnswer(catalog, "int"); }
 default long getLongFor(int catalog, long identity) { throw cannotAnswer(catalog, "long"); }
 default double getDoubleFor(int catalog, long identity) { throw cannotAnswer(catalog, "double"); }
