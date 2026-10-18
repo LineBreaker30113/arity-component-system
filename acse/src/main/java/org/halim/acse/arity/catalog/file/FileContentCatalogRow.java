@@ -1,8 +1,8 @@
 package org.halim.acse.arity.catalog.file;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
-import org.halim.acs.ACSE_PersistenceManager;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
+import org.halim.acs.ACS_PersistenceManager;
 import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
 
 import java.io.DataInputStream;
@@ -89,7 +89,7 @@ public void truncate(long capacity) {
 /** The path row by class and data, the reach, then each file up to it as its length and bytes, or -1 for none. */
 @Override
 public boolean saveTo(DataOutputStream dos) throws IOException {
-	if(!ACSE_PersistenceManager.writeClass(dos, paths)) {
+	if(!ACS_PersistenceManager.writeClass(dos, paths)) {
 		throw new IOException(paths.getClass().getName() + " declares no public static loadFrom, and a file content row cannot be stored without its paths");
 	}
 	if(!paths.saveTo(dos)) { return false; }
@@ -107,8 +107,8 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote, writing each file back and deleting each one the copy has as absent. */
-public static FileContentCatalogRow loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
-	ACS_ArityCatalogRowBase paths = ACSE_PersistenceManager.readPart(dis, ACS_ArityCatalogRowBase.class, core, journal);
+public static FileContentCatalogRow loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
+	ACS_ArityCatalogRowBase paths = ACS_PersistenceManager.readPart(dis, ACS_ArityCatalogRowBase.class, core, journal);
 	if(paths == null) { throw new IOException("a file content row was stored without its paths"); }
 	FileContentCatalogRow row = new FileContentCatalogRow(paths);
 	row.lastIndex = dis.readLong();

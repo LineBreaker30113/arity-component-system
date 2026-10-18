@@ -2,9 +2,9 @@ package org.halim.acse;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
-import org.halim.acs.ACSE_PersistenceManager;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
+import org.halim.acs.ACS_PersistenceManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -42,17 +42,17 @@ import java.util.regex.Pattern;
 
 /**
  * Stores a core into a new numbered folder under {@link #folder} each time - 000001, 000002, ... - and
- * only then points {@value ACSE_PersistenceManager#POINTER} at it, so a store that fails halfway leaves
+ * only then points {@value ACS_PersistenceManager#POINTER} at it, so a store that fails halfway leaves
  * the previous generation current; earlier generations are kept. The pointer holds the header every
  * manager writes, then the current generation's number. What goes inside a generation is the core's own
- * {@link ACSE_Core#store}.
+ * {@link ACS_Core#store}.
  * <p>
  * The static half is the machinery of a stored folder, which the core's store and load use: its files,
- * the class numbers behind {@link ACSE_PersistenceManager#writeClass}, and the classes it carries - the
+ * the class numbers behind {@link ACS_PersistenceManager#writeClass}, and the classes it carries - the
  * core's class, every class the store named, and what they reach from the same places, except the
  * contracts. Loading a folder runs the code it carries: load only folders trusted as much as a program.
  * */
-public class ACSE_PersistenceManagerBasic implements ACSE_PersistenceManager {
+public class ACSE_PersistenceManagerBasic implements ACS_PersistenceManager {
 /** One date on every jar entry, so the same classes make the same jar. */
 static final LocalDateTime ENTRY_TIME = LocalDateTime.of(1980, 1, 1, 0, 0);
 /** An {@code L...;} in a descriptor or a signature, for the classes a class file names outside its class entries. */
@@ -68,7 +68,7 @@ public ACSE_PersistenceManagerBasic(Path folder) {
 
 /** Stores the core into a new generation, then makes it current. A failed store leaves a stray folder and the previous generation current. */
 @Override
-public List<String> store(ACSE_Core core) throws IOException {
+public List<String> store(ACS_Core core) throws IOException {
 	Files.createDirectories(folder);
 	int number = lastGeneration() + 1;
 	List<String> warnings = core.store(Files.createDirectory(generation(number)));
@@ -82,7 +82,7 @@ public Path current() throws IOException {
 	Path pointer = folder.resolve(POINTER);
 	if(!Files.exists(pointer)) { throw new NoSuchFileException(pointer.toString(), null, "nothing was stored in this folder"); }
 	int number = read(pointer, null, dis -> {
-		String manager = ACSE_PersistenceManager.readHeader(dis, pointer);
+		String manager = ACS_PersistenceManager.readHeader(dis, pointer);
 		if(!manager.equals(getClass().getName())) { throw new IOException(pointer + " belongs to " + manager + ", not " + getClass().getName()); }
 		return dis.readInt();
 	});
@@ -107,14 +107,14 @@ int lastGeneration() throws IOException {
 /** Replaces the pointer by a rename, so a crash leaves the old pointer or the new one, never half of either. */
 void makeCurrent(int number) throws IOException {
 	Path temporary = folder.resolve(POINTER + ".tmp");
-	write(temporary, null, dos -> { ACSE_PersistenceManager.writeHeader(dos, getClass()); dos.writeInt(number); return true; });
+	write(temporary, null, dos -> { ACS_PersistenceManager.writeHeader(dos, getClass()); dos.writeInt(number); return true; });
 	Files.move(temporary, folder.resolve(POINTER), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
 	syncDirectory(folder);
 }
 
 
 /** A part of a known class, through its static {@code loadFrom}; an IOException or a runtime one it throws comes out unwrapped. */
-static <T> T build(Class<?> cls, Class<T> type, ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+static <T> T build(Class<?> cls, Class<T> type, ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	if(!type.isAssignableFrom(cls)) { throw new IOException(cls.getName() + " is not a " + type.getSimpleName()); }
 	Object part;
 	try { part = loadFromOf(cls).invoke(null, core, journal, dis); }
@@ -132,10 +132,10 @@ static <T> T build(Class<?> cls, Class<T> type, ACSE_Core core, ACSE_Journal jou
 /** The class's own static {@code loadFrom}; one inherited from a superclass would build the superclass. */
 static Method loadFromOf(Class<?> cls) throws IOException {
 	Method method = null;
-	try { method = cls.getMethod("loadFrom", ACSE_Core.class, ACSE_Journal.class, DataInputStream.class); }
+	try { method = cls.getMethod("loadFrom", ACS_Core.class, ACS_Journal.class, DataInputStream.class); }
 	catch(NoSuchMethodException e) { }
 	if(method == null || method.getDeclaringClass() != cls || !Modifier.isStatic(method.getModifiers()) || !cls.isAssignableFrom(method.getReturnType())) {
-		throw new IOException(cls.getName() + " declares no public static " + cls.getSimpleName() + " loadFrom(ACSE_Core, ACSE_Journal, DataInputStream)");
+		throw new IOException(cls.getName() + " declares no public static " + cls.getSimpleName() + " loadFrom(ACS_Core, ACS_Journal, DataInputStream)");
 	}
 	// A public method of a package-private class is still out of reach without this.
 	method.trySetAccessible();
@@ -146,7 +146,7 @@ static Method loadFromOf(Class<?> cls) throws IOException {
 /** The names, in number order. */
 static void writeClasses(DataOutputStream dos, ClassTable table) throws IOException {
 	dos.writeInt(table.classes.size());
-	for(Class<?> cls : table.classes) { ACSE_PersistenceManager.writeString(dos, cls.getName()); }
+	for(Class<?> cls : table.classes) { ACS_PersistenceManager.writeString(dos, cls.getName()); }
 }
 
 /** The classes by number, every one found and checked for a static {@code loadFrom} before any data is read, the failures named together. */
@@ -154,7 +154,7 @@ static Class<?>[] readClasses(DataInputStream dis, ClassLoader loader) throws IO
 	Class<?>[] classes = new Class<?>[dis.readInt()];
 	ArrayList<String> failures = new ArrayList<>();
 	for(int number = 0; number < classes.length; number++) {
-		String name = ACSE_PersistenceManager.readString(dis);
+		String name = ACS_PersistenceManager.readString(dis);
 		classes[number] = find(name, loader);
 		if(classes[number] == null) { failures.add("cannot find " + name); continue; }
 		try { loadFromOf(classes[number]); }
@@ -233,7 +233,7 @@ static final class Input extends DataInputStream implements PartBuilding, InFold
 	public Path folder() { return folder; }
 
 	@Override
-	public <T> T build(int number, Class<T> type, ACSE_Core core, ACSE_Journal journal) throws IOException {
+	public <T> T build(int number, Class<T> type, ACS_Core core, ACS_Journal journal) throws IOException {
 		if(number < 0 || number >= classes.length) { throw new IOException("class " + number + ", the indexer names " + classes.length); }
 		return ACSE_PersistenceManagerBasic.build(classes[number], type, core, journal, this);
 	}
@@ -283,7 +283,7 @@ static void storeClasses(Path folder, ClassTable table, Class<?>... roots) throw
 	ArrayDeque<Class<?>> pending = new ArrayDeque<>(table.classes);
 	for(int i = roots.length - 1; i >= 0; i--) { pending.addFirst(roots[i]); }
 	HashSet<String> origins = new HashSet<>();
-	origins.add(originOf(ACSE_Core.class));
+	origins.add(originOf(ACS_Core.class));
 	for(Class<?> cls : pending) { origins.add(originOf(cls)); }
 	origins.remove(null);
 	TreeMap<String, byte[]> entries = new TreeMap<>();
@@ -314,7 +314,7 @@ static void storeClasses(Path folder, ClassTable table, Class<?>... roots) throw
 
 /** The engine's public interfaces, nested ones included: its contracts, which the loading program supplies. */
 static boolean isContract(Class<?> cls) {
-	String contracts = originOf(ACSE_Core.class);
+	String contracts = originOf(ACS_Core.class);
 	return cls.isInterface() && Modifier.isPublic(cls.getModifiers()) && contracts != null && contracts.equals(originOf(cls));
 }
 

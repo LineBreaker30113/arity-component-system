@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 
-public interface ACSE_Core extends ACSE_Journal.TraceableForUndoingRedoing {
+public interface ACS_Core extends ACS_Journal.TraceableForUndoingRedoing {
 
 int getArityCount();
 
@@ -55,7 +55,7 @@ List<String> store(Path folder) throws IOException;
  * Fills this core, which must hold no component, from what {@link #store} wrote into {@code folder},
  * outside the journal, so undo history begins here. The folder's classes are found through this core's
  * own class loader, so a folder carrying its classes is loaded through
- * {@link ACSE_PersistenceManager#loadCore}, which builds the core, and the journal the folder names, from
+ * {@link ACS_PersistenceManager#loadCore}, which builds the core, and the journal the folder names, from
  * them. A failed load leaves the core as it was.
  * */
 void load(Path folder) throws IOException;

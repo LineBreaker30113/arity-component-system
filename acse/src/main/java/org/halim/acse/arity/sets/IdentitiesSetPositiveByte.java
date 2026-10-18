@@ -1,7 +1,7 @@
 package org.halim.acse.arity.sets;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.arity.sets.IdentitiesSet;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -90,7 +90,7 @@ public IdentitiesSetPositiveByte(long lastIndex) {
 }
 
 /** Rebuilds what the default {@link IdentitiesSet#saveTo} wrote. */
-public static IdentitiesSetPositiveByte loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static IdentitiesSetPositiveByte loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	return IdentitiesSet.loadInto(new IdentitiesSetPositiveByte(), dis);
 }
 

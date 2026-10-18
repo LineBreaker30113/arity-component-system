@@ -154,7 +154,7 @@ default Roaring64Bitmap getAsRoaringBitset() {
 
 
 /**
- * Writes the identities so that the class's {@code public static loadFrom(ACSE_Core, ACSE_Journal,
+ * Writes the identities so that the class's {@code public static loadFrom(ACS_Core, ACS_Journal,
  * DataInputStream)} rebuilds the same set. The default writes the count and then every identity, which
  * is the right size for a sparse set, and {@link #loadInto} reads it back; a representation with a
  * smaller form - a range and its holes, a compressed bitmap - overrides this and reads its own.

@@ -1,8 +1,8 @@
 package org.halim.acse.arity.catalog.memory;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.arity.ACS_ArityComponentBase;
 import org.halim.acs.arity.catalog.IntegerValueCatalog.IntSizedIntegerValueCatalog;
 
@@ -52,7 +52,7 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote. */
-public static IntegerValueCatalogListerByte loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static IntegerValueCatalogListerByte loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	IntegerValueCatalogListerByte catalog = new IntegerValueCatalogListerByte();
 	int size = dis.readInt();
 	byte[] values = new byte[size];

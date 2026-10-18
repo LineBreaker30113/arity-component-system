@@ -1,6 +1,6 @@
 package org.halim.acse.arity.catalog.file;
 
-import org.halim.acs.ACSE_PersistenceManager;
+import org.halim.acs.ACS_PersistenceManager;
 import org.halim.acs.arity.catalog.LongChunkInt;
 import org.halim.acse.arity.catalog.memory.ChunkedCatalogBase;
 
@@ -253,12 +253,12 @@ static void zero(ByteBuffer mapping, int from, int to) {
  * write their layout.
  * */
 public void writeLayout(DataOutputStream dos) throws IOException {
-	ACSE_PersistenceManager.writeString(dos, file.toString());
+	ACS_PersistenceManager.writeString(dos, file.toString());
 	dos.writeInt(fields.length);
 	dos.write(fields);
 	dos.writeInt(chunking.fullLength());
 	if(copiedBy != dos) {
-		copyDurably(file, copyOf(ACSE_PersistenceManager.folderOf(dos), file));
+		copyDurably(file, copyOf(ACS_PersistenceManager.folderOf(dos), file));
 		copiedBy = dos;
 	}
 }
@@ -268,12 +268,12 @@ public void writeLayout(DataOutputStream dos) throws IOException {
  * Every chunking splits uniformly - each chunk below the last is full - so the length is the whole of it.
  * */
 public static MappedRecordFile openLayout(DataInputStream dis) throws IOException {
-	Path file = Path.of(ACSE_PersistenceManager.readString(dis));
+	Path file = Path.of(ACS_PersistenceManager.readString(dis));
 	byte[] fields = new byte[dis.readInt()];
 	dis.readFully(fields);
 	int length = dis.readInt();
 	LongChunkInt chunking = Integer.bitCount(length) == 1 && length > 1 ? new LongChunkInt.LongChunkIntPowerOfTwo(Integer.numberOfTrailingZeros(length)) : new LongChunkInt.LongChunkIntUniform(length);
-	return loadCopy(file, chunking, fields, copyOf(ACSE_PersistenceManager.folderOf(dis), file), dis);
+	return loadCopy(file, chunking, fields, copyOf(ACS_PersistenceManager.folderOf(dis), file), dis);
 }
 
 /** Refuses a layout other than the one a catalog class stores. */

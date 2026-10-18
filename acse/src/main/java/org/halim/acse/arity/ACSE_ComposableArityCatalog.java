@@ -1,8 +1,8 @@
 package org.halim.acse.arity;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
-import org.halim.acs.ACSE_PersistenceManager;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
+import org.halim.acs.ACS_PersistenceManager;
 import org.halim.acs.arity.ACS_ArityComponentBase;
 import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
 import org.halim.acs.arity.sets.IdentitiesSet;
@@ -46,12 +46,12 @@ public ArrayList<ACS_ArityCatalogRowBase> catalogRows;
  * an unsigned identity leaves a hole in the set without lowering what the columns address.
  * */
 public long lastIndex = -1;
-public final ACSE_Journal journal;
+public final ACS_Journal journal;
 final int[] params = new int[5];
 
 static final byte IDENTITY = 1, CATALOG = 2, WRITE = 3;
 
-public ACSE_ComposableArityCatalog(IdentitiesSet occupied, ACSE_Journal journal) {
+public ACSE_ComposableArityCatalog(IdentitiesSet occupied, ACS_Journal journal) {
 	this.occupied = occupied;
 	this.catalogRows = new ArrayList<>();
 	this.journal = journal;
@@ -237,24 +237,24 @@ public void truncate(long capacity) {
 @Override
 public boolean saveTo(DataOutputStream dos) throws IOException {
 	dos.writeLong(lastIndex);
-	if(!ACSE_PersistenceManager.writeClass(dos, occupied)) {
+	if(!ACS_PersistenceManager.writeClass(dos, occupied)) {
 		throw new IOException(occupied.getClass().getName() + " declares no public static loadFrom, and an arity cannot be stored without its identity set");
 	}
 	if(!occupied.saveTo(dos)) { return false; }
 	dos.writeInt(catalogRows.size());
 	for(ACS_ArityCatalogRowBase row : catalogRows) {
-		if(ACSE_PersistenceManager.writeClass(dos, row) && !row.saveTo(dos)) { return false; }
+		if(ACS_PersistenceManager.writeClass(dos, row) && !row.saveTo(dos)) { return false; }
 	}
 	return true;
 }
 
 /** Rebuilds what {@link #saveTo} wrote, each part through its own class. */
-public static ACSE_ComposableArityCatalog loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static ACSE_ComposableArityCatalog loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	long lastIndex = dis.readLong();
-	ACSE_ComposableArityCatalog arity = new ACSE_ComposableArityCatalog(ACSE_PersistenceManager.readPart(dis, IdentitiesSet.class, core, journal), journal);
+	ACSE_ComposableArityCatalog arity = new ACSE_ComposableArityCatalog(ACS_PersistenceManager.readPart(dis, IdentitiesSet.class, core, journal), journal);
 	arity.lastIndex = lastIndex;
 	for(int catalog = 0, count = dis.readInt(); catalog < count; catalog++) {
-		arity.catalogRows.add(ACSE_PersistenceManager.readPart(dis, ACS_ArityCatalogRowBase.class, core, journal));
+		arity.catalogRows.add(ACS_PersistenceManager.readPart(dis, ACS_ArityCatalogRowBase.class, core, journal));
 	}
 	return arity;
 }

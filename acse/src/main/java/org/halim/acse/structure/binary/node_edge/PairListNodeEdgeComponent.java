@@ -2,8 +2,8 @@ package org.halim.acse.structure.binary.node_edge;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.structure.binary.node_edge.ACS_NodeEdgeComponentBase;
 
 import java.io.DataInputStream;
@@ -27,8 +27,8 @@ public class PairListNodeEdgeComponent implements ACS_NodeEdgeComponentBase {
 /** The edge (edge, smaller node, larger node); the negative triple removes it. */
 static final byte LINK = 1;
 
-final ACSE_Core core;
-final ACSE_Journal journal;
+final ACS_Core core;
+final ACS_Journal journal;
 final int nodeArity, edgeArity;
 final boolean allowsLoops, allowsParallelEdges;
 final int[] params = new int[3];
@@ -37,7 +37,7 @@ final int[] params = new int[3];
 final IntArrayList pairs = new IntArrayList();
 
 
-public PairListNodeEdgeComponent(ACSE_Core core, ACSE_Journal journal, int nodeArity, int edgeArity, boolean allowsLoops, boolean allowsParallelEdges) {
+public PairListNodeEdgeComponent(ACS_Core core, ACS_Journal journal, int nodeArity, int edgeArity, boolean allowsLoops, boolean allowsParallelEdges) {
 	if(nodeArity == edgeArity) { throw new IllegalArgumentException("nodes and edges in one arity " + nodeArity); }
 	this.core = core;
 	this.journal = journal;
@@ -217,7 +217,7 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote, attached to the core, outside the journal; refuses an edge written twice, a pair out of order, or one the rules forbid. */
-public static PairListNodeEdgeComponent loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static PairListNodeEdgeComponent loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	int nodeArity = dis.readInt();
 	int edgeArity = dis.readInt();
 	boolean allowsLoops = dis.readBoolean();

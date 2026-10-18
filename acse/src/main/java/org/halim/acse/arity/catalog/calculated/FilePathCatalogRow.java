@@ -1,8 +1,8 @@
 package org.halim.acse.arity.catalog.calculated;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
-import org.halim.acs.ACSE_PersistenceManager;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
+import org.halim.acs.ACS_PersistenceManager;
 import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
 
 import java.io.DataInputStream;
@@ -30,14 +30,14 @@ public FilePathCatalogRow(String path, String extension) {
 /** The path and the extension, which are all this row is. */
 @Override
 public boolean saveTo(DataOutputStream dos) throws IOException {
-	ACSE_PersistenceManager.writeString(dos, path);
-	ACSE_PersistenceManager.writeString(dos, extension);
+	ACS_PersistenceManager.writeString(dos, path);
+	ACS_PersistenceManager.writeString(dos, extension);
 	return true;
 }
 
-public static FilePathCatalogRow loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
-	String path = ACSE_PersistenceManager.readString(dis);
-	return new FilePathCatalogRow(path, ACSE_PersistenceManager.readString(dis));
+public static FilePathCatalogRow loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
+	String path = ACS_PersistenceManager.readString(dis);
+	return new FilePathCatalogRow(path, ACS_PersistenceManager.readString(dis));
 }
 
 @Override

@@ -1,7 +1,7 @@
 package org.halim.acse.arity.catalog.file;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.arity.catalog.FloatingValueCatalog;
 import org.halim.acs.arity.catalog.LongChunkInt;
 
@@ -37,7 +37,7 @@ FloatingValueCatalogFileDouble(MappedRecordFile storage) {
 }
 
 /** Rebuilds what {@link #saveTo} wrote, over the file put back from the loaded folder's copy. */
-public static FloatingValueCatalogFileDouble loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static FloatingValueCatalogFileDouble loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	FloatingValueCatalogFileDouble catalog = new FloatingValueCatalogFileDouble(reopen(dis, MappedRecordFile.DOUBLE));
 	catalog.readValues(dis);
 	return catalog;

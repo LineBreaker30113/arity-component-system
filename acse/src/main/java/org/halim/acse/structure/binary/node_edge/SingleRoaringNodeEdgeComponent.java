@@ -1,8 +1,8 @@
 package org.halim.acse.structure.binary.node_edge;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.roaringbitmap.RoaringBitmap;
 
 import java.io.DataInputStream;
@@ -39,11 +39,11 @@ final RoaringBitmap pairs = new RoaringBitmap();
 final IntArrayList edgesInOrder = new IntArrayList();
 
 
-public SingleRoaringNodeEdgeComponent(ACSE_Core core, ACSE_Journal journal, int nodeArity, int edgeArity, boolean directed, boolean acyclic, boolean allowsLoops) {
+public SingleRoaringNodeEdgeComponent(ACS_Core core, ACS_Journal journal, int nodeArity, int edgeArity, boolean directed, boolean acyclic, boolean allowsLoops) {
 	super(core, journal, nodeArity, edgeArity, directed, acyclic, allowsLoops, false);
 }
 
-SingleRoaringNodeEdgeComponent(ACSE_Core core, ACSE_Journal journal, Rules rules) {
+SingleRoaringNodeEdgeComponent(ACS_Core core, ACS_Journal journal, Rules rules) {
 	super(core, journal, rules);
 	if(rules.allowsParallelEdges) { throw new IllegalArgumentException("one index a pair holds one edge"); }
 }
@@ -137,7 +137,7 @@ IntArrayList edgesOf(int node) {
 
 
 /** Rebuilds what {@link #saveTo} wrote, attached to the core, outside the journal. */
-public static SingleRoaringNodeEdgeComponent loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static SingleRoaringNodeEdgeComponent loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	SingleRoaringNodeEdgeComponent graph = new SingleRoaringNodeEdgeComponent(core, journal, Rules.read(dis));
 	graph.readEdges(dis);
 	return graph;

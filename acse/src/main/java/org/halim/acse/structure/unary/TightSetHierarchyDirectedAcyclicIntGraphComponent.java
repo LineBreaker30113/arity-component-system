@@ -2,8 +2,8 @@ package org.halim.acse.structure.unary;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.structure.ACS_StructureComponentBase;
 import org.halim.acs.arity.sets.IdentitiesSet;
 
@@ -87,8 +87,8 @@ static final int ROOT_SLOT = 0;
 /** The edge (element, parent); the negative pair removes it. */
 static final byte LINK = 1;
 
-final ACSE_Core core;
-final ACSE_Journal journal;
+final ACS_Core core;
+final ACS_Journal journal;
 /** The slot of the arity this graph is over. */
 final int arity;
 final int[] params = new int[2];
@@ -115,7 +115,7 @@ boolean rootChildrenDirty;
 public boolean isRootExcluded;
 
 
-public TightSetHierarchyDirectedAcyclicIntGraphComponent(ACSE_Core core, ACSE_Journal journal, int arity) {
+public TightSetHierarchyDirectedAcyclicIntGraphComponent(ACS_Core core, ACS_Journal journal, int arity) {
 	this.core = core;
 	this.journal = journal;
 	this.arity = arity;
@@ -551,7 +551,7 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote, attached to the core, outside the journal. */
-public static TightSetHierarchyDirectedAcyclicIntGraphComponent loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static TightSetHierarchyDirectedAcyclicIntGraphComponent loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	TightSetHierarchyDirectedAcyclicIntGraphComponent graph = new TightSetHierarchyDirectedAcyclicIntGraphComponent(core, journal, dis.readInt());
 	graph.isRootExcluded = dis.readBoolean();
 	graph.ensureCapacity(dis.readInt() - 1);

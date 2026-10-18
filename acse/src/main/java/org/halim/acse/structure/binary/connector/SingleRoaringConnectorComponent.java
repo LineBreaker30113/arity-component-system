@@ -1,8 +1,8 @@
 package org.halim.acse.structure.binary.connector;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.structure.binary.connector.ACS_ConnectorComponentBase;
 import org.roaringbitmap.IntIterator;
 import org.roaringbitmap.PeekableIntIterator;
@@ -43,8 +43,8 @@ public class SingleRoaringConnectorComponent implements ACS_ConnectorComponentBa
 /** The connection (persistent, volatile); the negative pair breaks it. */
 static final byte CONNECT = 1;
 
-final ACSE_Core core;
-final ACSE_Journal journal;
+final ACS_Core core;
+final ACS_Journal journal;
 /** The slots of the arities at index 0 and 1; they may be the same slot. */
 final int persistentArity, volatileArity;
 /** The stride: every connected persistent identity is below it. Written only through {@link #setPersistentSize}, which moves the indexes with it, and which a connection that does not fit calls. */
@@ -55,7 +55,7 @@ final int[] params = new int[2];
 RoaringBitmap connections = new RoaringBitmap();
 
 
-public SingleRoaringConnectorComponent(ACSE_Core core, ACSE_Journal journal, int persistentArity, int volatileArity, int persistentSize) {
+public SingleRoaringConnectorComponent(ACS_Core core, ACS_Journal journal, int persistentArity, int volatileArity, int persistentSize) {
 	if(persistentSize < 1) { throw new IllegalArgumentException("persistent size " + persistentSize); }
 	this.core = core;
 	this.journal = journal;
@@ -290,7 +290,7 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote, attached to the core, outside the journal; refuses a connection written twice or past the size. */
-public static SingleRoaringConnectorComponent loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static SingleRoaringConnectorComponent loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	int persistentArity = dis.readInt();
 	int volatileArity = dis.readInt();
 	SingleRoaringConnectorComponent indexer = new SingleRoaringConnectorComponent(core, journal, persistentArity, volatileArity, dis.readInt());

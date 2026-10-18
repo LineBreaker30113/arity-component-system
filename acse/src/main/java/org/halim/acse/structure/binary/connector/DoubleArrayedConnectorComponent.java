@@ -1,8 +1,8 @@
 package org.halim.acse.structure.binary.connector;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.structure.binary.connector.ACS_ConnectorComponentBase;
 
 import java.io.DataInputStream;
@@ -31,8 +31,8 @@ public class DoubleArrayedConnectorComponent implements ACS_ConnectorComponentBa
 /** The connection (primary, complement); the negative pair breaks it. */
 static final byte CONNECT = 1;
 
-final ACSE_Core core;
-final ACSE_Journal journal;
+final ACS_Core core;
+final ACS_Journal journal;
 /** The slots of the arities at index 0 and 1; they may be the same slot. */
 final int primaryArity, complementArity;
 final int[] params = new int[2];
@@ -43,7 +43,7 @@ final ArrayList<IntArrayList> complements = new ArrayList<>();
 final ArrayList<IntArrayList> primaries = new ArrayList<>();
 
 
-public DoubleArrayedConnectorComponent(ACSE_Core core, ACSE_Journal journal, int primaryArity, int complementArity) {
+public DoubleArrayedConnectorComponent(ACS_Core core, ACS_Journal journal, int primaryArity, int complementArity) {
 	this.core = core;
 	this.journal = journal;
 	this.primaryArity = primaryArity;
@@ -203,7 +203,7 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote, attached to the core, outside the journal; refuses a connection written twice. */
-public static DoubleArrayedConnectorComponent loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static DoubleArrayedConnectorComponent loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	int primaryArity = dis.readInt();
 	DoubleArrayedConnectorComponent indexer = new DoubleArrayedConnectorComponent(core, journal, primaryArity, dis.readInt());
 	for(long i = 0, count = dis.readLong(); i < count; i++) {

@@ -1,7 +1,7 @@
 package org.halim.acses.daemon;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_PersistenceManager;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_PersistenceManager;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,10 +11,10 @@ import java.nio.file.Path;
 class ACSES_Database {
 
 final Path folder;
-final ACSE_PersistenceManager manager;
-final ACSE_Core core;
+final ACS_PersistenceManager manager;
+final ACS_Core core;
 
-ACSES_Database(Path folder, ACSE_PersistenceManager manager, ACSE_Core core) {
+ACSES_Database(Path folder, ACS_PersistenceManager manager, ACS_Core core) {
 	this.folder = folder;
 	this.manager = manager;
 	this.core = core;
@@ -31,7 +31,7 @@ void close() throws IOException {
 }
 
 static void close(Object built) throws IOException {
-	if(built.getClass().getClassLoader() instanceof ACSE_PersistenceManager.StoredClassLoader loader) { loader.close(); }
+	if(built.getClass().getClassLoader() instanceof ACS_PersistenceManager.StoredClassLoader loader) { loader.close(); }
 }
 
 }

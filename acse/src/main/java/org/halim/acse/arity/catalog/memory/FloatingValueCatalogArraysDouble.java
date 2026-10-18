@@ -1,7 +1,7 @@
 package org.halim.acse.arity.catalog.memory;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.arity.catalog.FloatingValueCatalog;
 import org.halim.acs.arity.catalog.LongChunkInt;
 
@@ -47,7 +47,7 @@ protected void write(DataOutputStream dos, double[] chunk, int length) throws IO
 protected void read(DataInputStream dis, double[] chunk, int length) throws IOException { for(int i = 0; i < length; i++) { chunk[i] = Double.longBitsToDouble(dis.readLong()); } }
 
 /** Rebuilds what {@link #saveTo} wrote. */
-public static FloatingValueCatalogArraysDouble loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static FloatingValueCatalogArraysDouble loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	FloatingValueCatalogArraysDouble catalog = new FloatingValueCatalogArraysDouble(readChunking(dis));
 	catalog.readValues(dis);
 	return catalog;

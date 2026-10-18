@@ -1,7 +1,7 @@
 package org.halim.acse.arity.catalog.memory;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.arity.ACS_ArityComponentBase;
 import org.halim.acs.arity.catalog.IntegerValueCatalog.IntSizedIntegerValueCatalog;
 import org.halim.acs.arity.catalog.LongChunkInt;
@@ -47,7 +47,7 @@ protected void write(DataOutputStream dos, short[] chunk, int length) throws IOE
 protected void read(DataInputStream dis, short[] chunk, int length) throws IOException { for(int i = 0; i < length; i++) { chunk[i] = dis.readShort(); } }
 
 /** Rebuilds what {@link #saveTo} wrote. */
-public static IntegerValueCatalogArraysShort loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static IntegerValueCatalogArraysShort loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	IntegerValueCatalogArraysShort catalog = new IntegerValueCatalogArraysShort(readChunking(dis));
 	catalog.readValues(dis);
 	return catalog;

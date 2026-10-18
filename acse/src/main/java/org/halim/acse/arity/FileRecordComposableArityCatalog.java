@@ -1,8 +1,8 @@
 package org.halim.acse.arity;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
-import org.halim.acs.ACSE_PersistenceManager;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
+import org.halim.acs.ACS_PersistenceManager;
 import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
 import org.halim.acs.arity.catalog.LongChunkInt;
 import org.halim.acse.arity.catalog.file.FileRecordCatalog;
@@ -34,17 +34,17 @@ public class FileRecordComposableArityCatalog extends ACSE_ComposableArityCatalo
 public final FileRecordCatalog record;
 
 /** A new record file of a field per type - {@link MappedRecordFile#LONG}, {@link MappedRecordFile#FLOAT}, ... - refused if it already holds data. */
-public FileRecordComposableArityCatalog(IdentitiesSet occupied, ACSE_Journal journal, Path file, byte... types) throws IOException {
+public FileRecordComposableArityCatalog(IdentitiesSet occupied, ACS_Journal journal, Path file, byte... types) throws IOException {
 	this(occupied, journal, file, MappedRecordFile.DEFAULT_CHUNKING, types);
 }
 
-public FileRecordComposableArityCatalog(IdentitiesSet occupied, ACSE_Journal journal, Path file, LongChunkInt chunking, byte... types) throws IOException {
+public FileRecordComposableArityCatalog(IdentitiesSet occupied, ACS_Journal journal, Path file, LongChunkInt chunking, byte... types) throws IOException {
 	this(occupied, journal, new FileRecordCatalog(file, chunking, types));
 	for(int field = 0; field < record.rowCount(); field++) { putCatalogRow(field, record.row(field)); }
 }
 
 /** Over a record already made; its rows are not put in, which a load does from the stream. */
-FileRecordComposableArityCatalog(IdentitiesSet occupied, ACSE_Journal journal, FileRecordCatalog record) {
+FileRecordComposableArityCatalog(IdentitiesSet occupied, ACS_Journal journal, FileRecordCatalog record) {
 	super(occupied, journal);
 	this.record = record;
 }
@@ -59,14 +59,14 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote: the record from the loaded folder's copy, which its rows then share, then the composable arity's parts. */
-public static FileRecordComposableArityCatalog loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static FileRecordComposableArityCatalog loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	FileRecordCatalog record = new FileRecordCatalog(MappedRecordFile.openLayout(dis));
 	record.storage.reach(dis.readLong());
 	long lastIndex = dis.readLong();
-	FileRecordComposableArityCatalog arity = new FileRecordComposableArityCatalog(ACSE_PersistenceManager.readPart(dis, IdentitiesSet.class, core, journal), journal, record);
+	FileRecordComposableArityCatalog arity = new FileRecordComposableArityCatalog(ACS_PersistenceManager.readPart(dis, IdentitiesSet.class, core, journal), journal, record);
 	arity.lastIndex = lastIndex;
 	for(int catalog = 0, count = dis.readInt(); catalog < count; catalog++) {
-		arity.catalogRows.add(ACSE_PersistenceManager.readPart(dis, ACS_ArityCatalogRowBase.class, core, journal));
+		arity.catalogRows.add(ACS_PersistenceManager.readPart(dis, ACS_ArityCatalogRowBase.class, core, journal));
 	}
 	return arity;
 }

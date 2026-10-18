@@ -5,7 +5,7 @@ import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
 import org.halim.acs.structure.ACS_StructureComponentBase;
 
 
-public interface ACSE_DescriptionManager {
+public interface ACS_DescriptionManager {
 
 String getCoreDescription();
 void setCoreDescription(String coreDescription);

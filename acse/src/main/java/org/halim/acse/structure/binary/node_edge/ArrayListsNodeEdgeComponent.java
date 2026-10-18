@@ -1,8 +1,8 @@
 package org.halim.acse.structure.binary.node_edge;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -24,11 +24,11 @@ public class ArrayListsNodeEdgeComponent extends NodeEdgeGraphBase {
 final ArrayList<IntArrayList> incident = new ArrayList<>();
 
 
-public ArrayListsNodeEdgeComponent(ACSE_Core core, ACSE_Journal journal, int nodeArity, int edgeArity, boolean directed, boolean acyclic, boolean allowsLoops, boolean allowsParallelEdges) {
+public ArrayListsNodeEdgeComponent(ACS_Core core, ACS_Journal journal, int nodeArity, int edgeArity, boolean directed, boolean acyclic, boolean allowsLoops, boolean allowsParallelEdges) {
 	super(core, journal, nodeArity, edgeArity, directed, acyclic, allowsLoops, allowsParallelEdges);
 }
 
-ArrayListsNodeEdgeComponent(ACSE_Core core, ACSE_Journal journal, Rules rules) {
+ArrayListsNodeEdgeComponent(ACS_Core core, ACS_Journal journal, Rules rules) {
 	super(core, journal, rules);
 }
 
@@ -64,7 +64,7 @@ void remove(int node, int edge) {
 
 
 /** Rebuilds what {@link #saveTo} wrote, attached to the core, outside the journal. */
-public static ArrayListsNodeEdgeComponent loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static ArrayListsNodeEdgeComponent loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	ArrayListsNodeEdgeComponent graph = new ArrayListsNodeEdgeComponent(core, journal, Rules.read(dis));
 	graph.readEdges(dis);
 	return graph;

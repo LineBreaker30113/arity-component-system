@@ -2,8 +2,8 @@ package org.halim.acse.structure.unary;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.structure.ACS_StructureComponentBase;
 import org.halim.acs.arity.sets.IdentitiesSet;
 
@@ -33,8 +33,8 @@ static final int ROOT_SLOT = 0;
 /** [element, from, to]: the positive pair moves the element to {@code to}, the negative back to {@code from}. */
 static final byte MOVE = 1;
 
-final ACSE_Core core;
-final ACSE_Journal journal;
+final ACS_Core core;
+final ACS_Journal journal;
 /** The slot of the arity this graph is over. */
 final int arity;
 final int[] params = new int[3];
@@ -47,7 +47,7 @@ IntArrayList freeSlots;
 boolean rootChildrenDirty;
 
 
-public FolderHierarchyDirectedAcyclicIntGraphComponent(ACSE_Core core, ACSE_Journal journal, int arity) {
+public FolderHierarchyDirectedAcyclicIntGraphComponent(ACS_Core core, ACS_Journal journal, int arity) {
 	this.core = core;
 	this.journal = journal;
 	this.arity = arity;
@@ -247,7 +247,7 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote, attached to the core, outside the journal. */
-public static FolderHierarchyDirectedAcyclicIntGraphComponent loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static FolderHierarchyDirectedAcyclicIntGraphComponent loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	FolderHierarchyDirectedAcyclicIntGraphComponent graph = new FolderHierarchyDirectedAcyclicIntGraphComponent(core, journal, dis.readInt());
 	graph.ensureCapacity(dis.readInt() - 1);
 	for(int i = 0, count = dis.readInt(); i < count; i++) {

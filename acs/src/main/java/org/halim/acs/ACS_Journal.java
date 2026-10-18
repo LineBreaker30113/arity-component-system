@@ -3,7 +3,7 @@ package org.halim.acs;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public interface ACSE_Journal {
+public interface ACS_Journal {
 
 /** Begins recording a mutation on the structure. The paramsMemory is for communicating parameters using a single allocation, and itself will not be recorded, defined as an object so client choose to use an int[] or IntArrayList. */
 int beginRecordingActivity(TraceableForUndoingRedoing actor, String methodName, Object paramsMemory, String comment);

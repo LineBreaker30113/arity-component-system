@@ -1,7 +1,7 @@
 package org.halim.acse.arity.sets;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.arity.sets.IdentitiesSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -129,7 +129,7 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote, refusing a hole that would break the invariants above rather than holding it. */
-public static IdentitiesSetNegativeLong loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static IdentitiesSetNegativeLong loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	long first = dis.readLong(), last = dis.readLong();
 	IdentitiesSetNegativeLong set = new IdentitiesSetNegativeLong(first, last);
 	for(int p = 0, count = dis.readInt(); p < count; p++) {

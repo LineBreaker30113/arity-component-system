@@ -4,8 +4,8 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.structure.binary.node_edge.ACS_NodeEdgeComponentBase;
 
 import java.io.DataInputStream;
@@ -32,8 +32,8 @@ public abstract class NodeEdgeGraphBase implements ACS_NodeEdgeComponentBase {
 /** The edge (edge, first node, second node); the negative triple removes it. */
 static final byte LINK = 1;
 
-final ACSE_Core core;
-final ACSE_Journal journal;
+final ACS_Core core;
+final ACS_Journal journal;
 final int nodeArity, edgeArity;
 final boolean directed, acyclic, allowsLoops, allowsParallelEdges;
 final int[] params = new int[3];
@@ -42,7 +42,7 @@ final int[] params = new int[3];
 final IntArrayList ends = new IntArrayList();
 
 
-protected NodeEdgeGraphBase(ACSE_Core core, ACSE_Journal journal, int nodeArity, int edgeArity, boolean directed, boolean acyclic, boolean allowsLoops, boolean allowsParallelEdges) {
+protected NodeEdgeGraphBase(ACS_Core core, ACS_Journal journal, int nodeArity, int edgeArity, boolean directed, boolean acyclic, boolean allowsLoops, boolean allowsParallelEdges) {
 	if(nodeArity == edgeArity) { throw new IllegalArgumentException("nodes and edges in one arity " + nodeArity); }
 	if(acyclic && allowsLoops) { throw new IllegalArgumentException("an acyclic graph has no loops: a loop is a cycle"); }
 	this.core = core;
@@ -55,7 +55,7 @@ protected NodeEdgeGraphBase(ACSE_Core core, ACSE_Journal journal, int nodeArity,
 	this.allowsParallelEdges = allowsParallelEdges;
 }
 
-NodeEdgeGraphBase(ACSE_Core core, ACSE_Journal journal, Rules rules) {
+NodeEdgeGraphBase(ACS_Core core, ACS_Journal journal, Rules rules) {
 	this(core, journal, rules.nodeArity, rules.edgeArity, rules.directed, rules.acyclic, rules.allowsLoops, rules.allowsParallelEdges);
 }
 

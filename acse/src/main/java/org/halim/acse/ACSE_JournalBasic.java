@@ -1,8 +1,8 @@
 package org.halim.acse;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,9 +16,9 @@ import java.util.Objects;
  * transaction, which undo and redo move as a whole; a new client request drops the transactions undone
  * before it. Nothing here is multi thread safe.
  * */
-public class ACSE_JournalBasic implements ACSE_Journal {
+public class ACSE_JournalBasic implements ACS_Journal {
 
-final ACSE_Core core;
+final ACS_Core core;
 
 /** Steps as [pair, count, params...]. */
 final IntArrayList data = new IntArrayList();
@@ -48,7 +48,7 @@ int done;
 int horizon;
 boolean replaying;
 
-public ACSE_JournalBasic(ACSE_Core core) { this.core = core; }
+public ACSE_JournalBasic(ACS_Core core) { this.core = core; }
 
 
 @Override

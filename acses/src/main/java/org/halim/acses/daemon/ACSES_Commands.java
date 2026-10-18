@@ -1,8 +1,8 @@
 package org.halim.acses.daemon;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_DescriptionManager;
-import org.halim.acs.ACSE_PersistenceManager;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_DescriptionManager;
+import org.halim.acs.ACS_PersistenceManager;
 import org.halim.acs.arity.ACS_ArityComponentBase;
 import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
 import org.halim.acs.structure.ACS_StructureComponentBase;
@@ -84,9 +84,9 @@ ACSES_Request.Answer createDB(Request request) throws IOException {
 	if(Files.exists(folder) && !Files.isDirectory(folder)) { return refused(folder + " is not a folder"); }
 	if(Files.isDirectory(folder) && !isEmpty(folder)) { return refused(folder + " holds files"); }
 	Files.createDirectories(folder);
-	Path jar = folder.resolve(ACSE_PersistenceManager.MANAGER);
+	Path jar = folder.resolve(ACS_PersistenceManager.MANAGER);
 	ACSES_PersistenceJar.write(jar, ACSE_PersistenceManagerBasic.class);
-	ACSE_PersistenceManager manager = managerFrom(jar, folder);
+	ACS_PersistenceManager manager = managerFrom(jar, folder);
 	ACSE_CoreBasic core = new ACSE_CoreBasic();
 	List<String> warnings;
 	try { warnings = manager.store(core); }
@@ -103,8 +103,8 @@ ACSES_Request.Answer loadDB(Request request) throws IOException {
 	request.expect(1, true, "loadDB <path> [--calledBy <name>]");
 	Path folder = absolute(request.plain.get(0));
 	String name = nameFor(request, folder);
-	ACSE_PersistenceManager manager = ACSE_PersistenceManager.open(folder);
-	ACSE_Core core;
+	ACS_PersistenceManager manager = ACS_PersistenceManager.open(folder);
+	ACS_Core core;
 	try { core = manager.load(); }
 	catch(IOException | RuntimeException | LinkageError e) {
 		ACSES_Database.close(manager);
@@ -122,8 +122,8 @@ ACSES_Request.Answer loadDB(Request request) throws IOException {
  * */
 ACSES_Request.Answer components(Request request) {
 	request.expect(1, false, "components <name>");
-	ACSE_Core core = database(request.plain.get(0)).core;
-	ACSE_DescriptionManager descriptions = core instanceof ACSE_DescriptionManager manager ? manager : null;
+	ACS_Core core = database(request.plain.get(0)).core;
+	ACS_DescriptionManager descriptions = core instanceof ACS_DescriptionManager manager ? manager : null;
 	StringBuilder lines = new StringBuilder();
 	for(int slot = 0; slot < core.getArityCount(); slot++) {
 		ACS_ArityComponentBase arity = core.getArity(slot);
@@ -222,13 +222,13 @@ static boolean isEmpty(Path folder) throws IOException {
 
 /**
  * The manager built from the folder's jar through its public {@code (Path)} constructor, as
- * {@link ACSE_PersistenceManager#open} builds one; open itself needs the root file the first store
+ * {@link ACS_PersistenceManager#open} builds one; open itself needs the root file the first store
  * writes, which a folder being created has not got yet.
  * */
-static ACSE_PersistenceManager managerFrom(Path jar, Path folder) throws IOException {
-	ACSE_PersistenceManager.StoredClassLoader loader = new ACSE_PersistenceManager.StoredClassLoader(jar.toUri().toURL(), ACSE_PersistenceManager.class.getClassLoader());
+static ACS_PersistenceManager managerFrom(Path jar, Path folder) throws IOException {
+	ACS_PersistenceManager.StoredClassLoader loader = new ACS_PersistenceManager.StoredClassLoader(jar.toUri().toURL(), ACS_PersistenceManager.class.getClassLoader());
 	String name = ACSE_PersistenceManagerBasic.class.getName();
-	try { return (ACSE_PersistenceManager) Class.forName(name, true, loader).getConstructor(Path.class).newInstance(folder); }
+	try { return (ACS_PersistenceManager) Class.forName(name, true, loader).getConstructor(Path.class).newInstance(folder); }
 	catch(ReflectiveOperationException | ClassCastException | LinkageError e) {
 		loader.close();
 		throw new IOException("cannot build " + name + " from " + jar + ": " + reason(e), e);

@@ -1,8 +1,8 @@
 package org.halim.acse.arity.catalog.memory;
 
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.arity.catalog.FloatingValueCatalog;
 
 import java.io.DataInputStream;
@@ -52,7 +52,7 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote. */
-public static FloatingValueCatalogListerFloat loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static FloatingValueCatalogListerFloat loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	FloatingValueCatalogListerFloat catalog = new FloatingValueCatalogListerFloat();
 	int size = dis.readInt();
 	catalog.data = new FloatArrayList(size);

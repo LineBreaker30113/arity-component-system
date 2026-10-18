@@ -1,7 +1,7 @@
 package org.halim.acses.daemon;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.halim.acs.ACSE_Core;
+import org.halim.acs.ACS_Core;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -42,7 +42,7 @@ static void write(Path jar, Class<?> root) throws IOException {
 	ArrayDeque<Class<?>> pending = new ArrayDeque<>();
 	pending.add(root);
 	HashSet<String> origins = new HashSet<>();
-	origins.add(originOf(ACSE_Core.class));
+	origins.add(originOf(ACS_Core.class));
 	origins.add(originOf(root));
 	origins.remove(null);
 	TreeMap<String, byte[]> entries = new TreeMap<>();
@@ -73,7 +73,7 @@ static void write(Path jar, Class<?> root) throws IOException {
 
 /** The engine's public interfaces, nested ones included: its contracts, which the loading program supplies. */
 static boolean isContract(Class<?> cls) {
-	String contracts = originOf(ACSE_Core.class);
+	String contracts = originOf(ACS_Core.class);
 	return cls.isInterface() && Modifier.isPublic(cls.getModifiers()) && contracts != null && contracts.equals(originOf(cls));
 }
 

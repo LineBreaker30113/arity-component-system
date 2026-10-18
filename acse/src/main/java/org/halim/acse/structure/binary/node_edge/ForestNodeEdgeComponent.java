@@ -1,8 +1,8 @@
 package org.halim.acse.structure.binary.node_edge;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.structure.ACS_StructureComponentBase;
 
 import java.io.DataInputStream;
@@ -41,8 +41,8 @@ static final byte SET = 1;
 /** [edge, node, parent, child count, child edges...]: takes the edge out, its children left without a parent. */
 static final byte DETACH = 2;
 
-final ACSE_Core core;
-final ACSE_Journal journal;
+final ACS_Core core;
+final ACS_Journal journal;
 final int nodeArity, edgeArity;
 /** Node 0 is no node here, since the node arity has no root. */
 public final boolean skipFirstNode;
@@ -55,7 +55,7 @@ final IntArrayList edgeOfNode = new IntArrayList();
 final ArrayList<IntArrayList> entries = new ArrayList<>();
 
 
-public ForestNodeEdgeComponent(ACSE_Core core, ACSE_Journal journal, int nodeArity, int edgeArity, boolean skipFirstNode) {
+public ForestNodeEdgeComponent(ACS_Core core, ACS_Journal journal, int nodeArity, int edgeArity, boolean skipFirstNode) {
 	if(nodeArity == edgeArity) { throw new IllegalArgumentException("nodes and edges in one arity " + nodeArity); }
 	this.core = core;
 	this.journal = journal;
@@ -317,7 +317,7 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 }
 
 /** Rebuilds what {@link #saveTo} wrote, attached to the core, outside the journal: every entry first, then each listed under its parent. */
-public static ForestNodeEdgeComponent loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static ForestNodeEdgeComponent loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	int nodeArity = dis.readInt();
 	int edgeArity = dis.readInt();
 	ForestNodeEdgeComponent forest = new ForestNodeEdgeComponent(core, journal, nodeArity, edgeArity, dis.readBoolean());

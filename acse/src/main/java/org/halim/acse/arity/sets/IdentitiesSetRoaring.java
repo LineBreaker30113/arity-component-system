@@ -1,7 +1,7 @@
 package org.halim.acse.arity.sets;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.arity.sets.IdentitiesSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -78,7 +78,7 @@ public boolean saveTo(DataOutputStream dos) throws IOException {
 	return true;
 }
 
-public static IdentitiesSetRoaring loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static IdentitiesSetRoaring loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	IdentitiesSetRoaring set = new IdentitiesSetRoaring();
 	set.deserializePortable(dis);
 	return set;

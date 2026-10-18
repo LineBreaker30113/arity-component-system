@@ -1,7 +1,7 @@
 package org.halim.acse.arity.catalog.file;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 import org.halim.acs.arity.ACS_ArityComponentBase;
 import org.halim.acs.arity.catalog.IntegerValueCatalog.IntSizedIntegerValueCatalog;
 import org.halim.acs.arity.catalog.LongChunkInt;
@@ -37,7 +37,7 @@ IntegerValueCatalogFileShort(MappedRecordFile storage) {
 }
 
 /** Rebuilds what {@link #saveTo} wrote, over the file put back from the loaded folder's copy. */
-public static IntegerValueCatalogFileShort loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static IntegerValueCatalogFileShort loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	IntegerValueCatalogFileShort catalog = new IntegerValueCatalogFileShort(reopen(dis, MappedRecordFile.SHORT));
 	catalog.readValues(dis);
 	return catalog;

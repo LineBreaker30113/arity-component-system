@@ -181,7 +181,6 @@ Observed from the source. Match them; do not "fix" them.
 - Package-private by default. Fields and helper methods usually carry no access modifier.
 - Javadoc is prose about **invariants and trade-offs**, not parameter lists — it explains why a
   representation costs what it costs. Match that register if asked to write one.
-- `ACS_` prefixes the interfaces (`ACS_IntSet`, `ACS_ArityComponentBase`); the database-side ones
-  (the core, the journal, the persistence manager, the description manager) and the engine's
-  classes keep `ACSE_`.
+- `ACS_` prefixes the interfaces (`ACS_IntSet`, `ACS_ArityComponentBase`); the engine's classes
+  keep `ACSE_`.
 - `fastutil` primitives (`IntArrayList`) over boxed collections.

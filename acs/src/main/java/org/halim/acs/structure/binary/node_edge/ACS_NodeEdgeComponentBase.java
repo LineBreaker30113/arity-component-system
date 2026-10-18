@@ -1,6 +1,6 @@
 package org.halim.acs.structure.binary.node_edge;
 
-import org.halim.acs.ACSE_Core;
+import org.halim.acs.ACS_Core;
 import org.halim.acs.structure.ACS_StructureComponentBase;
 
 /**
@@ -19,7 +19,7 @@ import org.halim.acs.structure.ACS_StructureComponentBase;
  * connections. Connecting two nodes captures the edge on the edge arity through the core, as a request
  * nested in the connection's, so undoing the connection removes the edge with it. An edge leaving its arity
  * - through the core, or by its connection breaking - is forgotten here, and a node leaving its arity
- * removes every edge on it through {@link ACSE_Core#delegateRemoval}, which is the recursive step. An edge
+ * removes every edge on it through {@link ACS_Core#delegateRemoval}, which is the recursive step. An edge
  * identity captured any other way is no connection. The two arities must be different slots: an edge that
  * was also a node would be forgotten as both.
  * */

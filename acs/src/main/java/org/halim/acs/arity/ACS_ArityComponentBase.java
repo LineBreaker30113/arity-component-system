@@ -1,8 +1,8 @@
 package org.halim.acs.arity;
 
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
-import org.halim.acs.ACSE_PersistenceManager;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
+import org.halim.acs.ACS_PersistenceManager;
 import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
 import org.halim.acs.arity.sets.IdentitiesSet;
 
@@ -44,7 +44,7 @@ import java.io.IOException;
  * buys: an arity mints an identity once and every column follows in one call, with no chance of two
  * of them disagreeing about how far they reach.
  * */
-public interface ACS_ArityComponentBase extends ACSE_Journal.TraceableForUndoingRedoing {
+public interface ACS_ArityComponentBase extends ACS_Journal.TraceableForUndoingRedoing {
 
 /**
  * Which identities exist. A catalog is total - it answers for every identity, and a stored slot
@@ -53,9 +53,9 @@ public interface ACS_ArityComponentBase extends ACSE_Journal.TraceableForUndoing
  * */
 IdentitiesSet occupied();
 
-/** Called by the core only; everyone else removes through {@link ACSE_Core#delegateRemoval}, which also runs forget. */
+/** Called by the core only; everyone else removes through {@link ACS_Core#delegateRemoval}, which also runs forget. */
 void removeIf(int identity, String comment);
-/** Called by the core only; everyone else captures through {@link ACSE_Core#captureIdentity}. */
+/** Called by the core only; everyone else captures through {@link ACS_Core#captureIdentity}. */
 void registerIf(int identity, String comment);
 
 /** How many columns, so a slot is checkable and a walk over all of them is writable. */
@@ -81,8 +81,8 @@ void truncate(long capacity);
 
 /**
  * Writes everything this arity holds - which identities exist, and every column - so that the class's
- * {@code public static loadFrom(ACSE_Core, ACSE_Journal, DataInputStream)} rebuilds the same arity,
- * outside the journal. Java cannot require that static method here, so {@link ACSE_PersistenceManager}
+ * {@code public static loadFrom(ACS_Core, ACS_Journal, DataInputStream)} rebuilds the same arity,
+ * outside the journal. Java cannot require that static method here, so {@link ACS_PersistenceManager}
  * looks it up. One file per arity; its columns go inside it. False when it cannot be stored, and the
  * whole store fails.
  * */

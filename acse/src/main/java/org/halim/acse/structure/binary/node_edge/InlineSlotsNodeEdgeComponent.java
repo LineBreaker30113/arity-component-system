@@ -3,8 +3,8 @@ package org.halim.acse.structure.binary.node_edge;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import org.halim.acs.ACSE_Core;
-import org.halim.acs.ACSE_Journal;
+import org.halim.acs.ACS_Core;
+import org.halim.acs.ACS_Journal;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -39,12 +39,12 @@ final ByteArrayList counts = new ByteArrayList();
 final Int2ObjectOpenHashMap<IntArrayList> overflow = new Int2ObjectOpenHashMap<>();
 
 
-public InlineSlotsNodeEdgeComponent(ACSE_Core core, ACSE_Journal journal, int nodeArity, int edgeArity, boolean directed, boolean acyclic, boolean allowsLoops, boolean allowsParallelEdges, int slots) {
+public InlineSlotsNodeEdgeComponent(ACS_Core core, ACS_Journal journal, int nodeArity, int edgeArity, boolean directed, boolean acyclic, boolean allowsLoops, boolean allowsParallelEdges, int slots) {
 	super(core, journal, nodeArity, edgeArity, directed, acyclic, allowsLoops, allowsParallelEdges);
 	this.slots = checkSlots(slots);
 }
 
-InlineSlotsNodeEdgeComponent(ACSE_Core core, ACSE_Journal journal, Rules rules, int slots) {
+InlineSlotsNodeEdgeComponent(ACS_Core core, ACS_Journal journal, Rules rules, int slots) {
 	super(core, journal, rules);
 	this.slots = checkSlots(slots);
 }
@@ -134,7 +134,7 @@ void remove(int node, int edge) {
 void writeSettings(DataOutputStream dos) throws IOException { dos.writeInt(slots); }
 
 /** Rebuilds what {@link #saveTo} wrote, attached to the core, outside the journal. */
-public static InlineSlotsNodeEdgeComponent loadFrom(ACSE_Core core, ACSE_Journal journal, DataInputStream dis) throws IOException {
+public static InlineSlotsNodeEdgeComponent loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
 	Rules rules = Rules.read(dis);
 	InlineSlotsNodeEdgeComponent graph = new InlineSlotsNodeEdgeComponent(core, journal, rules, dis.readInt());
 	graph.readEdges(dis);

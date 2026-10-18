@@ -67,3 +67,9 @@ Agents append new inferences here (`CLAUDE.md` → Decisions).
   must implement a way of interacting with the arities. Also, there must be methods of querying
   data."; answering P2: "since we plan allowing custom class files, we need to handle it properly,
   but later. Certainly an option mechanism along side a list function necessary.")*
+- The interfaces in `acs` start with `ACS_`, the core, journal, persistence manager and description
+  manager included. *(Author, 2026-10-18: "Hereby interfaces in the acs start by ACS_ instead.")*
+  Conflicts: `layers-and-names.md` → [The prefixes:] (2026-10-14) would lose "except the core,
+  journal and most importantly the persistence manager". Commons: "do it as "OE_ -> ACS_""
+  (`decisions.md`). Complements: "ACS: The contract interfaces" (atop this file). `persistence.md`'s
+  "make an "ACSE_PersistenceManager" class" keeps the name it had.

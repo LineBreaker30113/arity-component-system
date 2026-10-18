@@ -58,7 +58,7 @@ public interface ACS_ArityCatalogRowBase {
 
     /**
      * Writes the column's values, or what it calculates them from, so that the class's
-     * {@code public static loadFrom(ACSE_Core, ACSE_Journal, DataInputStream)} rebuilds the same column;
+     * {@code public static loadFrom(ACS_Core, ACS_Journal, DataInputStream)} rebuilds the same column;
      * the core and the journal are there for a column calculated from other components. The arity
      * holding it calls this, inside the arity's own file.
      */
