@@ -3,7 +3,7 @@
 What exists now, checked against the repo on the date given, and the former handoff. Rules: `CLAUDE.md` →
 Markdown files.
 
-## Layers — checked 2026-10-13; paths and format 2026-10-18
+## Layers — checked 2026-10-13; paths, format and acses 2026-10-18
 
 The live work is the `acs` module (`org.halim.acs`, the contracts) and the `acse` module
 (`org.halim.acse`, the classes); `deprecatedCode/` holds `org.halim.ontology`, outside the build.
@@ -18,7 +18,8 @@ The live work is the `acs` module (`org.halim.acs`, the contracts) and the `acse
 | Journal | `ACSE_Journal`, `ACSE_JournalBasic` | Transactions of nested requests; undo, redo, waypoints, `checkout`, abort; `storeAll` writes JSON Lines. The core builds its journal from a factory, the basic one by default. An aborted client request still loses the undone transactions its start dropped. |
 | Persistence | `ACSE_PersistenceManager`, `ACSE_PersistenceManagerBasic` | A store writes a file per arity and per structure, the descriptions, the journal's log, `indexer.bin` naming the core's class, the journal's, and every class used, and `classes.jar` holding them; a load builds that core and journal, then each part through its class's static `loadFrom`, taking the classes from the folder's jar. Format 3. The basic manager stores into numbered generations and points `acse-persistence.data` at the current one. |
 | Descriptions | `ACSE_DescriptionManager`, on `ACSE_CoreBasic` | A string for the core, each arity, catalog row and structure, and each class by name; outside the journal; stored in `core.bin`. |
-| Procedures, filtering, `acses` | — | Do not exist. |
+| Service | `acses`: `org.halim.acses.acsess` (the access side, JDK only) and `org.halim.acses.daemon` | `acses boot` starts the daemon as a separate process, under `setsid` or else `nohup`, on a Unix socket, `$XDG_RUNTIME_DIR/acses/acses.sock` unless `ACSES_SOCKET` names another, with the lock and the log beside it; it serves one request at a time. `createDB` writes `acse-persistence.jar`, builds the manager from it, and stores a new `ACSE_CoreBasic` through it; the other commands are `loadDB`, `components`, `storeDB`, `unloadDB`, `databases` and `shutdown`. Paths must be absolute. `mvn package` lays the program out in `acses/target/acses/`. |
+| Procedures, filtering | — | Do not exist. |
 
 ## Legacy features not yet in incubation — checked 2026-10-11
 

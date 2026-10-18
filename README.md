@@ -94,8 +94,9 @@ completely quit being an ACS. Creation of a database is done by copying the base
 to the database, after that the ACSES doesn't care if the database uses those classes or not and it
 only checks if the contracts (defined by interfaces) are satisfied. The ACSES can load any database
 folder: it opens the folder's persistence manager, which builds the core from the classes in the
-folder's own jar, so the database, not the ACSES, is the authority about implementation. The ACSES
-does not exist yet; the library side of creating and loading does.
+folder's own jar, so the database, not the ACSES, is the authority about implementation. A first
+ACSES exists: `acses boot`, `createDB`, `loadDB`, `components`, `storeDB`, `unloadDB`, `databases`
+and `shutdown`, served by a daemon over a Unix socket.
 
 #### OntoDirectory
 

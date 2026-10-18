@@ -20,5 +20,6 @@ Rules: `CLAUDE.md` → Markdown files.
 - **snapshot** — a copy of the state, or of a region, kept before a change.
 - **SPDX** — the standard short names for licences and exceptions that tools and package registries read, such as `AGPL-3.0-only WITH Universal-FOSS-exception-1.0`.
 - **tombstone** — a marker left where an element was removed, so the positions after it do not move.
+- **walk** — finding every class a class needs to run: read its class file for the classes it names, keep those from the same jar, and repeat on each one kept until none is new; `ACSE_PersistenceManagerBasic.storeClasses` does it to fill `classes.jar`.
 - **write-ahead log** — the journal written to disk before a change is applied, so a crash can replay or roll it back.
 - **write barrier** — one private method every mutator calls first, so no journal entry is forgotten.

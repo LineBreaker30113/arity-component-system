@@ -36,14 +36,10 @@ decided to be done and urgent.")* The last five, and the reading below, were con
   this naming convention is good, but out of scope; this is boilerplate polishing. — Not named yet.
 - Test the README's "2^28 files of records … a few GiB" claim; nothing measures it. *(Author: "Record
   it, we need to test it.")*
-- Write `acse-persistence.jar` when a database is created; without it, `open` uses the program's own
-  manager. *(Author: "Record this, we need to do it.")*
 - Move the decisions into the Citable (`CLAUDE.md` → Decisions): `decisions.md` and its topic files
   joined into `citable.md`, words unchanged; this file joined in, Unreviewed at its end as
   Unconfirmed; summaries cut to about a quarter, plus `summaries/overview.md`; the summary check run.
   Where the handoff goes is the author's call.
-- Build `acses` as `decisions.md` → Layers and names and Persistence describe; the library side
-  exists.
 - Later: the procedure contract, and more structure components, the cartesian (ternary) and the
   transitions arities among them (`decisions.md` → Architecture).
 - A "String" catalog type, a string subversion of the Object one. Its allowed types are spread over
@@ -64,3 +60,10 @@ decided to be done and urgent.")* The last five, and the reading below, were con
 ## Unreviewed
 
 Agents append new inferences here (`CLAUDE.md` → Decisions).
+
+- Later, in `acses`: commands that interact with the arities and that query data, and custom class
+  files handled properly, with an option mechanism beside a list function. *(Author, 2026-10-18, in
+  `plan.md` → P2: "Since the database is really modular, and we made the Composable Arity instance, we
+  must implement a way of interacting with the arities. Also, there must be methods of querying
+  data."; answering P2: "since we plan allowing custom class files, we need to handle it properly,
+  but later. Certainly an option mechanism along side a list function necessary.")*

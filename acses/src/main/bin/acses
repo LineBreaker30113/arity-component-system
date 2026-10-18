@@ -1,0 +1,4 @@
+#!/bin/sh
+# Runs ACSES from the folder it is installed in: this script sits in bin/, acses.jar one level up.
+here=$(dirname "$(readlink -f "$0")")
+exec java -jar "${here%/bin}/acses.jar" "$@"
