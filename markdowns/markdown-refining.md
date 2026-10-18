@@ -12,11 +12,15 @@ for refining them. Claude uses it when the author wants a refined markdown file.
   I would rather it [the agent] forget (at most) 20 percent of important details. *(2026-10-14)*
 - I want them [the agents that organize the decisions files] to bring me numbered options for
   workarounds if there are multiple; it makes things way easier. *(2026-10-14)*
+- AI must write summaries citing my own words; this is more compact and protects the adherence.
+  *(2026-10-18)*
 
 ## Method
 
 Claude's wording, from the research of 2026-10-14, written at the author's request ("Can you
 implement everything good and related into the refining .md?"). The author's rules above win.
+Since 2026-10-18 it no longer cuts the author's words ("we do not cut my words"): it applies to the
+summaries and to the Unconfirmed inferences (`CLAUDE.md` → Decisions).
 
 ### Steps
 

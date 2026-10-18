@@ -13,10 +13,10 @@ about them:
 
 - **Arities** hold the data of a group of objects: one table per sort of record, with its catalog
   rows as columns. A row can be stored, or calculated from the identity.
-- **Identity sets** only match an identity to memory. Each record is a dense integer identity, so
-  deleting a record never moves the rest.
+- **Identity sets** primarily match an identity to memory. Each record is a dense integer identity,
+  so deleting a record never moves the rest.
 - **Structures** hold the relations between identities, over one arity or several, and know nothing
-  about data or memory. Many structures may do the same thing, each optimized another way; they keep
+  about data of records. Many structures may do the same thing, each optimized another way; they keep
   their rules themselves, and an arity can take part in several at once.
 - **Procedures** (planned) are behaviors: they depend on some of the data and structure, and when
   run they change some of it. They must be clear enough to be reasoned about automatically.
@@ -53,10 +53,13 @@ The agents build knowledge from books:
 3. A third agent builds a new ACS of paragraphs from the first, one that describes better and is
    copyright free. Paragraphs cite their resources and reasoning.
 
+The vision is a huge database of nearly 512GB of text, built using agents and ACSES; ACS-alHikmet
+holds the method of building it, not the database.
+
 Agents must be allowed at every step, to automate it; humans too, to study how proper knowledge
-graphs are developed. The GUI is OntoDirectory, the sibling project, once improved; another GUI may
-focus on the RAG structure. The architecture suits RAG specifically, since it is the most expressive
-by itself.
+graphs are developed. The GUI is OntoDirectory, once improved; the ACSAH viewer, a GUI like it,
+shows the results of ACS-alHikmet and focuses on the RAG structure. The architecture suits RAG
+specifically, since it is the most expressive by itself.
 
 Where it started, in the author's words:
 
@@ -67,6 +70,14 @@ Where it started, in the author's words:
 > of rigorous books on the fields.
 
 ## The products
+
+The ACS project is the parent project that compiles its modules together, each in the folder of its
+name: ACS holds the contracts, ACSE implements them, ACSES uses ACSE for the database service, and
+OntoDirectory, ACS-alHikmet and the ACSAH viewer are built on them.
+
+#### ACS
+
+The contracts. Empty until the contracts move out of ACSE.
 
 #### ACSE (Arity Component System Engine)
 
@@ -85,6 +96,18 @@ only checks if the contracts (defined by interfaces) are satisfied. The ACSES ca
 folder: it opens the folder's persistence manager, which builds the core from the classes in the
 folder's own jar, so the database, not the ACSES, is the authority about implementation. The ACSES
 does not exist yet; the library side of creating and loading does.
+
+#### OntoDirectory
+
+The GUI. Its code is still in its own repository, to be brought in later.
+
+#### ACS-alHikmet
+
+The methodology of building a database of nearly 512GB of text with agents and ACSES. No code yet.
+
+#### ACSAH viewer
+
+A GUI like OntoDirectory, viewing the results of ACS-alHikmet. No code yet.
 
 ## Navigating the code
 
@@ -142,6 +165,38 @@ blocks, with ease.
 its columns. A *component* is a plugin the core holds and drives. The *system* is the core and the
 components together. It is also the answer to the line above about ECS: same archetype layout,
 without the arity-2 ceiling.
+
+## History
+
+The repository's record, from its git log; what came before it is under "Where this came from".
+
+- **2026-09-03** — The Ontology Engine is extracted from OntoDirectory as a standalone project. Int
+  set listers start in `incubation`, and on 09-04 get a set algebra, so they can take part in formal
+  concept analysis.
+- **2026-09-07** — The extracted engine moves under `legacy/`. The structurer, the first serious try,
+  opens on long identities at four storage widths, identity sets and typed catalogs; on 09-09 the
+  arity becomes an interface and the first structure is added.
+- **2026-09-11** — The first written goal: the ontology a person curates by filing in OntoDirectory,
+  as the retrieval backbone of a RAG over paragraphs of facts, with an ingest agent and an answer
+  agent.
+- **2026-09-18** — The history is rewritten to keep the study material private; the last copy of the
+  old history was deleted on 10-13.
+- **2026-09-25** — The rename to Arity Component System is staged; on 09-27 the next package,
+  `ontructure`, becomes `acs_beta`.
+- **2026-10-07** — The goal turns to agents that build paragraphs of knowledge from books; on 10-08
+  it becomes a database managed with commands, through a library and a service named ACSE and ACSES.
+- **2026-10-11** — `acse_beta` gets its core, journal, catalog rows and two hierarchies; on 10-13,
+  descriptions, composable arities, and persistence that stores a database with its own classes.
+- **2026-10-13** — Licensed AGPL-3.0-only with the Universal FOSS Exception, and the messy version is
+  pushed to GitHub, to keep its identity.
+- **2026-10-14** — ACS names the system, ACSE its implementation, and ACSES the database service
+  built on it; the novelty study is published.
+- **2026-10-15** — `acse_beta` becomes `acse`, split into arity and structure, with file-backed rows,
+  connectors and node-edge graphs; the contracts take the `ACS_` prefix, and `structurer` becomes
+  `structurer_depr`.
+- **2026-10-18** — The project becomes a parent of six Maven modules: ACS, ACSE, ACSES,
+  OntoDirectory, ACS-alHikmet and the ACSAH viewer. The goal grows to a database of nearly 512GB of
+  text.
 
 ## Novelty study
 

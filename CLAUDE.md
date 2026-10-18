@@ -10,7 +10,7 @@ boilerplate."
 
 | Job | Who | When | Output | Checked by |
 |---|---|---|---|---|
-| Decide | author | a question | `decisions.md` | nothing: the authority |
+| Decide | author | a question | the Citable | nothing: the authority |
 | Write the unique parts | author | — | interfaces, invariants, tests, the first class of each pattern | compiler, the author's tests |
 | Review | author | before a session or a commit | reviewed inferences, accepted diffs | — |
 | Answer | Claude | a question | the terminal, or `response.md` if asked | sources, arithmetic shown |
@@ -20,7 +20,7 @@ boilerplate."
 
 - **Write only when requested** — code, markdown, commits. Recording may also run under a standing
   instruction. Not wanted: implementing features, refactoring, or improving code shown for discussion.
-- **Boilerplate** is code fully determined by the author's code, `decisions.md`, and reviewed
+- **Boilerplate** is code fully determined by the author's code, the Citable, and reviewed
   inferences: two careful people given the same inputs write the same code. If a choice is left, it
   is a unique part — stop and ask rather than choose. It covers sibling variants of a class the author
   wrote, delegation methods, bulk accessors per type once the first one exists, and the mechanical
@@ -66,20 +66,14 @@ boilerplate."
 
 ## Markdown files
 
-Every entry has one home. **Inferences live only in `inferred-decisions.md`**, so a wrong one can
-only sit in the file the author reviews. Keep the file count low: do not create a markdown file
-without being asked.
+Every entry has one home. **Agents' inferences live only under the Citable's Unconfirmed heading**,
+so a wrong one can only sit where the author reviews. Keep the file count low: do not create a
+markdown file without being asked.
 
-- `markdowns/decisions.md` — the author's words only, the target use case among them. **Wins any
-  conflict with another doc.** Fundamental decisions only: a command about one class or method stays
-  out.
+- `markdowns/decisions/` — the decisions: the Citable and its summaries, kept as **Decisions** below
+  says. **The Citable wins any conflict with another doc.** Fundamental decisions only: a command
+  about one class or method stays out.
 - `markdowns/terms.md` — one-line definitions of terms, looked up by name when met, not read whole.
-- `markdowns/inferred-decisions.md` — every inference, quoting its source. New entries go under
-  **Unreviewed**, at the end. The author's review corrects or deletes each one. One the author
-  confirms strongly enough, the author claims and moves into `decisions.md`; one the author keeps
-  but still doubts moves above that heading. Treat entries above it as correct; build nothing on
-  unreviewed ones.
-  It also holds the handoff, work decided to be done and not done, under Unreviewed → Handoff.
 - `markdowns/questions.md` — open questions, each with its options and who holds each. A suggestion
   that answers no question is not recorded. A settled question leaves the file.
 - `markdowns/current-state.md` — facts about what exists, checked against the repo and dated, and the
@@ -105,8 +99,8 @@ their code, with only filler removed.
   negations, scope, time.
 - Quote the transcript or the code, never a compaction summary.
 - A sentence of Claude's becomes the author's only when the author quotes it and approves it, or
-  confirms it strongly enough to claim it — moving it into `decisions.md` is that claim. General
-  agreement approves no particular sentence.
+  confirms it strongly enough to claim it — moving it above the Citable's Unconfirmed heading is
+  that claim. General agreement approves no particular sentence.
 
 **Inferences, suggestions, facts.**
 
@@ -116,7 +110,7 @@ their code, with only filler removed.
 
 **Guards.**
 
-- Doc against doc: `decisions.md` wins. Doc against code: ask the author — the code may be newer.
+- Doc against doc: the Citable wins. Doc against code: ask the author — the code may be newer.
 - Decision against decision: the newer is correct. Before going on, say which two conflict and which
   one is taken.
 - About the architecture target, the files in `markdowns/` win over the Java code and its
@@ -124,25 +118,42 @@ their code, with only filler removed.
 - A standing instruction has a scope (which files) and an end. One meant to last goes in this file.
 - A changed decision is edited in place and committed; git keeps the old version.
 
-**record-decision.** How any agent brings a new decision into `decisions.md`. The author: "Agent must
-scan entire decisions to find "common, complement, contradict" things and then propose me a better
-definition."
+**Decisions.** The author: "I decided a single source of truth where the rest is build"; "the
+decisions work as a RAPTOR"; "hereby Agents store their inference only, I can fix those
+inferences"; "we do not cut my words." *(2026-10-18)*
 
-- Quote the author's statement first, under the quote test.
-- Scan all of `decisions.md`, every section, in one run, for entries that share its terms or answer
-  the same question. Label each Commons, Complements or Conflicts.
-- Propose the better definition: one entry joining the statement with its Commons and Complements,
-  in the author's words where they serve. List the entries it replaces and what each loses.
-- Ask each conflict as `markdown-refining.md` → Questions to the author says: numbered options, each
-  entry quoted in full, what the file keeps and loses under each option.
-- Write nothing until the author answers. The approved entry goes in its section, dated; Claude's
-  wording in it is marked *(Claude's wording, confirmed by the author.)*; the replaced entries leave.
+- **The Citable**, `markdowns/decisions/citable.md`, is the single source of truth. Above its
+  **Unconfirmed** heading: the author's words, never cut, and the inferences the author confirmed.
+  At its end, under Unconfirmed: the agents' inferences.
+- **Agents store inferences only**, never the author's words in full: the agent's claim, then the
+  author's own words it rests on, in quotes, dated. The full wording stays in the session
+  transcripts. Agents append under Unconfirmed and edit nothing above it unless the author asks.
+- **The author audits**: fixes an inference, cuts it (never copies) above Unconfirmed to confirm it,
+  or deletes it. Build nothing on an unconfirmed inference.
+- **The summaries** are a two-level tree, the RAPTOR way (summaries built recursively over clusters),
+  from the part above Unconfirmed only: `summaries/<topic>.md`, compact bullets that each quote the
+  Citable, and `summaries/overview.md`, whose lines each cite topic bullets. A cluster is the
+  question entries answer; an entry may sit in several. Cut hard, to about a quarter of the source:
+  detail is one quote away.
+- **Agents read** the overview, then a topic summary, and open a quoted Citable entry only when a
+  line concerns them. The Citable wins over its summary; a summary line without a quote is invalid.
+- **After a change above Unconfirmed**, rebuild only the topic summaries quoting the changed entry,
+  then the overview, and run the summary check (its path is in Claude's memory).
+- **record-decision**, for a new decision. The author: "Agent must scan entire decisions to find
+  "common, complement, contradict" things and then propose me a better definition." Scan the
+  summaries and open the entries they quote; label each related entry Commons, Complements or
+  Conflicts; append the better definition under Unconfirmed, quoting the author, with the entries it
+  would replace and what each loses; ask each conflict as `markdown-refining.md` → Questions to the
+  author says.
+- **Not migrated yet.** Today the Citable is `decisions.md` with its topic files, plus
+  `inferred-decisions.md`, whose Unreviewed is Unconfirmed and which also holds the handoff; the
+  summaries have one level, at 89% of the source. The steps: `inferred-decisions.md` → Not done yet.
 
 ## Layout
 
-- `src/main/java/org/halim/ontology/incubation/` — **the live work.** A clean restart. Everything
+- `acse/src/main/java/org/halim/ontology/incubation/` — **the live work.** A clean restart. Everything
   here is provisional and expected to change.
-- `src/main/java/org/halim/ontology/legacy/` — the previous engine, kept for reference only.
+- `acse/src/main/java/org/halim/ontology/legacy/` — the previous engine, kept for reference only.
   **Its javadoc is not authoritative.** It documents an architecture being deliberately abandoned
   and describes intentions that may never have held. Judge legacy code by reading the code, and
   don't quote its comments back as fact.
