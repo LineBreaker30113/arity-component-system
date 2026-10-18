@@ -6,7 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="ontology-engine" />
+        <module name="acs" />
+        <module name="acse" />
+        <module name="acs-alhikmet" />
+        <module name="acses" />
+        <module name="acsah-viewer" />
+        <module name="ontodirectory" />
       </profile>
     </annotationProcessing>
   </component>

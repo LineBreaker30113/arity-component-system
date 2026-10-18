@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.halim</groupId>
+        <artifactId>the-acs-project</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>acs-alhikmet</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ACS-alHikmet</name>
+    <description>
+        The methodology of building a database of nearly 512GB of text with agents and ACSES.
+    </description>
+</project>

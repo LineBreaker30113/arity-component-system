@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.halim</groupId>
+        <artifactId>the-acs-project</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>ontodirectory</artifactId>
+    <packaging>jar</packaging>
+
+    <name>OntoDirectory</name>
+    <description>
+        The GUI. Its code is still in its own repository, to be brought in later.
+    </description>
+</project>
