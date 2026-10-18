@@ -28,8 +28,8 @@ decided to be done and urgent.")* The last five, and the reading below, were con
   phase, cycle refusal, slot reuse, reduction preserving reachability.
 - [The `OE_` prefix, `OntologyEngineCore` and the package `org.halim.ontology`:] now the name is
   "ACS" [now `acse`], replace them with "ACS" [`acse`, except the `OE_` prefix, which becomes `ACS_`:
-  see Layers and names, 2026-10-14]. — `OE_` is gone; `OntologyEngineCore.java` and the root package
-  remain.
+  see Layers and names, 2026-10-14]. — `OE_` is gone. Done for the live work, 2026-10-18;
+  `OntologyEngineCore.java` and `org.halim.ontology` remain in `deprecatedCode/`.
 - [The `Module` at the end of `SetHierarchyDirectedAcyclicIntGraphModule`:] replace with
   `Component`. — Still so named, in `structurer_depr/`.
 - [Naming the judgment-call existence method so it looks deliberate, like `identityAtUnchecked`:]
@@ -38,8 +38,6 @@ decided to be done and urgent.")* The last five, and the reading below, were con
   it, we need to test it.")*
 - Write `acse-persistence.jar` when a database is created; without it, `open` uses the program's own
   manager. *(Author: "Record this, we need to do it.")*
-- Make `acse/pom.xml`'s description describe ACSE; it still says "A pure set-theory/DAG
-  classification engine". *(Author: "Record as handoff (like the rest).")*
 - Move the decisions into the Citable (`CLAUDE.md` → Decisions): `decisions.md` and its topic files
   joined into `citable.md`, words unchanged; this file joined in, Unreviewed at its end as
   Unconfirmed; summaries cut to about a quarter, plus `summaries/overview.md`; the summary check run.

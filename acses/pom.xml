@@ -17,4 +17,11 @@
     <description>
         The database service, which uses ACSE; it acts as the requester when a service is already running.
     </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.halim</groupId>
+            <artifactId>acse</artifactId>
+        </dependency>
+    </dependencies>
 </project>

@@ -3,20 +3,20 @@
 What exists now, checked against the repo on the date given, and the former handoff. Rules: `CLAUDE.md` →
 Markdown files.
 
-## Layers — checked 2026-10-13
+## Layers — checked 2026-10-13; paths and format 2026-10-18
 
-The live work is `incubation/acse_beta/`. `incubation/structurer/` is the previous layout, kept until
-the author says otherwise; nothing in `acse_beta` imports it.
+The live work is the `acs` module (`org.halim.acs`, the contracts) and the `acse` module
+(`org.halim.acse`, the classes); `deprecatedCode/` holds `org.halim.ontology`, outside the build.
 
 | Layer | Package | State |
 |---|---|---|
-| Identity sets | `acse_beta/sets/` | Negative at byte/short/int/long, positive at byte/short, Roaring. `lowestFree()`: fast on `NegativeInt`, a counting default elsewhere. |
-| Catalog rows | `acse_beta/catalogs/` | Row contract `ACS_ArityCatalogRowBase`; stored integer and floating rows, chunked; calculated rows `FilePathCatalogRow` and `HashedFilePathCatalogRow`. Stored rows take `setLongFor` and `setDoubleFor`, exact or refused, never growing; calculated rows refuse. |
+| Identity sets | `arity/sets/`, in `acs` and `acse` | Negative at byte/short/int/long, positive at byte/short, Roaring. `lowestFree()`: fast on `NegativeInt`, a counting default elsewhere. |
+| Catalog rows | `arity/catalog/` in `acs`; `memory/`, `file/`, `calculated/` under it in `acse` | Row contract `ACS_ArityCatalogRowBase`; stored integer and floating rows, chunked; calculated rows `FilePathCatalogRow` and `HashedFilePathCatalogRow`. Stored rows take `setLongFor` and `setDoubleFor`, exact or refused, never growing; calculated rows refuse. |
 | Arity | `ACS_ArityComponentBase`, `ACSE_ComposableArityCatalog` | Occupied set plus rows; adding and removing rows and identities is journaled, and so is a write (`setLongFor`, `setDoubleFor`), as `old ^ new` over the stored bits, within the arity's reach. `removeIf` and `registerIf` are for the core only. |
-| Structures | `acse_beta/structures/unary/` | `TightSetHierarchyDirectedAcyclicIntGraphComponent` (always reduced) and `FolderHierarchyDirectedAcyclicIntGraphComponent` (single parent). Both journal their steps and save the relation as (element, parent) pairs. |
-| Core | `ACSE_Core`, `ACSE_CoreBasic` | Components by slot, a removed slot left empty; `delegateRemoval` with the forget recursion; `captureIdentity`; `store` and `load` of a folder, between requests. Every request takes a comment. `ArityComponentSystem_Core_Deprecated` is an older interface nothing uses. |
+| Structures | `structure/unary/`, in `acse` | `TightSetHierarchyDirectedAcyclicIntGraphComponent` (always reduced) and `FolderHierarchyDirectedAcyclicIntGraphComponent` (single parent). Both journal their steps and save the relation as (element, parent) pairs. |
+| Core | `ACSE_Core`, `ACSE_CoreBasic` | Components by slot, a removed slot left empty; `delegateRemoval` with the forget recursion; `captureIdentity`; `store` and `load` of a folder, between requests. Every request takes a comment. `ArityComponentSystem_Core_Deprecated`, an older interface nothing uses, is now in `deprecatedCode/`. |
 | Journal | `ACSE_Journal`, `ACSE_JournalBasic` | Transactions of nested requests; undo, redo, waypoints, `checkout`, abort; `storeAll` writes JSON Lines. The core builds its journal from a factory, the basic one by default. An aborted client request still loses the undone transactions its start dropped. |
-| Persistence | `ACSE_PersistenceManager`, `ACSE_PersistenceManagerBasic` | A store writes a file per arity and per structure, the descriptions, the journal's log, `indexer.bin` naming the core's class, the journal's, and every class used, and `classes.jar` holding them; a load builds that core and journal, then each part through its class's static `loadFrom`, taking the classes from the folder's jar. Format 2. The basic manager stores into numbered generations and points `acse-persistence.data` at the current one. |
+| Persistence | `ACSE_PersistenceManager`, `ACSE_PersistenceManagerBasic` | A store writes a file per arity and per structure, the descriptions, the journal's log, `indexer.bin` naming the core's class, the journal's, and every class used, and `classes.jar` holding them; a load builds that core and journal, then each part through its class's static `loadFrom`, taking the classes from the folder's jar. Format 3. The basic manager stores into numbered generations and points `acse-persistence.data` at the current one. |
 | Descriptions | `ACSE_DescriptionManager`, on `ACSE_CoreBasic` | A string for the core, each arity, catalog row and structure, and each class by name; outside the journal; stored in `core.bin`. |
 | Procedures, filtering, `acses` | — | Do not exist. |
 
@@ -25,10 +25,11 @@ the author says otherwise; nothing in `acse_beta` imports it.
 Locking, filtering, analytics, in-place walking, and the service layer. Undo/redo and logging now
 exist as the journal; storing and restoring, as folder persistence (2026-10-13).
 
-## Tests — measured 2026-10-13
+## Tests — measured 2026-10-18
 
-`mvn test`: 182 tests, 0 failures. Nothing under `src/test/` exercises `acse_beta`; Claude's
-throwaway checks of it live outside the repo (see Claude's memory).
+`mvn -o test` runs no tests: the 19 test files (182 tests, passing before the move) are in
+`deprecatedCode/`, outside the build. Claude's throwaway checks live outside the repo (see Claude's
+memory).
 
 ## Repository — checked 2026-10-14
 

@@ -15,18 +15,21 @@
 
     <name>ACSE</name>
     <description>
-        A pure set-theory/DAG classification engine. Elements are int identities the engine attaches
-        no meaning to; classes form a multiple-parent hierarchy. Extracted from OntoDirectory.
+        Few good implementations of the ACS contracts for solidifying the project.
     </description>
 
     <dependencies>
+        <dependency>
+            <groupId>org.halim</groupId>
+            <artifactId>acs</artifactId>
+        </dependency>
+
         <!-- One of the engine's two runtime dependencies, with RoaringBitmap below. Everything else
-             it uses is JDK. Keep it that way: this is a library meant to be embedded, so every
+             it uses is acs and the JDK. Keep it that way: this is a library meant to be embedded, so every
              dependency added here is one its consumers inherit. -->
         <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>
-            <version>8.5.13</version>
         </dependency>
 
         <!-- The engine's second runtime dependency, for the Roaring-backed identity sets: a 481 KB
@@ -34,7 +37,6 @@
         <dependency>
             <groupId>org.roaringbitmap</groupId>
             <artifactId>RoaringBitmap</artifactId>
-            <version>1.6.21</version>
         </dependency>
 
         <!-- Test only. Versions match OntoDirectory's, so a test moved between the two projects

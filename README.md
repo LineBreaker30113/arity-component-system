@@ -77,7 +77,7 @@ OntoDirectory, ACS-alHikmet and the ACSAH viewer are built on them.
 
 #### ACS
 
-The contracts. Empty until the contracts move out of ACSE.
+The contract interfaces, since they elegantly formalize things into modules.
 
 #### ACSE (Arity Component System Engine)
 
@@ -114,9 +114,11 @@ A GUI like OntoDirectory, viewing the results of ACS-alHikmet. No code yet.
 To understand the evolution of the project and navigate the code base, the steps are:
 
 1. The "legacy" package was the old package I used for a single version of that goal.
-2. The "incubation" package is meant to be an empty canvas for an improved architecture of it.
+2. The "incubation" package was meant to be an empty canvas for an improved architecture of it.
 3. The "incubation.structurer_depr" was the first serious try.
-4. The "incubation.acse" is the target of the project.
+4. The "acs" and "acse" modules, packages org.halim.acs and org.halim.acse, are the target of the project.
+
+The first three are in `deprecatedCode/`, outside the build.
 
 ## What it aims to be
 
@@ -196,7 +198,8 @@ The repository's record, from its git log; what came before it is under "Where t
   `structurer_depr`.
 - **2026-10-18** — The project becomes a parent of six Maven modules: ACS, ACSE, ACSES,
   OntoDirectory, ACS-alHikmet and the ACSAH viewer. The goal grows to a database of nearly 512GB of
-  text.
+  text; the contracts move to ACS and the classes to ACSE, and the older code with its tests to
+  `deprecatedCode/`, outside the build.
 
 ## Novelty study
 

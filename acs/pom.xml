@@ -15,6 +15,18 @@
 
     <name>ACS</name>
     <description>
-        The contracts. Empty until the contracts move out of ACSE.
+        The contract interfaces, since they elegantly formalize things into modules.
     </description>
+
+    <dependencies>
+        <!-- Both are in IdentitiesSet's signatures: fastutil's lists and RoaringBitmap's Roaring64Bitmap. -->
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>fastutil</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.roaringbitmap</groupId>
+            <artifactId>RoaringBitmap</artifactId>
+        </dependency>
+    </dependencies>
 </project>

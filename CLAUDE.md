@@ -151,10 +151,11 @@ inferences"; "we do not cut my words." *(2026-10-18)*
 
 ## Layout
 
-- `acse/src/main/java/org/halim/ontology/incubation/` — **the live work.** A clean restart. Everything
-  here is provisional and expected to change.
-- `acse/src/main/java/org/halim/ontology/legacy/` — the previous engine, kept for reference only.
-  **Its javadoc is not authoritative.** It documents an architecture being deliberately abandoned
+- `acs/src/main/java/org/halim/acs/` and `acse/src/main/java/org/halim/acse/` — **the live work**: the
+  contracts in `acs`, the classes in `acse`. A clean restart. Everything here is provisional and
+  expected to change.
+- `deprecatedCode/` — `org.halim.ontology` with its tests, by package, outside the build. Its `legacy/`
+  is the previous engine, kept for reference only. **Its javadoc is not authoritative.** It documents an architecture being deliberately abandoned
   and describes intentions that may never have held. Judge legacy code by reading the code, and
   don't quote its comments back as fact.
 - `reference/` — third-party code and papers kept locally for study. Gitignored, never on the build
@@ -165,7 +166,7 @@ inferences"; "we do not cut my words." *(2026-10-18)*
 ## Build
 
 ```
-mvn test        # surefire; ACS_IntSetListerTest is the main incubation suite
+mvn test        # surefire; no module has tests yet (the old suites are in deprecatedCode/)
 mvn -q compile
 ```
 
