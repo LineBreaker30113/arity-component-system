@@ -169,3 +169,26 @@ Agents append new inferences here (`CLAUDE.md` → Decisions).
   *(Author, 2026-10-19: "we need to ensure no name starts with "--" or find a better flag prefix.";
   "flags cannot become parameters but they can take the shape +Duplicate, and parameter flags can
   become toPath=, so cool.")* Conflicts: `plan.md` → P5's `--` flags, replaced; the newer is taken.
+- An actor's `call` takes a `DataInputStream`: objects cost too much on a database of 2^25 or more
+  records, and a method takes any number of inputs of any type. The author is open to a better
+  solution. *(Author, 2026-10-19: "About the call function, make it take a "DataInputStream"."; "Objects
+  introduce overhead, for a 2^25+ record data base this is unacceptable. The method require any number
+  of inputs of any types, formalizing this would be hard. The DataInputStream is well designed for
+  that."; "you know the saying "If you find a good solution, find a better solution" and I am open to
+  suggestions.")* No related entry found in the summaries.
+- ACSES splits into two packages: `acsed`, the daemon, which gets raw data on the input channels (such
+  as sockets) that its boot parameters open, maybe only one; and `acsess`, the command line tool,
+  which converts the CLI to raw data, owns the communication, and boots acsed, so it chooses the
+  channels and uses them. *(Author, 2026-10-19: "the daemon will be called ACSED and the command line
+  tool will be called ACSESS. So the ACSES project is split in two packages, acsed that gets raw data,
+  and its inputs are specified during the booting session, and the acsess that converts the CLI to raw
+  Data."; "by inputs I mean things like sockets."; "You thought `acsess writes by the same layout the
+  daemon reads by.`, which is correct, the communication becomes the responsibility of acsess. The
+  ACSED will take in parameters when it is booted up to open input channels (or maybe only one channel,
+  whichever preferred). The ACSESS will bootup the ACSED for usage, so it can specify the channels
+  itself, and can use them itself.")* Commons: "Four layers: library, database application, requester,
+  GUI or agent" and "the requester is an adaptor the GUI and agents will use" (`summaries/layers-and-
+  names.md`), acsess being the requester; "Boot must launch a separate process" and "acses launches the
+  engine if and only if boot is the command and not anyone is running", now acsess launching acsed.
+  Complements: "ACSES uses it for [the] database service" (`decisions.md`) keeps ACSES as the project
+  holding both; "many ways of accepting requests" gains that boot chooses them. No conflict found.

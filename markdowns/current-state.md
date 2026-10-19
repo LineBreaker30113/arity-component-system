@@ -35,7 +35,8 @@ memory).
 ## Repository — checked 2026-10-14
 
 On `incubation/int-set-algebra`, with `main` at the same commit, `a856b45`. `main` is pushed to
-`origin`, https://github.com/LineBreaker30113/arity-component-system.git: public, `main` its default
+`origin`, https://github.com/LineBreaker30113/the-acs-project.git (renamed from `arity-component-system`
+on 2026-10-19; the local `origin` still names the old URL, which still answers): public, `main` its default
 branch, and GitHub detects the licence as AGPL-3.0 from `LICENSE`. The other local branches are not
 pushed. The pre-purge bundle was deleted on 2026-10-13, so no copy of the history before the rewrite
 is kept.

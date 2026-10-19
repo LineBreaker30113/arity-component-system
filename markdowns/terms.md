@@ -12,6 +12,7 @@ Rules: `CLAUDE.md` → Markdown files.
 - **horizon** — the point undo cannot go back past: a vacuum (decided), or a step that breaks undo history; `ACSE_JournalBasic.horizon` is the first transaction still undoable.
 - **invert** — a logging mode whose record holds what is needed to reverse the change.
 - **journal** — the one ordered list of what changed; undo, redo and logging all read it.
+- **locality of behaviour** — a unit's behaviour is plain from reading that unit alone, as each component's `request` shows what it accepts; it trades against separation of concerns, which the journal's undo follows (Carson Gross, htmx.org, 2020, after Richard Gabriel's *Patterns of Software*).
 - **n-ary** — taking any number of inputs: one AND over five filters, not four nested pairs.
 - **normalise** — rewriting a filter tree into a standard shape, so its parts can be compared and reordered.
 - **proxy** — a class that handles entry-exit conditions of another class.

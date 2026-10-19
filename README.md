@@ -1,8 +1,5 @@
 # The Arity Component System Project
 
-I recently gained a feeling to set the Repository name to "The ACS Project" or alike,
-since it contains nearly 6 maven modules for separate applications.
-
 *Formerly Ontology Engine.*
 
 **ACS (Arity Component System) is a system, as its name states, for building arbitrary mathematical
