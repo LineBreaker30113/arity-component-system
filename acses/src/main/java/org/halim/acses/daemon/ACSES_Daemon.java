@@ -58,7 +58,9 @@ static void serve(Path socket) throws IOException {
 			server.bind(UnixDomainSocketAddress.of(socket));
 			log(OffsetDateTime.now(), "listening on " + socket + ", pid " + ProcessHandle.current().pid());
 			while(!commands.stopping) {
-				try(SocketChannel client = server.accept()) { answer(client, commands); }
+				SocketChannel client = server.accept();
+				if(!answer(client, commands)) { client.close(); }
+				answerHeld(commands);
 			}
 		} finally { Files.deleteIfExists(socket); }
 	}
@@ -70,16 +72,38 @@ static boolean answers(Path socket) {
 	catch(IOException e) { return false; }
 }
 
-/** Reads one request, runs it and answers; a request that cannot be read, or an answer that cannot be sent, is logged and dropped, so a broken peer never stops the daemon. */
-static void answer(SocketChannel client, ACSES_Commands commands) {
+/**
+ * Reads one request, runs it and answers; a request that cannot be read, or an answer that cannot be
+ * sent, is logged and dropped, so a broken peer never stops the daemon. Gives back whether a wait holds
+ * the client, which then stays open until {@link #answerHeld} answers it.
+ * */
+static boolean answer(SocketChannel client, ACSES_Commands commands) {
 	OffsetDateTime time = OffsetDateTime.now();
 	List<String> arguments;
 	try { arguments = ACSES_Request.readRequest(new DataInputStream(new BufferedInputStream(Channels.newInputStream(client)))); }
 	catch(IOException e) {
 		log(time, "unreadable request: " + ACSES_Commands.reason(e));
-		return;
+		return false;
 	}
 	ACSES_Request.Answer answer = commands.run(arguments);
+	if(answer == null) {
+		commands.hold(new ACSES_Commands.Held(client, time, arguments));
+		log(time, arguments.stream().map(ACSES_Daemon::quoted).collect(Collectors.joining(" ")) + " -> held");
+		return true;
+	}
+	send(client, time, arguments, answer);
+	return false;
+}
+
+/** Sends the answers that came ready for held clients, each logged under the time of its request, and closes them. */
+static void answerHeld(ACSES_Commands commands) throws IOException {
+	for(ACSES_Commands.Held held : commands.ready) {
+		try(held.client) { send(held.client, held.time, held.arguments, held.answer); }
+	}
+	commands.ready.clear();
+}
+
+static void send(SocketChannel client, OffsetDateTime time, List<String> arguments, ACSES_Request.Answer answer) {
 	String sent = "";
 	try {
 		DataOutputStream out = new DataOutputStream(new BufferedOutputStream(Channels.newOutputStream(client)));

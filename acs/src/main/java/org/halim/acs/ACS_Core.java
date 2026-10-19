@@ -42,7 +42,8 @@ long captureIdentity(int arity, String comment);
 /** Takes {@code identity} itself, after the structures forget anything left on it: for a structure whose identities are calculated, not counted. Refuses one the arity already holds. */
 long captureIdentity(int arity, long identity, String comment);
 
-
+/** The journal recording this core's mutations, so a client can undo, redo, inspect a former state and ask where it stands. */
+ACS_Journal getJournal();
 /**
  * Writes every component, every description, the journal's log and the classes they need into
  * {@code folder}, between requests. A component or catalog row whose class has no static loadFrom

@@ -46,6 +46,10 @@ final IntArrayList openQueries = new IntArrayList();
 int done;
 /** Transactions below this can no longer be undone. */
 int horizon;
+/** The first inspectAt's {@code done}, -1 without an inspection; not stored, a loaded journal starts without one. */
+int returnPoint = -1;
+/** The request the last inspectAt named, for the refusal. */
+int inspected;
 boolean replaying;
 
 public ACSE_JournalBasic(ACS_Core core) { this.core = core; }
@@ -54,6 +58,7 @@ public ACSE_JournalBasic(ACS_Core core) { this.core = core; }
 @Override
 public int beginRecordingActivity(TraceableForUndoingRedoing actor, String methodName, Object paramsMemory, String comment) {
 	checkNotReplaying();
+	if(returnPoint >= 0) { throw new IllegalStateException("an inspection at request " + inspected + " stands; call endInspection before recording"); }
 	int actorId = actorIdOf(actor);
 	int parent = openRequests.isEmpty() ? -1 : openRequests.topInt();
 	if(parent < 0) {
@@ -200,12 +205,36 @@ public void redoUntilActivityIndex(int activityIndex) {
 	moveTo(target);
 }
 
-/** Leaves the state right after the transaction holding {@code activityIndex}, undoing or redoing as needed. */
+/**
+ * Leaves the state right after the transaction holding {@code activityIndex}, undoing or redoing as
+ * needed. The first inspectAt keeps the point it left; a later one, and undo or redo meanwhile, move
+ * without changing it, so the way back stays one call.
+ * */
 @Override
-public void checkout(int activityIndex) {
+public void inspectAt(int activityIndex) {
 	checkIdle();
+	int before = done;
 	moveTo(transactionOf(activityIndex) + 1);
+	if(returnPoint < 0) { returnPoint = before; }
+	inspected = activityIndex;
 }
+
+@Override
+public void endInspection() {
+	checkIdle();
+	if(returnPoint < 0) { throw new IllegalStateException("no inspection stands"); }
+	moveTo(returnPoint);
+	returnPoint = -1;
+}
+
+@Override
+public boolean isInspecting() { return returnPoint >= 0; }
+
+@Override
+public int getCurrentActivityIndex() { return done < transactionCount() ? transactions.getInt(done) - 1 : requestCount() - 1; }
+
+@Override
+public int getPendingActivityCount() { return requestCount() - getCurrentActivityIndex() - 1; }
 
 void moveTo(int target) {
 	if(target < horizon) { throw new IllegalStateException("undo history is broken before transaction " + horizon); }

@@ -31,7 +31,15 @@ void redoLastActivity();
 void undoUntilActivityIndex(int activityIndex);
 void redoUntilActivityIndex(int activityIndex);
 /** Undoes or redoes as needed. */
-void checkout(int activityIndex);
+void inspectAt(int activityIndex);
+/** Returns to the last point prior to made inspection. */
+void endInspection();
+/** Whether an inspection holds a return point; while it does, beginRecordingActivity refuses, since recording would drop the way back. */
+boolean isInspecting();
+/** The last request of the last applied transaction, -1 when none is applied. */
+int getCurrentActivityIndex();
+/** How many requests the transactions after the current point hold, which redo can apply again. */
+int getPendingActivityCount();
 
 void storeAll(DataOutputStream dos) throws IOException;
 

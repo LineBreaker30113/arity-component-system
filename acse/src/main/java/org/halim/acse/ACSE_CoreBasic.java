@@ -71,6 +71,9 @@ public int getArityCount() { return arities.size(); }
 public ACS_ArityComponentBase getArity(int arity) { return arities.get(arity); }
 
 @Override
+public ACS_Journal getJournal() { return journal; }
+
+@Override
 public int getStructureCount() { return structures.size(); }
 
 @Override
