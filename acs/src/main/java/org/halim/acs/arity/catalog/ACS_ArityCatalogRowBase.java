@@ -11,7 +11,7 @@ import java.io.IOException;
  * value is. This is what a column looks like when it is genuinely its own object; the enclosing
  * interface is what the same data looks like when it is not.
  * <p>
- * The five accessors are widened views over one stored value. A catalog implements the ones it can
+ * The six accessors are widened views over one stored value. A catalog implements the ones it can
  * answer exactly and inherits the rest, and every inherited one throws - so asking a floating catalog
  * for an object is a failure at the call, not a zero. That is the whole reason they are defaults
  * rather than abstract: a new catalog supplies what it has and is refused on the rest for free.
@@ -31,6 +31,7 @@ public interface ACS_ArityCatalogRowBase {
     int PREFERRED_FLOATING = ACS_ArityComponentBase.PREFERRED_FLOATING;
     int PREFERRED_BOOL = ACS_ArityComponentBase.PREFERRED_BOOL;
     int PREFERRED_OBJECT = ACS_ArityComponentBase.PREFERRED_OBJECT;
+    int PREFERRED_STRING = ACS_ArityComponentBase.PREFERRED_STRING;
 
 
     double getEstimatedBytesPerIdentity();
@@ -85,12 +86,16 @@ public interface ACS_ArityCatalogRowBase {
         throw cannotAnswer("Object");
     }
 
+    default String getStringFor(long identity) {
+        throw cannotAnswer("String");
+    }
+
 
     /**
      * The writes, the other side of the views: one value at an identity this column already reaches,
      * exact or refused the way a read is - refusal by type is {@link UnsupportedOperationException},
-     * refusal by value is {@link ArithmeticException}. Only the two numeric families are written, since
-     * they are the only ones stored; Java widens an int or a float argument on the way in.
+     * refusal by value is {@link ArithmeticException}. The two numeric families, booleans and strings are
+     * written; Java widens an int or a float argument on the way in.
      * <p>
      * Nothing here grows the column. Lifecycle stays with {@link #ensureCapacity}, which the arity drives
      * for every column at once, so a write cannot leave one column reaching further than the rest. Nor is
@@ -102,6 +107,14 @@ public interface ACS_ArityCatalogRowBase {
 
     default void setDoubleFor(long identity, double value) {
         throw cannotAnswer("a written double");
+    }
+
+    default void setBooleanFor(long identity, boolean value) {
+        throw cannotAnswer("a written boolean");
+    }
+
+    default void setStringFor(long identity, String value) {
+        throw cannotAnswer("a written String");
     }
 
 

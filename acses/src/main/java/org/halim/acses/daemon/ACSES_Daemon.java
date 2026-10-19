@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
  * The process that holds the databases. It serves one request at a time on one thread, which makes it
  * the single writer: no core is ever reached by two requests at once. Each request is logged on the
  * standard output - its time, its arguments with the comment among them, and its outcome - and boot
- * points the standard output at the log.
+ * points the standard output at the log. A waitInspectionReturn during an inspection is held open
+ * without a thread and answered after a later request; a Commit runs its requests back to back.
  * <p>
  * The lock beside the socket is held for the daemon's whole life, and only its holder removes a socket
  * file nothing answers on and binds a new one, so two boots racing cannot take the socket from each

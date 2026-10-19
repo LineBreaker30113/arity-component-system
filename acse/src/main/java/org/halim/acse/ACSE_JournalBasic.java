@@ -14,7 +14,8 @@ import java.util.Objects;
 /**
  * Requests and their steps in flat lists. A client request and every request nested in it form one
  * transaction, which undo and redo move as a whole; a new client request drops the transactions undone
- * before it. Nothing here is multi thread safe.
+ * before it; during an inspection a new client request is refused instead, so the way back is kept.
+ * Nothing here is multi thread safe.
  * */
 public class ACSE_JournalBasic implements ACS_Journal {
 

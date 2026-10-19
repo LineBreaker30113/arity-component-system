@@ -4,15 +4,18 @@
  * <p>
  * {@link org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase} is what every
  * catalog answers to whatever it stores: the lifecycle, the type it prefers, what one identity costs,
- * five widened accessors and their range forms. It pairs with
+ * six widened accessors and their range forms. It pairs with
  * {@link ACS_ArityComponentBase}: the two are one contract
  * under two addressing schemes - a column addressed by its receiver here, a cell addressed by
  * {@code (catalog, identity)} there.
- * Two families sit under it -
- * {@link org.halim.acs.arity.catalog.IntegerValueCatalog} and
- * {@link org.halim.acs.arity.catalog.FloatingValueCatalog} - because a
- * {@code long getData} and a {@code double getData} cannot be one generic method without boxing the
- * return, and boxing per element is the thing this engine exists to avoid.
+ * Four families sit under it -
+ * {@link org.halim.acs.arity.catalog.IntegerValueCatalog},
+ * {@link org.halim.acs.arity.catalog.FloatingValueCatalog},
+ * {@link org.halim.acs.arity.catalog.BooleanValueCatalog} and
+ * {@link org.halim.acs.arity.catalog.StringValueCatalog} - because a
+ * {@code long}, a {@code double} and a {@code boolean getData} cannot be one generic method without
+ * boxing the return, and boxing per element is the thing this engine exists to avoid; a string is an
+ * object already, and its family is for its accessor and for the difference its writes are journaled as.
  * <p>
  * <b>The accessors are views, not stored values.</b> A catalog implements the ones it can answer
  * exactly and inherits the rest, and every inherited one throws. That is why they are defaults: a
@@ -42,7 +45,7 @@
  * <em>arrays</em> catalog keeps a list of blocks and is the large one; both live in the
  * {@code memory} subpackage, with
  * {@link org.halim.acse.arity.catalog.memory.ChunkedCatalogBase} holding the growth
- * policy once for all six widths and
+ * policy once for every width and
  * {@link org.halim.acs.arity.catalog.LongChunkInt} owning where an identity
  * lands.
  * <p>
@@ -56,7 +59,7 @@
  * thing this package is arranged to avoid.
  * <p>
  * A catalog is <b>total</b>: it answers for every identity, and a stored slot never written reads as
- * zero rather than as absent. Zero is a value here, not a sentinel. Which identities exist is the
+ * zero - "" for a string - rather than as absent. Zero is a value here, not a sentinel. Which identities exist is the
  * occupied set's question and not a catalog's.
  * <p>
  * None of these is multi thread safe.

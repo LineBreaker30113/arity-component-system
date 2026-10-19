@@ -32,7 +32,8 @@ import java.util.stream.Stream;
  * What each command does, over the databases the daemon holds by name. A loaded database's classes are
  * its own, built from its folder's jars, so every command reaches a core through the contracts only: an
  * {@code instanceof} against one of ACSE's classes would be false for every loaded database. ACSE's
- * classes are named only where a database gets them, in {@link #createDB}.
+ * classes are named only where a database or a new folder gets them, in {@link #createDB} and
+ * {@link #newManager}.
  * <p>
  * A refused command leaves the databases held as they were. Paths must be absolute, since the daemon's
  * working folder is not the caller's and a relative path would name another place.

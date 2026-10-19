@@ -22,7 +22,7 @@ import java.io.IOException;
  * hold what a field would have held. {@link ACS_ArityCatalogRowBase} is the other side of that trade,
  * for arities whose columns already exist as objects.
  * <p>
- * The five accessors are widened views over one stored value, not five stored values, and every one
+ * The six accessors are widened views over one stored value, not six stored values, and every one
  * is a default that throws. That is right for the case this interface is for - a hand-written table
  * is usually one type throughout, so "this holds longs" is a fact about the whole object - and a
  * table that genuinely mixes types overrides the accessors it can answer and dispatches on
@@ -96,12 +96,15 @@ public static final int PREFERRED_LONGI = -2;
 public static final int PREFERRED_FLOATING = 0;
 public static final int PREFERRED_BOOL = 1;
 public static final int PREFERRED_OBJECT = 2;
+/** A string, which is an Object too: a string catalog answers {@link #getObjectFor} with the same value. */
+public static final int PREFERRED_STRING = 3;
 
 default int getIntFor(int catalog, long identity) { throw cannotAnswer(catalog, "int"); }
 default long getLongFor(int catalog, long identity) { throw cannotAnswer(catalog, "long"); }
 default double getDoubleFor(int catalog, long identity) { throw cannotAnswer(catalog, "double"); }
 default boolean getBooleanFor(int catalog, long identity) { throw cannotAnswer(catalog, "boolean"); }
 default Object getObjectFor(int catalog, long identity) { throw cannotAnswer(catalog, "Object"); }
+default String getStringFor(int catalog, long identity) { throw cannotAnswer(catalog, "String"); }
 
 /**
  * The writes, journaled: the value lands in {@code catalog} at {@code identity}, exact or refused like
@@ -110,10 +113,15 @@ default Object getObjectFor(int catalog, long identity) { throw cannotAnswer(cat
  * <p>
  * The journal keeps the difference, {@code old ^ new} over the stored bits, rather than the two
  * values: one long whatever the width, exact for a double where {@code new - old} is not, and the
- * same step both undoes and redoes. A table that takes no writes keeps these defaults, which refuse.
+ * same step both undoes and redoes. A string changes length, so its difference is the two strings'
+ * chars XORed - the shorter read as zeros past its end - and the change in length; a string column of
+ * dictionary codes keeps its code's {@code old ^ new} instead. A table that takes no writes keeps these
+ * defaults, which refuse.
  * */
 default void setLongFor(int catalog, long identity, long value, String comment) { throw cannotAnswer(catalog, "a written long"); }
 default void setDoubleFor(int catalog, long identity, double value, String comment) { throw cannotAnswer(catalog, "a written double"); }
+default void setBooleanFor(int catalog, long identity, boolean value, String comment) { throw cannotAnswer(catalog, "a written boolean"); }
+default void setStringFor(int catalog, long identity, String value, String comment) { throw cannotAnswer(catalog, "a written String"); }
 
 /**
  * The column as an object, for the table that has one. A table storing its columns as fields does
@@ -170,6 +178,7 @@ static String typeName(int preferredType) {
 		case PREFERRED_FLOATING -> "floating";
 		case PREFERRED_BOOL -> "boolean";
 		case PREFERRED_OBJECT -> "Object";
+		case PREFERRED_STRING -> "String";
 		default -> "type " + preferredType;
 	};
 }

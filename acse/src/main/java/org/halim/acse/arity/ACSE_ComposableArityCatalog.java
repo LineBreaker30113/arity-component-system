@@ -5,6 +5,7 @@ import org.halim.acs.ACS_Journal;
 import org.halim.acs.ACS_PersistenceManager;
 import org.halim.acs.arity.ACS_ArityComponentBase;
 import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
+import org.halim.acs.arity.catalog.StringValueCatalog.CodedStringValueCatalog;
 import org.halim.acs.arity.sets.IdentitiesSet;
 
 import java.io.DataInputStream;
@@ -49,7 +50,7 @@ public long lastIndex = -1;
 public final ACS_Journal journal;
 final int[] params = new int[5];
 
-static final byte IDENTITY = 1, CATALOG = 2, WRITE = 3;
+static final byte IDENTITY = 1, CATALOG = 2, WRITE = 3, TEXT = 4;
 
 public ACSE_ComposableArityCatalog(IdentitiesSet occupied, ACS_Journal journal) {
 	this.occupied = occupied;
@@ -146,13 +147,57 @@ public void setDoubleFor(int catalog, long identity, double value, String commen
 	complete(request);
 }
 
+@Override
+public void setBooleanFor(int catalog, long identity, boolean value, String comment) {
+	ACS_ArityCatalogRowBase row = writable(catalog, identity, PREFERRED_BOOL, "a written boolean");
+	long old = bitsOf(row, identity);
+	int request = journal.beginRecordingActivity(this, "setBooleanFor", params, comment);
+	try { row.setBooleanFor(identity, value); }
+	catch(RuntimeException | Error e) { journal.abortRecordingActivity(); throw e; }
+	recordWrite(catalog, identity, old ^ bitsOf(row, identity));
+	complete(request);
+}
+
+/**
+ * A column of dictionary codes is journaled as its code's difference, the same step as a number; any
+ * other string column as the two strings' chars XORed and the change in length. A string column holds
+ * "" where nothing was written, so a null is refused rather than stored as a second empty value.
+ * */
+@Override
+public void setStringFor(int catalog, long identity, String value, String comment) {
+	Objects.requireNonNull(value, "a string column holds \"\", not null");
+	ACS_ArityCatalogRowBase row = writable(catalog, identity, PREFERRED_STRING, "a written String");
+	boolean coded = row instanceof CodedStringValueCatalog;
+	long old = coded ? bitsOf(row, identity) : 0;
+	String before = coded ? null : row.getStringFor(identity);
+	int request = journal.beginRecordingActivity(this, "setStringFor", params, comment);
+	try { row.setStringFor(identity, value); }
+	catch(RuntimeException | Error e) { journal.abortRecordingActivity(); throw e; }
+	if(coded) { recordWrite(catalog, identity, old ^ bitsOf(row, identity)); }
+	else { recordText(catalog, identity, before, row.getStringFor(identity)); }
+	complete(request);
+}
+
 /** The column, checked before anything is recorded: present, numeric, and reaching the identity. */
 ACS_ArityCatalogRowBase writable(int catalog, long identity, String asked) {
-	ACS_ArityCatalogRowBase row = catalogRows.get(catalog);
-	if(row == null) { throw new IllegalStateException("catalog " + catalog + " is removed"); }
+	ACS_ArityCatalogRowBase row = present(catalog);
 	int type = row.getPreferredType();
 	if(type != PREFERRED_INTEGER && type != PREFERRED_LONGI && type != PREFERRED_FLOATING) { throw cannotAnswer(catalog, asked); }
 	Objects.checkIndex(identity, lastIndex + 1);
+	return row;
+}
+
+/** The same check for a write only a column of {@code type} takes: a boolean, or a string. */
+ACS_ArityCatalogRowBase writable(int catalog, long identity, int type, String asked) {
+	ACS_ArityCatalogRowBase row = present(catalog);
+	if(row.getPreferredType() != type) { throw cannotAnswer(catalog, asked); }
+	Objects.checkIndex(identity, lastIndex + 1);
+	return row;
+}
+
+ACS_ArityCatalogRowBase present(int catalog) {
+	ACS_ArityCatalogRowBase row = catalogRows.get(catalog);
+	if(row == null) { throw new IllegalStateException("catalog " + catalog + " is removed"); }
 	return row;
 }
 
@@ -167,17 +212,56 @@ void recordWrite(int catalog, long identity, long difference) {
 	journal.recordActivityStep(WRITE, 5);
 }
 
-/** The stored value as bits: a double's raw bits on a floating column, so a NaN or a -0.0 survives; the value itself on an integral one. */
+/**
+ * [catalog, identity, the chars' difference, the change in length], the identity as high and low ints
+ * and the difference among the journal's objects. A write that changed nothing records no step.
+ * */
+void recordText(int catalog, long identity, String before, String after) {
+	if(before.equals(after)) { return; }
+	params[0] = catalog;
+	params[1] = (int) (identity >>> 32);
+	params[2] = (int) identity;
+	params[3] = journal.recordObject(xor(before, after));
+	params[4] = after.length() - before.length();
+	journal.recordActivityStep(TEXT, 5);
+}
+
+/** The two strings' chars XORed, the shorter read as zeros past its end, so either string XORed with it gives the other. */
+static char[] xor(String a, String b) {
+	char[] difference = new char[Math.max(a.length(), b.length())];
+	for(int i = 0; i < difference.length; i++) { difference[i] = (char) ((i < a.length() ? a.charAt(i) : 0) ^ (i < b.length() ? b.charAt(i) : 0)); }
+	return difference;
+}
+
+/** Applies a recorded string difference: the chars XOR the same way both times, and the length moves by {@code change}, which undo passes negated. */
+void flipText(int catalog, long identity, char[] difference, int change) {
+	ACS_ArityCatalogRowBase row = catalogRows.get(catalog);
+	String current = row.getStringFor(identity);
+	char[] other = new char[current.length() + change];
+	for(int i = 0; i < other.length; i++) { other[i] = (char) ((i < current.length() ? current.charAt(i) : 0) ^ difference[i]); }
+	row.setStringFor(identity, new String(other));
+}
+
+/** The stored value as bits: a double's raw bits on a floating column, so a NaN or a -0.0 survives; 1 or 0 on a boolean one; the code on a column of dictionary codes; the value itself on an integral one. */
 static long bitsOf(ACS_ArityCatalogRowBase row, long identity) {
-	return row.getPreferredType() == PREFERRED_FLOATING ? Double.doubleToRawLongBits(row.getDoubleFor(identity)) : row.getLongFor(identity);
+	return switch(row.getPreferredType()) {
+		case PREFERRED_FLOATING -> Double.doubleToRawLongBits(row.getDoubleFor(identity));
+		case PREFERRED_BOOL -> row.getBooleanFor(identity) ? 1 : 0;
+		case PREFERRED_STRING -> ((CodedStringValueCatalog) row).getCode(identity);
+		default -> row.getLongFor(identity);
+	};
 }
 
 /** Applies a recorded difference. One step serves undo and redo alike, since {@code bits ^ d ^ d} is {@code bits}. */
 void flip(int catalog, long identity, long difference) {
 	ACS_ArityCatalogRowBase row = catalogRows.get(catalog);
 	long bits = bitsOf(row, identity) ^ difference;
-	if(row.getPreferredType() == PREFERRED_FLOATING) { row.setDoubleFor(identity, Double.longBitsToDouble(bits)); }
-	else { row.setLongFor(identity, bits); }
+	switch(row.getPreferredType()) {
+		case PREFERRED_FLOATING -> row.setDoubleFor(identity, Double.longBitsToDouble(bits));
+		case PREFERRED_BOOL -> row.setBooleanFor(identity, bits != 0);
+		case PREFERRED_STRING -> ((CodedStringValueCatalog) row).setCode(identity, (int) bits);
+		default -> row.setLongFor(identity, bits);
+	}
 }
 
 static long join(int high, int low) { return (long) high << 32 | Integer.toUnsignedLong(low); }
@@ -201,6 +285,7 @@ public void doTraceableStep(byte stepPair, int[] params, int index) {
 		case CATALOG -> putCatalogRow(params[index], (ACS_ArityCatalogRowBase) journal.getObject(params[index + 1]));
 		case -CATALOG -> catalogRows.set(params[index], null);
 		case WRITE, -WRITE -> flip(params[index], join(params[index + 1], params[index + 2]), join(params[index + 3], params[index + 4]));
+		case TEXT, -TEXT -> flipText(params[index], join(params[index + 1], params[index + 2]), (char[]) journal.getObject(params[index + 3]), stepPair == TEXT ? params[index + 4] : -params[index + 4]);
 		default -> throw new IllegalArgumentException("no step " + stepPair);
 	}
 }
@@ -270,6 +355,8 @@ public double getDoubleFor(int catalog, long identity) { return catalogRows.get(
 public boolean getBooleanFor(int catalog, long identity) { return catalogRows.get(catalog).getBooleanFor(identity); }
 @Override
 public Object getObjectFor(int catalog, long identity) { return catalogRows.get(catalog).getObjectFor(identity); }
+@Override
+public String getStringFor(int catalog, long identity) { return catalogRows.get(catalog).getStringFor(identity); }
 
 
 /** One dispatch pair for the range, where the interface default would have paid one per element. */

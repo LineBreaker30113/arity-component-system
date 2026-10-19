@@ -30,5 +30,11 @@
  * Each class is its four array hooks and its two accessors; growth, truncation and the chunk list
  * itself live once in
  * {@link org.halim.acse.arity.catalog.memory.ChunkedCatalogBase}.
+ * <p>
+ * Booleans, one bit an identity in chunked words: {@code BooleanValueCatalogBits}, an eighth of a
+ * boolean array. Strings, either each kept as it is - {@code StringValueCatalogArrays} - or as a
+ * fixed-width code into a dictionary of the distinct strings, one, two or four bytes an identity - the
+ * three subclasses of {@code StringValueCatalogDictionaryBase} - whose code the arity journals as
+ * {@code old ^ new}, as it journals an integer.
  * */
 package org.halim.acse.arity.catalog.memory;

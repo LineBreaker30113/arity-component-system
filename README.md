@@ -1,4 +1,7 @@
-# Arity Component System
+# The Arity Component System Project
+
+I recently gained a feeling to set the Repository name to "The ACS Project" or alike,
+since it contains nearly 6 maven modules for separate applications.
 
 *Formerly Ontology Engine.*
 
@@ -95,8 +98,9 @@ to the database, after that the ACSES doesn't care if the database uses those cl
 only checks if the contracts (defined by interfaces) are satisfied. The ACSES can load any database
 folder: it opens the folder's persistence manager, which builds the core from the classes in the
 folder's own jar, so the database, not the ACSES, is the authority about implementation. A first
-ACSES exists: `acses boot`, `createDB`, `loadDB`, `components`, `storeDB`, `unloadDB`, `databases`
-and `shutdown`, served by a daemon over a Unix socket.
+ACSES exists: `acses boot`, `createDB`, `loadDB`, `components`, `storeDB`, `migrate`, `inspectAt`,
+`endInspection`, `inspectionState`, `waitInspectionReturn`, `acquire`, `release`, `unloadDB`,
+`databases`, `shutdown`, `Commit` and `beginSession`, served by a daemon over a Unix socket.
 
 #### OntoDirectory
 
