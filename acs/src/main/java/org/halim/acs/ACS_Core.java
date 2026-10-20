@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 
-public interface ACS_Core extends ACS_Journal.TraceableForUndoingRedoing {
+public interface ACS_Core extends ACS_Actor {
 
 int getArityCount();
 

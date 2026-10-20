@@ -153,7 +153,7 @@ inferences"; "we do not cut my words." *(2026-10-18)*
 
 - `acs/src/main/java/org/halim/acs/`, `acse/src/main/java/org/halim/acse/` and
   `acses/src/main/java/org/halim/acses/` — **the live work**: the contracts in `acs`, the classes in
-  `acse`, the service in `acses`, its access side in `acsess` and its daemon in `daemon`. A clean
+  `acse`, the service in `acses`, its access side in `acsess` and its daemon in `acsed`. A clean
   restart. Everything here is provisional and expected to change.
 - `deprecatedCode/` — `org.halim.ontology` with its tests, by package, outside the build. Its `legacy/`
   is the previous engine, kept for reference only. **Its javadoc is not authoritative.** It documents an architecture being deliberately abandoned

@@ -175,6 +175,8 @@ static final class ClassTable {
 	final ArrayList<String> warnings = new ArrayList<>();
 	/** Where the store is writing - "arity 2" - for the warnings. */
 	String place;
+	/** The root of the database the stored core belongs to, null for a core that has none: a file under it is stored relative to it, so the file follows a copy or a migration. */
+	Path root;
 
 	ClassTable() { numbers.defaultReturnValue(-1); }
 
@@ -216,6 +218,9 @@ static final class Output extends DataOutputStream implements ClassNumbering, In
 
 	@Override
 	public Path folder() { return folder; }
+
+	@Override
+	public Path root() { return table.root; }
 }
 
 /** What a load reads each file through, turning a class number back into a part. */

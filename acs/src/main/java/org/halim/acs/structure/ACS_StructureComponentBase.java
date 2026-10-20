@@ -1,13 +1,13 @@
 package org.halim.acs.structure;
 
 
-import org.halim.acs.ACS_Journal;
+import org.halim.acs.ACS_Actor;
 import org.halim.acs.ACS_Core;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public interface ACS_StructureComponentBase extends ACS_Journal.TraceableForUndoingRedoing {
+public interface ACS_StructureComponentBase extends ACS_Actor {
 
 int getArityCount();
 int getArityIdentity(int index);

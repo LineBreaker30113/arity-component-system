@@ -1,4 +1,4 @@
-package org.halim.acses.daemon;
+package org.halim.acses.acsed;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.halim.acs.ACS_Core;
@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * here because ACSES, not ACSE, makes this jar. The two must keep the same rules - what a contract is,
  * which places count - or a folder's two kinds of jar would disagree about what the program supplies.
  * */
-class ACSES_PersistenceJar {
+class ACSED_PersistenceJar {
 /** One date on every entry, so the same classes make the same jar. */
 static final LocalDateTime ENTRY_TIME = LocalDateTime.of(1980, 1, 1, 0, 0);
 /** An {@code L...;} in a descriptor or a signature, for the classes a class file names outside its class entries. */

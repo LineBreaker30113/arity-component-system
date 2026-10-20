@@ -3,6 +3,7 @@ package org.halim.acse.arity.catalog.file;
 import org.halim.acs.ACS_Core;
 import org.halim.acs.ACS_Journal;
 import org.halim.acs.ACS_PersistenceManager;
+import org.halim.acs.arity.ACS_ArityComponentBase;
 import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
 
 import java.io.DataInputStream;
@@ -19,7 +20,7 @@ import java.nio.file.Path;
  * A file per identity, its value the file's whole content: the bytes of the file another row names for the
  * identity. The naming is that row's - {@link org.halim.acse.arity.catalog.calculated.FilePathCatalogRow}
  * spreading identities over folders by their digits, {@link org.halim.acse.arity.catalog.calculated.HashedFilePathCatalogRow}
- * by a keyed permutation, or any row whose object is a path - so finding a file stays deterministic and
+ * by a keyed permutation, or any row whose object or string is a path - so finding a file stays deterministic and
  * this row only reads what is there. A value can be any size, and only the one read is in memory.
  * <p>
  * A missing file reads as null, the zero of an object row. Nothing here writes a file during a request:
@@ -39,9 +40,27 @@ public final ACS_ArityCatalogRowBase paths;
 public long lastIndex = -1;
 
 public FileContentCatalogRow(ACS_ArityCatalogRowBase paths) {
-	if(paths.getPreferredType() != PREFERRED_OBJECT) { throw new IllegalArgumentException(paths.getClass().getSimpleName() + " names no paths"); }
+	if(!namesPaths(paths)) { throw new IllegalArgumentException(paths.getClass().getSimpleName() + " names no paths"); }
 	this.paths = paths;
 }
+
+/**
+ * Built by name, as the core builds a row a request names, to sit at {@code row} of {@code arity}: its paths
+ * are the nearest row before it that holds objects or strings, so which row names the files is found here,
+ * not given by the request.
+ * */
+public FileContentCatalogRow(ACS_Core core, int arity, int row) { this(nearestPaths(core.getArity(arity), arity, row)); }
+
+static ACS_ArityCatalogRowBase nearestPaths(ACS_ArityComponentBase target, int arity, int row) {
+	for(int at = row - 1; at >= 0; at--) {
+		ACS_ArityCatalogRowBase candidate = target.getCatalogRow(at);
+		if(candidate != null && namesPaths(candidate)) { return candidate; }
+	}
+	throw new IllegalArgumentException("arity " + arity + " has no row of objects or strings before row " + row + " to name its files");
+}
+
+/** A row of objects, or of strings, which a string row answers as its objects too. */
+static boolean namesPaths(ACS_ArityCatalogRowBase row) { return row.getPreferredType() == PREFERRED_OBJECT || row.getPreferredType() == PREFERRED_STRING; }
 
 
 public Path pathOf(long identity) { return Path.of(paths.getObjectFor(identity).toString()); }

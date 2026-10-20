@@ -1,8 +1,10 @@
 package org.halim.acse.arity;
 
+import org.halim.acs.ACS_Actor;
 import org.halim.acs.ACS_Core;
 import org.halim.acs.ACS_Journal;
 import org.halim.acs.ACS_PersistenceManager;
+import org.halim.acs.ACS_Requestable;
 import org.halim.acs.arity.ACS_ArityComponentBase;
 import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
 import org.halim.acs.arity.catalog.StringValueCatalog.CodedStringValueCatalog;
@@ -11,6 +13,7 @@ import org.halim.acs.arity.sets.IdentitiesSet;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -51,6 +54,8 @@ public final ACS_Journal journal;
 final int[] params = new int[5];
 
 static final byte IDENTITY = 1, CATALOG = 2, WRITE = 3, TEXT = 4;
+/** Each request's method name by its code, read once from the marks, for the queries a read records. */
+static final String[] REQUESTS = requestNames(ACSE_ComposableArityCatalog.class);
 
 public ACSE_ComposableArityCatalog(IdentitiesSet occupied, ACS_Journal journal) {
 	this.occupied = occupied;
@@ -62,6 +67,10 @@ public ACSE_ComposableArityCatalog(IdentitiesSet occupied, ACS_Journal journal) 
 @Override
 public IdentitiesSet occupied() { return occupied; }
 
+/** The occupied identities in ascending order, as ints, for the outside: the set itself is an object, which no request gives. */
+@ACS_Requestable(10)
+public int[] occupiedIdentities() { return occupied.toList().toIntArray(); }
+
 @Override
 public void removeIf(int identity, String comment) {
 	int request = journal.beginRecordingActivity(this, "removeIf", params, comment);
@@ -72,6 +81,7 @@ public void removeIf(int identity, String comment) {
 	complete(request);
 }
 
+@ACS_Requestable(0)
 @Override
 public int catalogCount() { return catalogRows.size(); }
 
@@ -125,6 +135,7 @@ public void registerIf(int identity, String comment) {
  * difference of the stored bits, which undo and redo both apply as it is. A write that changed
  * nothing records no step.
  * */
+@ACS_Requestable(6)
 @Override
 public void setLongFor(int catalog, long identity, long value, String comment) {
 	ACS_ArityCatalogRowBase row = writable(catalog, identity, "a written long");
@@ -136,6 +147,7 @@ public void setLongFor(int catalog, long identity, long value, String comment) {
 	complete(request);
 }
 
+@ACS_Requestable(7)
 @Override
 public void setDoubleFor(int catalog, long identity, double value, String comment) {
 	ACS_ArityCatalogRowBase row = writable(catalog, identity, "a written double");
@@ -147,6 +159,7 @@ public void setDoubleFor(int catalog, long identity, double value, String commen
 	complete(request);
 }
 
+@ACS_Requestable(8)
 @Override
 public void setBooleanFor(int catalog, long identity, boolean value, String comment) {
 	ACS_ArityCatalogRowBase row = writable(catalog, identity, PREFERRED_BOOL, "a written boolean");
@@ -163,6 +176,7 @@ public void setBooleanFor(int catalog, long identity, boolean value, String comm
  * other string column as the two strings' chars XORed and the change in length. A string column holds
  * "" where nothing was written, so a null is refused rather than stored as a second empty value.
  * */
+@ACS_Requestable(9)
 @Override
 public void setStringFor(int catalog, long identity, String value, String comment) {
 	Objects.requireNonNull(value, "a string column holds \"\", not null");
@@ -277,6 +291,105 @@ void complete(int request) {
 	if(completed != request) { throw new IllegalStateException("began request " + request + ", completed " + completed); }
 }
 
+/**
+ * The requests, by code in the order of the marks: each reads its inputs, calls the public method, which
+ * keeps its checks, and writes the result. A read is recorded as a query: its method's name and inputs,
+ * then its answer, or its refusal; the occupied identities are answered by their count, not listed.
+ * */
+@Override
+public boolean request(DataInputStream parameters, DataOutputStream returns) throws IOException {
+	int code = parameters.readInt();
+	String query = null;
+	try {
+		switch(code) {
+			case 0 -> {
+				query = REQUESTS[code] + "()";
+				int count = catalogCount();
+				recordQuery(query, Integer.toString(count));
+				returns.writeInt(count);
+			}
+			case 1 -> {
+				int catalog = parameters.readInt();
+				long identity = parameters.readLong();
+				query = REQUESTS[code] + "(" + catalog + ", " + identity + ")";
+				int value = getIntFor(catalog, identity);
+				recordQuery(query, Integer.toString(value));
+				returns.writeInt(value);
+			}
+			case 2 -> {
+				int catalog = parameters.readInt();
+				long identity = parameters.readLong();
+				query = REQUESTS[code] + "(" + catalog + ", " + identity + ")";
+				long value = getLongFor(catalog, identity);
+				recordQuery(query, Long.toString(value));
+				returns.writeLong(value);
+			}
+			case 3 -> {
+				int catalog = parameters.readInt();
+				long identity = parameters.readLong();
+				query = REQUESTS[code] + "(" + catalog + ", " + identity + ")";
+				double value = getDoubleFor(catalog, identity);
+				recordQuery(query, Double.toString(value));
+				returns.writeDouble(value);
+			}
+			case 4 -> {
+				int catalog = parameters.readInt();
+				long identity = parameters.readLong();
+				query = REQUESTS[code] + "(" + catalog + ", " + identity + ")";
+				boolean value = getBooleanFor(catalog, identity);
+				recordQuery(query, Boolean.toString(value));
+				returns.writeBoolean(value);
+			}
+			case 5 -> {
+				int catalog = parameters.readInt();
+				long identity = parameters.readLong();
+				query = REQUESTS[code] + "(" + catalog + ", " + identity + ")";
+				String value = getStringFor(catalog, identity);
+				recordQuery(query, value);
+				ACS_Actor.writeString(returns, value);
+			}
+			case 6 -> setLongFor(parameters.readInt(), parameters.readLong(), parameters.readLong(), ACS_Actor.readString(parameters));
+			case 7 -> setDoubleFor(parameters.readInt(), parameters.readLong(), parameters.readDouble(), ACS_Actor.readString(parameters));
+			case 8 -> setBooleanFor(parameters.readInt(), parameters.readLong(), parameters.readBoolean(), ACS_Actor.readString(parameters));
+			case 9 -> setStringFor(parameters.readInt(), parameters.readLong(), ACS_Actor.readString(parameters), ACS_Actor.readString(parameters));
+			case 10 -> {
+				query = REQUESTS[code] + "()";
+				int[] identities = occupiedIdentities();
+				recordQuery(query, "int[" + identities.length + "]");
+				returns.writeInt(identities.length);
+				for(int identity : identities) { returns.writeInt(identity); }
+			}
+			case 11 -> returns.writeBoolean(ensureCapacity(parameters.readLong()));
+			default -> throw new IllegalArgumentException(getClass().getName() + " has no request " + code);
+		}
+	} catch(RuntimeException e) {
+		if(query != null) { recordQuery(query, "refused: " + reason(e)); }
+		ACS_Actor.writeString(returns, reason(e));
+		return false;
+	}
+	return true;
+}
+
+void recordQuery(String request, String response) {
+	journal.recordQueryRequest(request);
+	journal.recordQueryResponse(response);
+}
+
+/** What a refused request writes back: the error's message, or its class when it has none. */
+static String reason(RuntimeException e) { return e.getMessage() != null ? e.getMessage() : e.getClass().getName(); }
+
+/** The names of the class's requests by their codes, from the marks, so no name is a literal. */
+static String[] requestNames(Class<?> actor) {
+	ArrayList<String> names = new ArrayList<>();
+	for(Method method : actor.getMethods()) {
+		ACS_Requestable mark = method.getAnnotation(ACS_Requestable.class);
+		if(mark == null || method.isBridge()) { continue; }
+		while(names.size() <= mark.value()) { names.add(null); }
+		names.set(mark.value(), method.getName());
+	}
+	return names.toArray(new String[0]);
+}
+
 @Override
 public void doTraceableStep(byte stepPair, int[] params, int index) {
 	switch(stepPair) {
@@ -302,9 +415,16 @@ public int getPreferredType(int catalog) {
 }
 
 
-/** Every column follows the identity, and the answer is whether any of them had to move. */
+/**
+ * Every column follows the identity, and the answer is whether any of them had to move. The reach only
+ * grows here: an identity within it changes nothing and asks no column, since a chunked column asked for
+ * less than it reaches truncates; lowering is {@link #truncate}'s.
+ * */
+@ACS_Requestable(11)
 @Override
 public boolean ensureCapacity(long identity) {
+	if(identity < 0) { throw new IllegalArgumentException("identity " + identity + " is negative"); }
+	if(identity <= lastIndex) { return false; }
 	boolean grown = false;
 	for(ACS_ArityCatalogRowBase row : catalogRows) { if(row != null) { grown |= row.ensureCapacity(identity); } }
 	lastIndex = identity;
@@ -345,16 +465,21 @@ public static ACSE_ComposableArityCatalog loadFrom(ACS_Core core, ACS_Journal jo
 }
 
 
+@ACS_Requestable(1)
 @Override
 public int getIntFor(int catalog, long identity) { return catalogRows.get(catalog).getIntFor(identity); }
+@ACS_Requestable(2)
 @Override
 public long getLongFor(int catalog, long identity) { return catalogRows.get(catalog).getLongFor(identity); }
+@ACS_Requestable(3)
 @Override
 public double getDoubleFor(int catalog, long identity) { return catalogRows.get(catalog).getDoubleFor(identity); }
+@ACS_Requestable(4)
 @Override
 public boolean getBooleanFor(int catalog, long identity) { return catalogRows.get(catalog).getBooleanFor(identity); }
 @Override
 public Object getObjectFor(int catalog, long identity) { return catalogRows.get(catalog).getObjectFor(identity); }
+@ACS_Requestable(5)
 @Override
 public String getStringFor(int catalog, long identity) { return catalogRows.get(catalog).getStringFor(identity); }
 

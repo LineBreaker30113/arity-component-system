@@ -192,3 +192,65 @@ Agents append new inferences here (`CLAUDE.md` → Decisions).
   engine if and only if boot is the command and not anyone is running", now acsess launching acsed.
   Complements: "ACSES uses it for [the] database service" (`decisions.md`) keeps ACSES as the project
   holding both; "many ways of accepting requests" gains that boot chooses them. No conflict found.
+- A request is described by a line in a small string grammar, written by reflection from the methods the
+  implementation marks, so no name is a literal; acsed gathers a database's lines into `acse-language.txt`
+  at its root, which acsess reads. *(Author, 2026-10-20: "Go with (b), the string grammar"; "Only
+  problem with b is, we need to automatically read the method names from the code instead of string
+  literals."; "The implementation meant to define the requestables. I suggest a
+  "getRequestables(DataOutputStream dos)" that describes the available request options."; "The file
+  that describes commands can be in the database root named as "acse-language.*" or alike.")*
+- acsess translates names into codes; a probe answers where an actor's class sits in the file, which is
+  rewritten only when a new class comes; acsed reads no name to pick a method. *(Author, 2026-10-20: "I
+  suggest a "probe" request which make the instance load its method data from the file. So file is
+  rewritten only when a new class is imported."; "I decided the daemon is not responsible of translating
+  the commands, they come as raw data, and the ACSESS translates commands to data."; ["The method name is
+  a huge No." means] "the fact ACSED is not responsible with reading names to check which method.")*
+  Commons: "can only request" (`summaries/journal-and-undo.md`), acsess being the client.
+- A request's address is plain ints: the subject, a database's index or acsed; within a database the
+  type, 0 the core, -128 the journal, 1 an arity, 2 a structure, 4 a procedure, 9 an arity row.
+  *(Author, 2026-10-20: "0 means core, -128 means journal, 1 is for arity, 2 for structures, 4 for
+  procedures, 9 for arity rows"; "we can simply use positive values for database index and negative
+  values for ACSED commands."; "Also commands can be long, we do not need to limit ourselves to bytes.
+  Why optimize the command length for bytes of data?")*
+- A database is an index, listed with its name and folder in a file acsed writes; acsess turns a name
+  into its index; a database's name holds no colon. *(Author, 2026-10-20: "Data base must also be an
+  index, so a file listing data base names with paths with their indexes are the right choice."; "So the
+  acsess reads the data base name and gives the index to the acsed. ACSED meant to be a pure server as I
+  said before, and ACSESS is the command line tool to connect to it locally."; "Instead we forbid the
+  users to use `:` on the database name")*
+- acsed's own commands are not journaled and do not go through `ACS_Actor`. *(Author, 2026-10-20: "ACSED
+  will not be journalled."; "ACSED commands do not need to go through the ACS_Actor, right?")*
+- Requests do the checks and call checkless methods; for now the public methods keep their checks.
+  *(Author, 2026-10-19: "One important detail, there must be checkless methods and requests must do the
+  checks and call those methods."; 2026-10-20: "keep the check in the public methods for now, in
+  development extra error check doesn't harm.")* Commons: "Check-and-call-checkless pattern"
+  (`summaries/journal-and-undo.md`).
+- A row a request makes keeps its file at the database's root, `arity-<k>-row-<j>.bin`, or
+  `arity-<k>-row-<j>plus.bin` for one file of several rows; a store keeps its path relative to the root,
+  and a load copies the stored file to the loaded database's root. *(Author, 2026-10-19: "Use a path
+  relative to database root, created automatically, calculated by arity and row index like data.";
+  "Having a separate file for every type of record is better in general, but we still allowed a single
+  file for multi row option, we can append its name "plus" as in `arity-<k>-row-<j>plus.bin`.";
+  2026-10-20: "the file of the file row moves to the version on save, so the root also serves as a
+  temporal place. Thus copy them to the database root on load.")*
+- A removed component leaves a tombstone rather than shifting the pointers, which also allows a
+  compacting load. *(Author, 2026-10-20: "in case of an Component removal, we need to either shift the
+  pointers or to keep tombstones. I will go with tombstones, it also allows loading with a compacting.
+  Lastly, since in the intended (for the project vision) use case there will be at most 2^20 arities (of
+  2^(22 to 28) identities), it is not going to be a huge problem.")*
+- Which row a file content row takes its paths from is ACSE's to find, not an input of the request.
+  *(Author, 2026-10-20: "The "pathRow" is the responsibility of the ACSE, so it shouldn't leak to the
+  command.")*
+- A client gets a new record's index by capturing it; `registerIf` is no request. *(Author, 2026-10-20:
+  "`registerIf` must go, and client must call capture which returns an index.")* Commons: "The core is
+  the only caller of removal requests from outside" (`summaries/identities-and-removal.md`).
+- The core and the journal are addressed by the database's name, `main:`, and also as `main:core` and
+  `main:journal`. *(Author, 2026-10-20: "I thought both of them [the core and the journal] can be
+  expressed as the name of the database"; "Also allow the `main:core` and `main:journal` actions for
+  clarity.")*
+- Separate projects for ACSESS and ACSED are a goal. *(Author, 2026-10-20: "making a separate maven
+  module for the daemon is one of the (future) goals."; "I meant separate projects for ACSESS and ACSED
+  is a goal.")*
+- A read through a request is recorded in the journal as a query, and `addCatalogRow` takes a row class
+  by its full name. *(Author, 2026-10-19, on reads written to the journal as queries: "Yes, record
+  them"; picking Claude's option "Full class name" for how `addCatalogRow` picks its row class.)*

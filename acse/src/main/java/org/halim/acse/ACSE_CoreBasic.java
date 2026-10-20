@@ -3,10 +3,12 @@ package org.halim.acse;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import org.halim.acs.ACS_Actor;
 import org.halim.acs.ACS_Core;
 import org.halim.acs.ACS_DescriptionManager;
 import org.halim.acs.ACS_Journal;
 import org.halim.acs.ACS_PersistenceManager;
+import org.halim.acs.ACS_Requestable;
 import org.halim.acs.arity.ACS_ArityComponentBase;
 import org.halim.acse.arity.ACSE_ComposableArityCatalog;
 import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
@@ -16,6 +18,9 @@ import org.halim.acs.structure.ACS_StructureComponentBase;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -34,6 +39,12 @@ public final ACS_Journal journal;
 final ArrayList<ACS_ArityComponentBase> arities = new ArrayList<>();
 final ArrayList<ACS_StructureComponentBase> structures = new ArrayList<>();
 final int[] params = new int[2];
+/**
+ * The database's root, the folder this core's stores go into: the parent of the first folder it stores
+ * into or loads from, so a copy stored elsewhere does not move it. A row made by name keeps its file here,
+ * and a store keeps a file under it relative to it. Null until then.
+ * */
+Path root;
 
 /** The descriptions are kept outside the journal: undo leaves them alone, and a removed component keeps its own. */
 String coreDescription;
@@ -80,6 +91,7 @@ public int getStructureCount() { return structures.size(); }
 public ACS_StructureComponentBase getStructure(int structure) { return structures.get(structure); }
 
 
+@ACS_Requestable(0)
 @Override
 public void addArity(String description, String comment) { addArity(new ACSE_ComposableArityCatalog(new IdentitiesSetNegativeInt(-1), journal), description, comment); }
 
@@ -88,24 +100,69 @@ public void addArity(ACS_ArityComponentBase acseArityComponent, String descripti
 
 @Override
 public int addCatalogRow(int arity, ACS_ArityCatalogRowBase row, String description, String comment) {
+	int catalog = composable(arity).addCatalogRow(row, comment);
+	catalogRowDescriptions.put(rowKey(arity, catalog), description);
+	return catalog;
+}
+
+/**
+ * Builds the row by its full class name, through this core's own class loader, so a loaded database finds
+ * the row classes its folder carries, by the first public constructor it has of three: one taking
+ * {@code (ACS_Core core, int arity, int row)}, the arity and the slot the row will sit at, for a row that
+ * finds what it needs in the arity itself, as a file content row finds its paths; one taking a {@link Path},
+ * which gets {@code arity-<k>-row-<j>.bin} at the database's root, which every store copies into its folder
+ * and a load copies back; one taking nothing. A row needing anything else is refused, and so is a file row before the core has a
+ * root, and any row during an inspection, all before anything is built, so a refusal leaves no file behind.
+ * */
+@ACS_Requestable(1)
+public int addCatalogRow(int arity, String className, String description, String comment) {
+	ACS_ArityComponentBase target = composable(arity);
+	if(journal.isInspecting()) { throw new IllegalStateException("an inspection stands; call endInspection before recording"); }
+	Class<?> rowClass;
+	try { rowClass = Class.forName(className, false, getClass().getClassLoader()); }
+	catch(ClassNotFoundException e) { throw new IllegalArgumentException("no class " + className + " is on this database's class path"); }
+	if(!ACS_ArityCatalogRowBase.class.isAssignableFrom(rowClass)) { throw new IllegalArgumentException(className + " is no catalog row"); }
+	Constructor<?> inArity = constructorOf(rowClass, ACS_Core.class, int.class, int.class), byFile = constructorOf(rowClass, Path.class), plain = constructorOf(rowClass);
+	if(inArity == null && byFile == null && plain == null) { throw new IllegalArgumentException(className + " takes none of (ACS_Core, int, int), a Path or nothing, so it cannot be built by name"); }
+	if(inArity == null && byFile != null && root == null) { throw new IllegalStateException("this core has no database root yet: a file row is made after its first store or load"); }
+	int slot = target.catalogCount();
+	ACS_ArityCatalogRowBase row;
+	try { row = (ACS_ArityCatalogRowBase) (inArity != null ? inArity.newInstance(this, arity, slot) : byFile != null ? byFile.newInstance(root.resolve(rowFile(arity, slot))) : plain.newInstance()); }
+	catch(InvocationTargetException e) {
+		if(e.getCause() instanceof RuntimeException failure) { throw failure; }
+		if(e.getCause() instanceof IOException failure) { throw new UncheckedIOException(failure.getMessage(), failure); }
+		throw new IllegalStateException("cannot build " + className + ": " + e.getCause(), e.getCause());
+	} catch(ReflectiveOperationException e) { throw new IllegalArgumentException("cannot build " + className + ": " + e, e); }
+	return addCatalogRow(arity, row, description, comment);
+}
+
+/** The arity, refused unless it is a composable one, the only kind that takes catalog rows. */
+ACSE_ComposableArityCatalog composable(int arity) {
 	ACS_ArityComponentBase target = arities.get(arity);
 	if(!(target instanceof ACSE_ComposableArityCatalog composable)) {
 		throw new UnsupportedOperationException("arity " + arity + " is " + (target == null ? "removed" : target.getClass().getSimpleName() + ", which takes no catalog rows"));
 	}
-	int catalog = composable.addCatalogRow(row, comment);
-	catalogRowDescriptions.put(rowKey(arity, catalog), description);
-	return catalog;
+	return composable;
+}
+
+/** The public constructor taking exactly {@code parameters}, or null. */
+static Constructor<?> constructorOf(Class<?> type, Class<?>... parameters) {
+	try { return type.getConstructor(parameters); }
+	catch(NoSuchMethodException e) { return null; }
 }
 
 @Override
 public void addStructure(ACS_StructureComponentBase acseArityComponent, String description, String comment) { addComponent(structures, acseArityComponent, structureDescriptions, description, STRUCTURE, "addStructure", comment); }
 
+@ACS_Requestable(2)
 @Override
 public void removeArity(int arity, String comment) { removeComponent(arities, arity, ARITY, "removeArity", comment); }
 
+@ACS_Requestable(3)
 @Override
 public void removeStructure(int structure, String comment) { removeComponent(structures, structure, STRUCTURE, "removeStructure", comment); }
 
+@ACS_Requestable(4)
 @Override
 public void delegateRemoval(int arity, int instance, String comment) {
 	if(!arities.get(arity).occupied().contains(instance)) { return; }
@@ -120,6 +177,7 @@ public void delegateRemoval(int arity, int instance, String comment) {
 	complete(request);
 }
 
+@ACS_Requestable(5)
 @Override
 public long captureIdentity(int arity, String comment) {
 	int request = journal.beginRecordingActivity(this, "captureIdentity", params, comment);
@@ -137,6 +195,7 @@ public long captureIdentity(int arity, String comment) {
 	return identity;
 }
 
+@ACS_Requestable(6)
 @Override
 public long captureIdentity(int arity, long identity, String comment) {
 	ACS_ArityComponentBase target = arities.get(arity);
@@ -222,7 +281,9 @@ long rowKey(int arity, int row) {
 public List<String> store(Path folder) throws IOException {
 	checkBetweenRequests("store");
 	Files.createDirectories(folder);
+	if(root == null) { root = folder.toAbsolutePath().normalize().getParent(); }
 	ACSE_PersistenceManagerBasic.ClassTable table = new ACSE_PersistenceManagerBasic.ClassTable();
+	table.root = root;
 	// The slots' classes first, so they keep the low numbers whatever their parts name.
 	IntArrayList aritySlots = slotNumbers(arities, "arity", table), structureSlots = slotNumbers(structures, "structure", table);
 	for(int slot = 0; slot < arities.size(); slot++) {
@@ -290,6 +351,7 @@ public void load(Path folder) throws IOException {
 			int number = structureSlots.getInt(slot);
 			structures.add(number < 0 ? null : ACSE_PersistenceManagerBasic.read(folder.resolve(structureFile(slot)), classes, dis -> ACSE_PersistenceManagerBasic.build(classes[number], ACS_StructureComponentBase.class, this, journal, dis)));
 		}
+		root = folder.toAbsolutePath().normalize().getParent();
 	} catch(IOException | RuntimeException | Error e) {
 		arities.clear();
 		structures.clear();
@@ -401,6 +463,8 @@ static void replace(HashMap<String, String> descriptions, HashMap<String, String
 
 static String arityFile(int slot) { return "arity-" + slot + ".bin"; }
 static String structureFile(int slot) { return "structure-" + slot + ".bin"; }
+/** A row made by name keeps its values here, at the database's root; a single file holding several rows would be {@code arity-<k>-row-<j>plus.bin}. */
+static String rowFile(int arity, int row) { return "arity-" + arity + "-row-" + row + ".bin"; }
 
 
 <T> void addComponent(ArrayList<T> list, T component, ArrayList<String> descriptions, String description, byte pair, String methodName, String comment) {
@@ -422,6 +486,28 @@ static String structureFile(int slot) { return "structure-" + slot + ".bin"; }
 	params[1] = journal.recordObject(removed);
 	journal.recordActivityStep((byte) -pair, 2);
 	complete(request);
+}
+
+/** The requests, by code in the order of the marks: each reads its inputs, calls the public method, which keeps its checks, and writes the result. */
+@Override
+public boolean request(DataInputStream parameters, DataOutputStream returns) throws IOException {
+	int code = parameters.readInt();
+	try {
+		switch(code) {
+			case 0 -> addArity(ACS_Actor.readString(parameters), ACS_Actor.readString(parameters));
+			case 1 -> returns.writeInt(addCatalogRow(parameters.readInt(), ACS_Actor.readString(parameters), ACS_Actor.readString(parameters), ACS_Actor.readString(parameters)));
+			case 2 -> removeArity(parameters.readInt(), ACS_Actor.readString(parameters));
+			case 3 -> removeStructure(parameters.readInt(), ACS_Actor.readString(parameters));
+			case 4 -> delegateRemoval(parameters.readInt(), parameters.readInt(), ACS_Actor.readString(parameters));
+			case 5 -> returns.writeLong(captureIdentity(parameters.readInt(), ACS_Actor.readString(parameters)));
+			case 6 -> returns.writeLong(captureIdentity(parameters.readInt(), parameters.readLong(), ACS_Actor.readString(parameters)));
+			default -> throw new IllegalArgumentException(getClass().getName() + " has no request " + code);
+		}
+	} catch(RuntimeException e) {
+		ACS_Actor.writeString(returns, ACSE_JournalBasic.reason(e));
+		return false;
+	}
+	return true;
 }
 
 @Override

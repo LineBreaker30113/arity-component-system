@@ -183,9 +183,21 @@ static Path folderOf(DataInputStream dis) {
 	return in.folder();
 }
 
-/** The stream of a store or a load: it knows the folder its file is in. */
+/**
+ * The root of the database a store writes from, as its core gives it, so a part keeping a file under that
+ * root can store the file's path relative to it, and the file follows its database to a copy or a
+ * migration; null for a core without one.
+ * */
+static Path rootOf(DataOutputStream dos) {
+	if(!(dos instanceof InFolder in)) { throw new IllegalArgumentException("a part's root is known only inside a store"); }
+	return in.root();
+}
+
+/** The stream of a store or a load: it knows the folder its file is in, and a store the root of its core's database. */
 interface InFolder {
 	Path folder();
+	/** Null for a load, and for a core without a root. */
+	default Path root() { return null; }
 }
 
 /** The stream a store writes each file through: it gives each part's class its number in the indexer. */

@@ -195,20 +195,22 @@ void write(int page, Page content) {
 /** The file, the entries a page, the page index, and the file copied into the store's folder. */
 @Override
 public boolean saveTo(DataOutputStream dos) throws IOException {
-	ACS_PersistenceManager.writeString(dos, file.toString());
+	Path stored = MappedRecordFile.storedPathOf(dos, file);
+	ACS_PersistenceManager.writeString(dos, stored.toString());
 	dos.writeInt(entriesPerPage);
 	pages.saveTo(dos);
-	MappedRecordFile.copyDurably(file, MappedRecordFile.copyOf(ACS_PersistenceManager.folderOf(dos), file));
+	MappedRecordFile.copyDurably(file, MappedRecordFile.copyOf(ACS_PersistenceManager.folderOf(dos), stored));
 	return true;
 }
 
 /** Rebuilds what {@link #saveTo} wrote, the store's copy put back at the file's place. */
 public static StringValueCatalogFilePages loadFrom(ACS_Core core, ACS_Journal journal, DataInputStream dis) throws IOException {
-	Path file = Path.of(ACS_PersistenceManager.readString(dis)).toAbsolutePath().normalize();
+	Path stored = Path.of(ACS_PersistenceManager.readString(dis));
+	Path file = MappedRecordFile.loadedPathOf(dis, stored).toAbsolutePath().normalize();
 	int entriesPerPage = dis.readInt();
 	if(entriesPerPage < 1 || entriesPerPage > MOST_ENTRIES) { throw new IOException(file + " was stored with " + entriesPerPage + " entries a page"); }
 	IntegerValueCatalogArraysInt pages = IntegerValueCatalogArraysInt.loadFrom(core, journal, dis);
-	Path copy = MappedRecordFile.copyOf(ACS_PersistenceManager.folderOf(dis), file);
+	Path copy = MappedRecordFile.copyOf(ACS_PersistenceManager.folderOf(dis), stored);
 	if(file.getParent() != null) { Files.createDirectories(file.getParent()); }
 	Files.copy(copy, file, StandardCopyOption.REPLACE_EXISTING);
 	return new StringValueCatalogFilePages(file, entriesPerPage, pages, false);

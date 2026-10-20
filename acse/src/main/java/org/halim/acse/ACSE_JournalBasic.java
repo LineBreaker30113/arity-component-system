@@ -1,11 +1,15 @@
 package org.halim.acse;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.halim.acs.ACS_Actor;
 import org.halim.acs.ACS_Core;
 import org.halim.acs.ACS_Journal;
+import org.halim.acs.ACS_Requestable;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -29,9 +33,13 @@ int booleanCount;
 final ArrayList<Object> objects = new ArrayList<>();
 /** [dataStart, request] per run of steps by one request; a new run opens whenever the recording request changes. */
 final IntArrayList segments = new IntArrayList();
-/** [transaction, firstSegment, actor, parent, booleansStart, objectsStart] per request, nested ones included; parent is -1 for a client request. */
+/** [transaction, firstSegment, actor, parent, booleansStart, objectsStart] per request, nested ones included; parent is -1 for a client request, actor as {@link #actorIdOf} packs it. */
 final IntArrayList requests = new IntArrayList();
 static final int FIELDS = 6, TRANSACTION = 0, SEGMENT = 1, ACTOR = 2, PARENT = 3, BOOLEANS = 4, OBJECTS = 5;
+/** An actor's type, as a request's address names it; the journal's own, -128, never records. */
+static final byte CORE = 0, ARITY = 1, STRUCTURE = 2;
+/** Each request's method name by its code, read once from the marks, for the queries a read records. */
+static final String[] REQUESTS = requestNames(ACSE_JournalBasic.class);
 /** [methodName, comment] per request. */
 final ArrayList<String> texts = new ArrayList<>();
 /** First request of each transaction. */
@@ -57,7 +65,7 @@ public ACSE_JournalBasic(ACS_Core core) { this.core = core; }
 
 
 @Override
-public int beginRecordingActivity(TraceableForUndoingRedoing actor, String methodName, Object paramsMemory, String comment) {
+public int beginRecordingActivity(ACS_Actor actor, String methodName, Object paramsMemory, String comment) {
 	checkNotReplaying();
 	if(returnPoint >= 0) { throw new IllegalStateException("an inspection at request " + inspected + " stands; call endInspection before recording"); }
 	int actorId = actorIdOf(actor);
@@ -174,6 +182,7 @@ public int recordQueryResponse(String description) {
 }
 
 
+@ACS_Requestable(0)
 @Override
 public void undoLastActivity() {
 	checkIdle();
@@ -181,6 +190,7 @@ public void undoLastActivity() {
 	moveTo(done - 1);
 }
 
+@ACS_Requestable(1)
 @Override
 public void redoLastActivity() {
 	checkIdle();
@@ -189,6 +199,7 @@ public void redoLastActivity() {
 }
 
 /** Leaves the state right after the transaction holding {@code activityIndex}. */
+@ACS_Requestable(2)
 @Override
 public void undoUntilActivityIndex(int activityIndex) {
 	checkIdle();
@@ -198,6 +209,7 @@ public void undoUntilActivityIndex(int activityIndex) {
 }
 
 /** Leaves the state right after the transaction holding {@code activityIndex}. */
+@ACS_Requestable(3)
 @Override
 public void redoUntilActivityIndex(int activityIndex) {
 	checkIdle();
@@ -211,6 +223,7 @@ public void redoUntilActivityIndex(int activityIndex) {
  * needed. The first inspectAt keeps the point it left; a later one, and undo or redo meanwhile, move
  * without changing it, so the way back stays one call.
  * */
+@ACS_Requestable(4)
 @Override
 public void inspectAt(int activityIndex) {
 	checkIdle();
@@ -220,6 +233,7 @@ public void inspectAt(int activityIndex) {
 	inspected = activityIndex;
 }
 
+@ACS_Requestable(5)
 @Override
 public void endInspection() {
 	checkIdle();
@@ -228,12 +242,15 @@ public void endInspection() {
 	returnPoint = -1;
 }
 
+@ACS_Requestable(6)
 @Override
 public boolean isInspecting() { return returnPoint >= 0; }
 
+@ACS_Requestable(7)
 @Override
 public int getCurrentActivityIndex() { return done < transactionCount() ? transactions.getInt(done) - 1 : requestCount() - 1; }
 
+@ACS_Requestable(8)
 @Override
 public int getPendingActivityCount() { return requestCount() - getCurrentActivityIndex() - 1; }
 
@@ -255,7 +272,7 @@ void replayTransaction(int transaction, boolean undo) {
 }
 
 void replaySegment(int segment, boolean undo) {
-	TraceableForUndoingRedoing actor = actorOf(field(segments.getInt(2 * segment + 1), ACTOR));
+	ACS_Actor actor = actorOf(field(segments.getInt(2 * segment + 1), ACTOR));
 	int at = segments.getInt(2 * segment);
 	int end = segmentEnd(segment);
 	int[] elements = data.elements();
@@ -302,7 +319,7 @@ void appendTransaction(StringBuilder line, int transaction) {
 	for(int request = firstRequest; request < endRequest; request++) {
 		comma(line, request - firstRequest);
 		line.append("{\"request\":").append(request).append(",\"parent\":").append(field(request, PARENT))
-			.append(",\"actor\":").append(field(request, ACTOR)).append(",\"method\":");
+			.append(",\"type\":").append(field(request, ACTOR) >> 24).append(",\"index\":").append(field(request, ACTOR) & 0xFFFFFF).append(",\"method\":");
 		string(line, texts.get(2 * request));
 		line.append(",\"comment\":");
 		string(line, texts.get(2 * request + 1));
@@ -362,18 +379,97 @@ static void string(StringBuilder line, String string) {
 static String className(Object object) { return object == null ? null : object.getClass().getName(); }
 
 
-/** Arity k is -(k + 1), the core is 0, structure k is k + 1. */
-int actorIdOf(TraceableForUndoingRedoing actor) {
-	if(actor == core) { return 0; }
-	for(int i = 0; i < core.getArityCount(); i++) { if(core.getArity(i) == actor) { return -i - 1; } }
-	for(int i = 0; i < core.getStructureCount(); i++) { if(core.getStructure(i) == actor) { return i + 1; } }
+/** The actor's type in the high byte and its slot in the low three, so one int per request holds both: the core is 0, arity k is 1 << 24 | k, structure k is 2 << 24 | k. */
+int actorIdOf(ACS_Actor actor) {
+	if(actor == core) { return actorId(CORE, 0); }
+	for(int i = 0; i < core.getArityCount(); i++) { if(core.getArity(i) == actor) { return actorId(ARITY, i); } }
+	for(int i = 0; i < core.getStructureCount(); i++) { if(core.getStructure(i) == actor) { return actorId(STRUCTURE, i); } }
 	throw new IllegalArgumentException(className(actor) + " is not added to the core");
 }
 
-TraceableForUndoingRedoing actorOf(int actor) {
-	if(actor < 0) { return core.getArity(-actor - 1); }
-	if(actor > 0) { return core.getStructure(actor - 1); }
-	return core;
+static int actorId(byte type, int slot) {
+	if(slot >= 1 << 24) { throw new IllegalArgumentException("slot " + slot + " does not fit the three bytes an actor id gives it"); }
+	return type << 24 | slot;
+}
+
+ACS_Actor actorOf(int actor) {
+	int slot = actor & 0xFFFFFF;
+	return switch((byte) (actor >> 24)) {
+		case CORE -> core;
+		case ARITY -> core.getArity(slot);
+		case STRUCTURE -> core.getStructure(slot);
+		default -> throw new IllegalStateException("actor id " + actor + " names no type");
+	};
+}
+
+/**
+ * The requests, by code in the order of the marks. A read is recorded as a query: its method's name and
+ * inputs, then its answer, or its refusal. A write during an inspection is refused where it is recorded,
+ * in {@link #beginRecordingActivity}, so nothing more is checked here; undo and redo move during one, as
+ * {@link #inspectAt} lets them.
+ * */
+@Override
+public boolean request(DataInputStream parameters, DataOutputStream returns) throws IOException {
+	int code = parameters.readInt();
+	String query = null;
+	try {
+		switch(code) {
+			case 0 -> undoLastActivity();
+			case 1 -> redoLastActivity();
+			case 2 -> undoUntilActivityIndex(parameters.readInt());
+			case 3 -> redoUntilActivityIndex(parameters.readInt());
+			case 4 -> inspectAt(parameters.readInt());
+			case 5 -> endInspection();
+			case 6 -> {
+				query = REQUESTS[code] + "()";
+				boolean inspecting = isInspecting();
+				recordQuery(query, Boolean.toString(inspecting));
+				returns.writeBoolean(inspecting);
+			}
+			case 7 -> {
+				query = REQUESTS[code] + "()";
+				int index = getCurrentActivityIndex();
+				recordQuery(query, Integer.toString(index));
+				returns.writeInt(index);
+			}
+			case 8 -> {
+				query = REQUESTS[code] + "()";
+				int pending = getPendingActivityCount();
+				recordQuery(query, Integer.toString(pending));
+				returns.writeInt(pending);
+			}
+			default -> throw new IllegalArgumentException(getClass().getName() + " has no request " + code);
+		}
+	} catch(RuntimeException e) {
+		if(query != null) { recordQuery(query, "refused: " + reason(e)); }
+		ACS_Actor.writeString(returns, reason(e));
+		return false;
+	}
+	return true;
+}
+
+/** The journal records no steps of its own: a journal traced as an actor is a timeline of several branches, which is out of scope. */
+@Override
+public void doTraceableStep(byte stepPair, int[] params, int index) { throw new UnsupportedOperationException("This feature is out of MVP"); }
+
+void recordQuery(String request, String response) {
+	recordQueryRequest(request);
+	recordQueryResponse(response);
+}
+
+/** What a refused request writes back: the error's message, or its class when it has none. */
+static String reason(RuntimeException e) { return e.getMessage() != null ? e.getMessage() : e.getClass().getName(); }
+
+/** The names of the class's requests by their codes, from the marks, so no name is a literal. */
+static String[] requestNames(Class<?> actor) {
+	ArrayList<String> names = new ArrayList<>();
+	for(Method method : actor.getMethods()) {
+		ACS_Requestable mark = method.getAnnotation(ACS_Requestable.class);
+		if(mark == null || method.isBridge()) { continue; }
+		while(names.size() <= mark.value()) { names.add(null); }
+		names.set(mark.value(), method.getName());
+	}
+	return names.toArray(new String[0]);
 }
 
 /** Reuses the last segment when nothing was recorded in it. */

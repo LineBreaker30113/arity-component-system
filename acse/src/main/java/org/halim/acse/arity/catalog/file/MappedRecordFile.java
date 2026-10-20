@@ -37,9 +37,11 @@ import java.util.HashMap;
  * past the file's end reads as zero. The default is 2^20 records a mapping: a process gets about 65530
  * mappings on Linux, and at this length 2^31 identities take 2048 of them.
  * <p>
- * Every store copies the file into the store's folder, under {@value #FILES} at the file's own path, so
- * each generation keeps the file as it was. A load copies it back to the file's place and maps it: a read
- * is a load from the mapping, never a copy. The copy put back is a new file, so a core still mapping the
+ * Every store copies the file into the store's folder, under {@value #FILES} at the file's own path - its
+ * path relative to the database's root when it lies under that root - so each generation keeps the file as
+ * it was. A load copies it back to the file's place - under the loaded database's root for a relative one,
+ * so a file follows its database to a copy or a migration - and maps it: a read is a load from the mapping,
+ * never a copy. The copy put back is a new file, so a core still mapping the
  * old one keeps mapping the old one, apart from the loaded core, and never reads past an end the load
  * moved. {@link #create} refuses a file that already holds data, so a new catalog never takes over a file
  * it did not make.
@@ -140,14 +142,33 @@ static MappedRecordFile opened(MappedRecordFile opened) {
 	return opened;
 }
 
-/** Where a store in {@code folder} keeps its copy of {@code file}: under {@value #FILES}, at the file's absolute path less its root. */
+/**
+ * Where a store in {@code folder} keeps its copy of {@code file}: under {@value #FILES}, at the file's path
+ * relative to its database's root when it is stored so, else at its absolute path less the file system's root.
+ * */
 public static Path copyOf(Path folder, Path file) {
+	if(!file.isAbsolute()) { return folder.resolve(FILES).resolve(file.toString()); }
 	Path absolute = file.toAbsolutePath().normalize();
 	Path root = absolute.getRoot();
 	return folder.resolve(FILES).resolve((root == null ? absolute : root.relativize(absolute)).toString());
 }
 
 /** Copies the file and forces the copy to the disk, as the store forces its own files. */
+/**
+ * The path a store writes for {@code file}: relative to the root of the database being stored when the file
+ * lies under it, so the file follows its database to a copy or a migration; else the file's own, absolute.
+ * */
+static Path storedPathOf(DataOutputStream dos, Path file) {
+	Path absolute = file.toAbsolutePath().normalize();
+	Path root = ACS_PersistenceManager.rootOf(dos);
+	return root != null && absolute.startsWith(root) ? root.relativize(absolute) : absolute;
+}
+
+/** Where a load puts a stored file: a relative path under the loaded database's root, the folder the stored folder sits in; an absolute one where it says. */
+static Path loadedPathOf(DataInputStream dis, Path stored) {
+	return stored.isAbsolute() ? stored : ACS_PersistenceManager.folderOf(dis).toAbsolutePath().getParent().resolve(stored).normalize();
+}
+
 public static void copyDurably(Path from, Path to) throws IOException {
 	if(to.getParent() != null) { Files.createDirectories(to.getParent()); }
 	try(FileChannel in = FileChannel.open(from, StandardOpenOption.READ);
@@ -253,12 +274,13 @@ static void zero(ByteBuffer mapping, int from, int to) {
  * write their layout.
  * */
 public void writeLayout(DataOutputStream dos) throws IOException {
-	ACS_PersistenceManager.writeString(dos, file.toString());
+	Path stored = storedPathOf(dos, file);
+	ACS_PersistenceManager.writeString(dos, stored.toString());
 	dos.writeInt(fields.length);
 	dos.write(fields);
 	dos.writeInt(chunking.fullLength());
 	if(copiedBy != dos) {
-		copyDurably(file, copyOf(ACS_PersistenceManager.folderOf(dos), file));
+		copyDurably(file, copyOf(ACS_PersistenceManager.folderOf(dos), stored));
 		copiedBy = dos;
 	}
 }
@@ -268,12 +290,12 @@ public void writeLayout(DataOutputStream dos) throws IOException {
  * Every chunking splits uniformly - each chunk below the last is full - so the length is the whole of it.
  * */
 public static MappedRecordFile openLayout(DataInputStream dis) throws IOException {
-	Path file = Path.of(ACS_PersistenceManager.readString(dis));
+	Path stored = Path.of(ACS_PersistenceManager.readString(dis));
 	byte[] fields = new byte[dis.readInt()];
 	dis.readFully(fields);
 	int length = dis.readInt();
 	LongChunkInt chunking = Integer.bitCount(length) == 1 && length > 1 ? new LongChunkInt.LongChunkIntPowerOfTwo(Integer.numberOfTrailingZeros(length)) : new LongChunkInt.LongChunkIntUniform(length);
-	return loadCopy(file, chunking, fields, copyOf(ACS_PersistenceManager.folderOf(dis), file), dis);
+	return loadCopy(loadedPathOf(dis, stored), chunking, fields, copyOf(ACS_PersistenceManager.folderOf(dis), stored), dis);
 }
 
 /** Refuses a layout other than the one a catalog class stores. */

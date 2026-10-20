@@ -1,7 +1,7 @@
 package org.halim.acs.arity;
 
+import org.halim.acs.ACS_Actor;
 import org.halim.acs.ACS_Core;
-import org.halim.acs.ACS_Journal;
 import org.halim.acs.ACS_PersistenceManager;
 import org.halim.acs.arity.catalog.ACS_ArityCatalogRowBase;
 import org.halim.acs.arity.sets.IdentitiesSet;
@@ -44,7 +44,7 @@ import java.io.IOException;
  * buys: an arity mints an identity once and every column follows in one call, with no chance of two
  * of them disagreeing about how far they reach.
  * */
-public interface ACS_ArityComponentBase extends ACS_Journal.TraceableForUndoingRedoing {
+public interface ACS_ArityComponentBase extends ACS_Actor {
 
 /**
  * Which identities exist. A catalog is total - it answers for every identity, and a stored slot

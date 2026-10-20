@@ -33,14 +33,15 @@ multi-arity. An "N arity structure builder", or "Structure of Arrays" builder.
 
 ## Goal
 
-An ACS database is managed with commands. ACSES is one program: `acses boot` starts the service if
-none is running, and every other command is a request to the running one, failing fast if there is
-none.
+An ACS database is managed with commands. ACSES is two programs: `acsess`, the command line, and
+`acsed`, the daemon it starts: `acsess boot` starts acsed if none is running, and every other command
+is a request to the running one, failing fast if there is none.
 
 ```
-acses boot                # start the service
-acses loadDB ~/main       # load the database in ~/main, named "main" after its folder
-acses components main     # list its components
+acsess boot                               # start the service
+acsess loadDB ~/main                      # load the database in ~/main, named "main" after its folder
+acsess components main                    # list its components
+acsess main:arity-0.row-1 getLongFor 5    # read row 1 of arity 0 at identity 5
 ```
 
 Requests come from a terminal, a GUI, or an AI agent, and each carries a comment, like a commit
@@ -95,9 +96,10 @@ to the database, after that the ACSES doesn't care if the database uses those cl
 only checks if the contracts (defined by interfaces) are satisfied. The ACSES can load any database
 folder: it opens the folder's persistence manager, which builds the core from the classes in the
 folder's own jar, so the database, not the ACSES, is the authority about implementation. A first
-ACSES exists: `acses boot`, `createDB`, `loadDB`, `components`, `storeDB`, `migrate`, `inspectAt`,
-`endInspection`, `inspectionState`, `waitInspectionReturn`, `acquire`, `release`, `unloadDB`,
-`databases`, `shutdown`, `Commit` and `beginSession`, served by a daemon over a Unix socket.
+ACSES exists: `acsess boot`, `createDB`, `loadDB`, `components`, `storeDB`, `migrate`,
+`inspectionState`, `waitInspectionReturn`, `acquire`, `release`, `unloadDB`, `databases`, `shutdown` and
+`beginSession`, served by the acsed daemon over a Unix socket, and the requests of the core, the arities
+and the journal.
 
 #### OntoDirectory
 

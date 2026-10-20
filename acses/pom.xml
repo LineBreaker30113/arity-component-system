@@ -26,7 +26,7 @@
     </dependencies>
 
     <build>
-        <finalName>acses</finalName>
+        <finalName>acsess</finalName>
         <plugins>
             <!-- The manifest names the main class and every runtime dependency under lib/, so java -jar
                  needs nothing else; the plain -SNAPSHOT names match the files the assembly puts there. -->
@@ -37,7 +37,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.halim.acses.acsess.ACSES</mainClass>
+                            <mainClass>org.halim.acses.acsess.ACSESS</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
                             <useUniqueVersions>false</useUniqueVersions>
@@ -46,7 +46,7 @@
                 </configuration>
             </plugin>
 
-            <!-- target/acses/: acses.jar, bin/acses, and lib/ with acs, acse, fastutil and RoaringBitmap
+            <!-- target/acsess/: acsess.jar, bin/acsess, and lib/ with acs, acse, fastutil and RoaringBitmap
                  as separate jars. Not one merged jar: a store copies what it reaches from the place the
                  contracts came from, so every database's classes.jar would carry fastutil and
                  RoaringBitmap, and a load would then meet two copies of the types the contracts name. -->
@@ -56,14 +56,14 @@
                 <version>3.7.1</version>
                 <executions>
                     <execution>
-                        <id>acses</id>
+                        <id>acsess</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>src/assembly/acses.xml</descriptor>
+                                <descriptor>src/assembly/acsess.xml</descriptor>
                             </descriptors>
                             <appendAssemblyId>false</appendAssemblyId>
                             <attach>false</attach>
