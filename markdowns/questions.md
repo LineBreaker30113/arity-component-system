@@ -34,7 +34,7 @@ The author has the most authority.
 
 Things added later are in `(!(<thing>)!)`
 
-The settled positions are in `decisions.md`.
+The settled positions are in `citable.md`.
 
 #### Author declines
 
@@ -52,7 +52,7 @@ Markdown files.
 
 - **What exactly is a "paragraph of knowledge", and how does a paragraph cite its sources and
   reasoning?**
-  - Author: "We can talk about it later." The three-agent pipeline is under Goal in `decisions.md`.
+  - Author: "We can talk about it later." The three-agent pipeline is under Goal in `citable.md`.
 
 ## Identity sets and catalogs
 

@@ -306,6 +306,6 @@ The author, 2026-10-20:
    journal's step error. Tests in `src/test/` are the author's.
 10. List the doc lines the work makes false (`CLAUDE.md` → Layout, `current-state.md`'s ACSES row, the
     README's commands, the javadocs naming `acses`), propose replacements, edit on approval.
-11. Propose entries under Unreviewed in `inferred-decisions.md` for this round's decisions, quoting the
+11. Propose entries under Unconfirmed in `citable.md` for this round's decisions, quoting the
     author; add them on approval.
 12. Stop: `git status`, the diff's summary, the checks' results. No commit until the author says.

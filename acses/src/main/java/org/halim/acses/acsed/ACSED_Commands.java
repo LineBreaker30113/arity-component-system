@@ -250,9 +250,9 @@ public String boot(String comment) {
 }
 
 /**
- * Makes a database in a new or empty folder, as persistence.md's first case has it: acsed writes the
- * manager's jar into the folder, the manager is built from that jar, and a new core - ACSE's basic one
- * with its basic journal, from acsed's own classes - is stored through it. Every store then puts its own
+ * Makes a database in a new or empty folder, as citable.md's Persistence has it in its first case: acsed
+ * writes the manager's jar into the folder, the manager is built from that jar, and a new core - ACSE's
+ * basic one with its basic journal, from acsed's own classes - is stored through it. Every store then puts its own
  * jar of classes into its numbered folder, through the manager. A failure after the folder is made
  * leaves what was written there, and the folder, holding files now, is refused until it is emptied.
  * */

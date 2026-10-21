@@ -75,7 +75,7 @@ data base architecture. I wonder if this is ever done." Tested as three nested c
 
 ## 2. The claim
 
-Elements (D = `decisions.md`, M = your message, B = the study brief); full quotes in
+Elements (D = `citable.md`, M = your message, B = the study brief); full quotes in
 `checkpoints.md` → Checkpoint 0.
 
 | # | Element | Source |
@@ -332,7 +332,7 @@ storage) + MINDSET (create, split, supersede schemas by an objective).
 
 ## 8. Improvements toward uniqueness
 
-Each respects `decisions.md`: structures guard their own rules, the core delegates and checks
+Each respects `citable.md`: structures guard their own rules, the core delegates and checks
 nothing on their behalf. Ordered by gain over cost.
 
 | # | Improvement | Cost | Gain | Distances from |

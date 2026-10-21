@@ -54,7 +54,7 @@ boilerplate."
 - **No reports, briefs, or plans** unless a file is explicitly requested.
 - **Use the author's words.** Answer in the vocabulary the author already uses. A term they do not
   use is defined where it first appears — in answers, and in `questions.md` and
-  `inferred-decisions.md` too. A question that cannot be asked without jargon is not ready to be
+  the Citable's Unconfirmed entries too. A question that cannot be asked without jargon is not ready to be
   asked; explain it first.
 - **One question, one answer.** Do not anticipate the next three questions and pre-answer them, and
   do not append an architecture, a build order, or a verification section to a factual answer.
@@ -145,9 +145,8 @@ inferences"; "we do not cut my words." *(2026-10-18)*
   Conflicts; append the better definition under Unconfirmed, quoting the author, with the entries it
   would replace and what each loses; ask each conflict as `markdown-refining.md` → Questions to the
   author says.
-- **Not migrated yet.** Today the Citable is `decisions.md` with its topic files, plus
-  `inferred-decisions.md`, whose Unreviewed is Unconfirmed and which also holds the handoff; the
-  summaries have one level, at 89% of the source. The steps: `inferred-decisions.md` → Not done yet.
+- **Migrated** on 2026-10-21 (`f52b823`): `decisions.md`, its topic files and `inferred-decisions.md`
+  joined into `citable.md`, and the handoff moved to `current-state.md`.
 
 ## Layout
 

@@ -46,7 +46,7 @@ Its working files are in `reference/novelty/`, gitignored: `novelty-study-2.md` 
 
 Scan of the tracked tree and of all 44 commits, every one on `main`: no email, home path or secret in
 any line ever added, and every commit carries the GitHub noreply address. The only home-style paths
-are `~/main` and `~/db3`, examples inside the author's commands in `decisions.md` (Goal; Layers and
+are `~/main` and `~/db3`, examples inside the author's commands in `citable.md` (Goal; Layers and
 names). Tracked but not project work: `.mcp.json`, Claude Code's local link to IntelliJ, and
 `src/main/java/Main.java`, IntelliJ's template.
 
@@ -69,11 +69,11 @@ decided to be done and urgent.")* The last five, and the reading below, were con
 - Test the README's "2^28 files of records … a few GiB" claim; nothing measures it. *(Author: "Record
   it, we need to test it.")*
 - Move the decisions into the Citable (`CLAUDE.md` → Decisions): `decisions.md` and its topic files
-  joined into `citable.md`, words unchanged; this file joined in, Unreviewed at its end as
-  Unconfirmed; summaries cut to about a quarter, plus `summaries/overview.md`; the summary check run.
-  Where the handoff goes is the author's call.
+  joined into `citable.md`, words unchanged; `inferred-decisions.md` joined in, its Unreviewed at its
+  end as Unconfirmed; summaries cut to about a quarter, plus `summaries/overview.md`; the summary check
+  run. Where the handoff goes is the author's call.
 - Later: the procedure contract, and more structure components, the cartesian (ternary) and the
-  transitions arities among them (`decisions.md` → Architecture).
+  transitions arities among them (`citable.md` → Architecture).
 - The commercial licence's text, drafted by a lawyer before it is sold, and a contributor agreement
   before the first outside contribution.
 - Delete `reference/msgfilter.py` once the author says so; it is gitignored.
@@ -92,10 +92,10 @@ Items of the handoff above found done, kept as the record.
 
 ## Former handoff — 2026-09-18
 
-Kept as the record of where that session left things. The live one is in `inferred-decisions.md` →
-Unreviewed → Handoff.
+Kept as the record of where that session left things. The live one is under Handoff — decided, not
+done yet, above.
 
-- The urgent code work: `inferred-decisions.md` → Urgent work, not yet reviewed.
+- The urgent code work: `inferred-decisions.md` → Urgent work (in git at `6f32a25`), not yet reviewed.
 - The author reviews the Unreviewed entries, the 19 term definitions among them, and decides the old
   plan's positions at the end of `questions.md`.
 - `reference/` holds `pre-purge-backup.bundle` and `msgfilter.py`, both gitignored and both deletable

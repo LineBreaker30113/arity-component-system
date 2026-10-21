@@ -111,7 +111,7 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
 
 ### Details
 
-*(Old names: see the note under Layers and names in `decisions.md`.)*
+*(Old names: see the note under Layers and names.)*
 
 - Since asca is a service, it must have a way to manage it, while the requests can go through the
   ascar.
@@ -141,7 +141,7 @@ mean `acse`; `acsr`, `asrc` and `ascar` are the requester.)*
   commercial use.
 - [What is the cost of not using a well-known licence?] If it is near nothing, go with AGPL-3.0-only
   with a commercial licence. *(Claude's comparison and the result: `inferred-decisions.md` → The
-  licence.)*
+  licence, in git at `6f32a25`.)*
 - [AGPL-3.0-only with the Universal FOSS Exception, plus a commercial licence:] Good, I want to use
   the first suggestion of you.
 - The exception is Oracle's Universal FOSS Exception, Version 1.0, referred to by name and by Oracle's
