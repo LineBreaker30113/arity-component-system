@@ -1,18 +1,26 @@
 package org.halim.acs.structure.binary.node_edge;
 
 import org.halim.acs.ACS_Core;
-import org.halim.acs.structure.ACS_StructureComponentBase;
+import org.halim.acs.structure.ACS_GraphComponentBase;
+import org.halim.acs.structure.binary.node_cluster.ACS_NodeClusterComponentBase;
 
 /**
  * A graph over two arities: the arity at index 0 holds the nodes and the one at index 1 the edges, so a
- * node and an edge each carry data of their own, and an edge is an identity like any other.
+ * node and an edge each carry data of their own, and an edge is an identity like any other. The nodes are
+ * the graph's elements, a node's parents the first nodes of the edges ending at it, so the reads, edits
+ * and analyses of {@link ACS_GraphComponentBase} hold here. {@link #addParent} captures an edge only when
+ * none joins the two, and {@link #removeParent} removes every edge from the parent, as
+ * {@link #breakEdges} does.
  * <p>
- * What kind of graph it is is a set of rules, each fixed at construction and checked when an edge is
- * made: direction - an edge goes from one node to another rather than joining them; acyclic - no path
- * returns to where it started, which on a directed graph makes it a DAG and on a directionless one a
- * forest; loops - an edge from a node to itself; parallel edges - more than one edge between the same two
- * nodes, the same way round on a directed graph. How the graph is stored is the implementation's, and
- * says nothing about which rules it takes.
+ * It is the node-cluster whose every cluster, an edge, joins exactly two nodes, the same node twice for a
+ * loop; with {@link #DIRECTED}, the first goes to the second. The connector's requests take a node and an
+ * edge, so one that would leave an edge with other than two nodes is refused.
+ * <p>
+ * What kind of graph it is is the restrictions of {@link ACS_NodeClusterComponentBase} plus
+ * {@link #NO_PARALLEL_EDGES}, so 0 is any symmetric graph, with loops and parallel edges. How the graph is
+ * stored is the implementation's, and says nothing about which restrictions it takes.
+ * {@link #NO_IMPLIED_EDGES} refuses rather than drops: an edge another path implies is not added, and one
+ * that would imply an edge already there is refused, since dropping an edge would forget its data.
  * <p>
  * An edge's two nodes are its first and its second: where it starts and where it ends on a directed
  * graph, the smaller and the larger on a directionless one. Edges are made and removed with their
@@ -23,7 +31,10 @@ import org.halim.acs.structure.ACS_StructureComponentBase;
  * identity captured any other way is no connection. The two arities must be different slots: an edge that
  * was also a node would be forgotten as both.
  * */
-public interface ACS_NodeEdgeComponentBase extends ACS_StructureComponentBase {
+public interface ACS_NodeEdgeComponentBase extends ACS_NodeClusterComponentBase {
+
+/** No more than one edge between the same two nodes, the same way round on a directed graph. */
+int NO_PARALLEL_EDGES = 1 << 18;
 
 @Override
 default int getArityCount() { return 2; }
@@ -31,30 +42,32 @@ default int getArityCount() { return 2; }
 @Override
 default boolean isRelatedArity(int identity) { return identity == getArityIdentity(0) || identity == getArityIdentity(1); }
 
-default int getNodeArity() { return getArityIdentity(0); }
 default int getEdgeArity() { return getArityIdentity(1); }
 
-default boolean isDirected() { return false; }
-default boolean isAcyclic() { return false; }
-boolean allowsLoops();
-boolean allowsParallelEdges();
+default boolean allowsParallelEdges() { return (getRestrictions() & NO_PARALLEL_EDGES) == 0; }
 
 
 /**
  * An edge from {@code node} to {@code otherNode}, or between them on a directionless graph, given back: a
- * new one captured on the edge arity, or, when parallel edges are not allowed, the one already there.
- * Refuses a node its arity does not hold, a loop when loops are not allowed, and an edge that would close
- * a cycle on an acyclic graph.
+ * new one captured on the edge arity, or, with {@link #NO_PARALLEL_EDGES}, the one already there. Refuses
+ * a node its arity does not hold and an edge a restriction forbids.
  * */
-int ensureConnection(int node, int otherNode, String comment);
+int ensureEdge(int node, int otherNode, String comment);
+
+/**
+ * As {@link ACS_GraphComponentBase#setParent}; with {@link #AT_MOST_ONE_FROM}, the edge from its one parent
+ * is kept and re-pointed, so its identity and its data stay and only its first node changes.
+ * */
+@Override
+boolean setParent(int element, int parent, String comment);
 
 /** Removes every edge from {@code node} to {@code otherNode}, or between them on a directionless graph, through the core. False when there was none. */
-boolean breakConnection(int node, int otherNode, String comment);
+boolean breakEdges(int node, int otherNode, String comment);
 
 /** An edge from {@code node} to {@code otherNode}, or between them on a directionless graph, or -1 for none; with parallel edges, the lowest. */
 int edgeOf(int node, int otherNode);
 
-default boolean isConnected(int node, int otherNode) { return edgeOf(node, otherNode) >= 0; }
+default boolean hasEdge(int node, int otherNode) { return edgeOf(node, otherNode) >= 0; }
 
 /** Where the edge starts, or its smaller node on a directionless graph; -1 when the edge is no connection here. */
 int firstNodeOf(int edge);
