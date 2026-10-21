@@ -50,6 +50,46 @@ are `~/main` and `~/db3`, examples inside the author's commands in `decisions.md
 names). Tracked but not project work: `.mcp.json`, Claude Code's local link to IntelliJ, and
 `src/main/java/Main.java`, IntelliJ's template.
 
+## Handoff — decided, not done yet
+
+Claude's wording unless quoted; facts checked 2026-10-18. *(Author: "The handoffs are things that are
+decided to be done and urgent.")* The last five, and the reading below, were confirmed on 2026-10-18.
+*(Author: "I read and confirm it.")*
+
+- DAG tests in `acse/src/test/` (the author writes them): encoding transitions, root list after every
+  phase, cycle refusal, slot reuse, reduction preserving reachability.
+- [The `OE_` prefix, `OntologyEngineCore` and the package `org.halim.ontology`:] now the name is
+  "ACS" [now `acse`], replace them with "ACS" [`acse`, except the `OE_` prefix, which becomes `ACS_`:
+  see Layers and names, 2026-10-14]. — `OE_` is gone. Done for the live work, 2026-10-18;
+  `OntologyEngineCore.java` and `org.halim.ontology` remain in `deprecatedCode/`.
+- [The `Module` at the end of `SetHierarchyDirectedAcyclicIntGraphModule`:] replace with
+  `Component`. — Still so named, in `structurer_depr/`.
+- [Naming the judgment-call existence method so it looks deliberate, like `identityAtUnchecked`:]
+  this naming convention is good, but out of scope; this is boilerplate polishing. — Not named yet.
+- Test the README's "2^28 files of records … a few GiB" claim; nothing measures it. *(Author: "Record
+  it, we need to test it.")*
+- Move the decisions into the Citable (`CLAUDE.md` → Decisions): `decisions.md` and its topic files
+  joined into `citable.md`, words unchanged; this file joined in, Unreviewed at its end as
+  Unconfirmed; summaries cut to about a quarter, plus `summaries/overview.md`; the summary check run.
+  Where the handoff goes is the author's call.
+- Later: the procedure contract, and more structure components, the cartesian (ternary) and the
+  transitions arities among them (`decisions.md` → Architecture).
+- The commercial licence's text, drafted by a lawyer before it is sold, and a contributor agreement
+  before the first outside contribution.
+- Delete `reference/msgfilter.py` once the author says so; it is gitignored.
+
+## Handoff done
+
+Items of the handoff above found done, kept as the record.
+
+- A "String" catalog type, a string subversion of the Object one. Its allowed types are spread over
+  the type constants of `ACS_ArityComponentBase` (copied in `ACS_ArityCatalogRowBase`), `typeName`,
+  both bases' default accessors, and the journaled writes' type check and `bitsOf` in
+  `ACSE_ComposableArityCatalog`. *(Author, 2026-10-14: "Right now we have object as a valid catalog
+  option, we still need to make a string subversion of it. The problem with it is the allowed types
+  of those catalogs are not in one place.")* — Done: `StringValueCatalog` in `acs`, its rows in `acse`, in `c0e26c3` (2026-10-19); checked
+  2026-10-21.
+
 ## Former handoff — 2026-09-18
 
 Kept as the record of where that session left things. The live one is in `inferred-decisions.md` →
