@@ -33,7 +33,7 @@ public LoadedLakesSection(LeftSidebar leftSidebar) {
 	headerPanel.setPreferredSize(new Dimension(leftSidebar.expanded, 56));
 	
 	Icon lockersIcon = Utilities.loadSVGIcon("icons/lockers.svg", 40, 40, Utilities.GOLDEN_COLOR);
-	dataLakeHeaderLabel = new JLabel("DATA LAKES", lockersIcon, SwingConstants.CENTER);
+	dataLakeHeaderLabel = new JLabel("SET SEAS", lockersIcon, SwingConstants.CENTER);
 	dataLakeHeaderLabel.setForeground(Utilities.GOLDEN_COLOR);
 	dataLakeHeaderLabel.setIconTextGap(8);
 	dataLakeHeaderLabel.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -72,7 +72,7 @@ public void unsignDataLake(Path lakeRootPath) {
 }
 
 public void updateCollapseState(boolean isCollapsed) {
-	dataLakeHeaderLabel.setText(isCollapsed ? "" : "DATA LAKES");
+	dataLakeHeaderLabel.setText(isCollapsed ? "" : "SET SEAS");
 	for (DataLakeHeaderTab item : lakeItems) {
 		item.mainButton.setText(isCollapsed ? "" : item.mainButton.getActionCommand());
 		item.mainButton.setIcon(isCollapsed ? (Icon) item.mainButton.getClientProperty("collapseIcon") : null);
@@ -126,7 +126,7 @@ private static class DataLakeHeaderTab {
 		JButton closeBtn  = createSolidActionBtn("Close", "x-square.svg", new Color(255, 100, 100), Color.WHITE); // Pass Red Foreground directly
 		
 		closeBtn.addActionListener(e -> {
-			int res = JOptionPane.showConfirmDialog(section.leftSidebar.owner, "Save and close Data Lake '" + lakeName + "'?", "Confirm Close", JOptionPane.YES_NO_OPTION);
+			int res = JOptionPane.showConfirmDialog(section.leftSidebar.owner, "Save and close Set Sea '" + lakeName + "'?", "Confirm Close", JOptionPane.YES_NO_OPTION);
 			if (res == JOptionPane.YES_OPTION) {
 				section.leftSidebar.owner.appController.servicePort.dispatchLakeChooseRequest(identity);
 				SwingUtilities.invokeLater(() -> {

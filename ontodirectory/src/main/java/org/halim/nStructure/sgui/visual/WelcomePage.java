@@ -47,7 +47,7 @@ private void buildUI() {
 	welcomeLabel.setForeground(Utilities.ELEMENT_TEXT_PRIMARY);
 	welcomeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 	
-	JButton createLakeBtn = new JButton("+ Create / Load Data Lake");
+	JButton createLakeBtn = new JButton("+ Create / Load Set Sea");
 	Utilities.initButton(createLakeBtn);
 	createLakeBtn.setBackground(Utilities.sideButtonBG);
 	createLakeBtn.setForeground(Color.WHITE);
@@ -55,7 +55,7 @@ private void buildUI() {
 	createLakeBtn.addActionListener(e -> launchLakeChooser());
 	
 	JLabel instructionsLabel = new JLabel("<html><br><b>Getting Started:</b><br><br>" +
-		  "1. Load an existing Data Lake or initialize a new one.<br>" +
+		  "1. Load an existing Set Sea or initialize a new one.<br>" +
 		  "2. Navigate your ontology hierarchy via the Sidebar.<br>" +
 		  "3. Assign specific tags to files to organize your workspace.</html>");
 	instructionsLabel.setForeground(Utilities.ELEMENT_TEXT_SECONDARY);
@@ -93,7 +93,7 @@ private void buildUI() {
 	JPanel lakesHeader = new JPanel(new BorderLayout());
 	lakesHeader.setBackground(Utilities.LIST_HEADER_BG);
 	lakesHeader.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
-	JLabel lakesHeaderLabel = new JLabel("Recent Data Lakes");
+	JLabel lakesHeaderLabel = new JLabel("Recent Set Seas");
 	lakesHeaderLabel.setForeground(Utilities.ELEMENT_TEXT_PRIMARY);
 	lakesHeader.add(lakesHeaderLabel, BorderLayout.WEST);
 	
@@ -143,7 +143,7 @@ private void buildUI() {
 private void launchLakeChooser() {
 	JFileChooser fileChooser = new JFileChooser();
 	fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-	fileChooser.setDialogTitle("Select a Directory for your Data Lake");
+	fileChooser.setDialogTitle("Select a Directory for your Set Sea");
 	
 	boolean useNative = SettingLogic.isSystemFileChooser;
 	if (useNative) {

@@ -68,7 +68,7 @@ public static void log(String message) {
  */
 public static Path generateCrashDump(Throwable ex, DataLakeManager activeLake) {
 	if (activeLake == null) {
-		System.err.println("CRITICAL: Crash occurred, but no Data Lake was active. Redirecting to global dump.");
+		System.err.println("CRITICAL: Crash occurred, but no Set Sea was active. Redirecting to global dump.");
 		return generateGlobalDump(ex, Paths.get(System.getProperty("user.dir")));
 	}
 	
@@ -79,7 +79,7 @@ public static Path generateCrashDump(Throwable ex, DataLakeManager activeLake) {
 		try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(dumpFile))) {
 			writeHeader(writer, "ONTO DIRECTORY CRASH DUMP");
 			writeSystemMetrics(writer);
-			writer.println("Active Lake  : [REDACTED FOR PRIVACY]");
+			writer.println("Active Sea   : [REDACTED FOR PRIVACY]");
 			writer.println("=========================================\n");
 			
 			writer.println("--- BREADCRUMB TRAIL (LAST " + MAX_BREADCRUMBS + " ACTIONS) ---");
@@ -113,7 +113,7 @@ public static Path generateGlobalDump(Throwable ex, Path fallbackConfigDir) {
 		try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(dumpFile))) {
 			writeHeader(writer, "ONTO DIRECTORY GLOBAL CRASH DUMP");
 			writeSystemMetrics(writer);
-			writer.println("State        : NO ACTIVE DATA LAKE");
+			writer.println("State        : NO ACTIVE SET SEA");
 			writer.println("=========================================\n");
 			
 			writeArchitecturalStateAndGlobalBreadcrumbs(writer);

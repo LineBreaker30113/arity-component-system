@@ -103,7 +103,11 @@ and the journal.
 
 #### OntoDirectory
 
-The GUI. Its code is still in its own repository, to be brought in later.
+The GUI. Its nStructure engine preview is brought in from its own repository, with the legacy classes
+it uses, and boots on a Set Sea: the Data Lake with `.SET_SEA` in place of `.DATA_LAKE`, and an ACSE
+database, in the same process, in place of the ontology package's catalogs; the tag hierarchy and the
+tagging are ACSE structures. Its well-tested algorithms can be used to correct ACSE:
+`TightSetHierarchyTest` checks ACSE's hierarchy against OntoDirectory's hierarchy lister.
 
 #### ACS-alHikmet
 

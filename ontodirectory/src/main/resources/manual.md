@@ -22,30 +22,30 @@ Standard file managers force you to memorize rigid paths (e.g., <code>Archive/Wo
 causing friction when a file belongs in multiple categories. <br>
 The ideology of <span style="color: #FFD700FF; font-weight: 700">Onto Directory</span>: Ontology is the philosophy of objects, and it studies their classifications and definitions.
 If we view files as object, we can use all the studies and discoveries of Ontology (which is the peak of this field) about classifications to organize them. <br>
-Powered by an <b>Ontology Engine</b>, Onto Directory eliminates folders entirely. You simply place files into a unified "Data Lake" and dynamically assign conceptual attributes (e.g., "Finance", "2026").
+Powered by an <b>Ontology Engine</b>, Onto Directory eliminates folders entirely. You simply place files into a unified "Set Sea" and dynamically assign conceptual attributes (e.g., "Finance", "2026").
 This allows you to cross-reference and retrieve data instantly, mirroring how the human brain actually categorizes information.
 ````
 
-# 1. Getting Started: Your First Data Lake
+# 1. Getting Started: Your First Set Sea
 ````html
-A Data Lake is the secure, isolated vault for your files. Think of it as a master database. You should aim to create one or two large Data Lakes (e.g., "Personal" and "Work") rather than many small ones.
+A Set Sea is the secure, isolated vault for your files. Think of it as a master database. You should aim to create one or two large Set Seas (e.g., "Personal" and "Work") rather than many small ones.
 ````
 
 ````html
-<b>To begin:</b> Click the <b>+ Create / Load Data Lake</b> button on the Welcome Page. Select an empty folder on your hard drive. Onto Directory will immediately initialize a secure <code>.DATA_LAKE</code> indexing structure inside it.<br><br>
-Once loaded, your Lake will appear in the Left Sidebar. You can freely switch between Lakes, but only one can be active in your workspace at a time. To ensure your data is perfectly synchronized, always use the <b>Close</b> button on the Lake's header before exiting the application.<br><br>
+<b>To begin:</b> Click the <b>+ Create / Load Set Sea</b> button on the Welcome Page. Select an empty folder on your hard drive. Onto Directory will immediately initialize a secure <code>.SET_SEA</code> indexing structure inside it.<br><br>
+Once loaded, your Sea will appear in the Left Sidebar. You can freely switch between Seas, but only one can be active in your workspace at a time. To ensure your data is perfectly synchronized, always use the <b>Close</b> button on the Sea's header before exiting the application.<br><br>
 <i>Safety net:</i> Onto Directory also saves automatically in the background a few seconds after any change, so you're still protected even if you forget to Close first.
 ````
 
 # 2. Importing & Exporting Files
 ````html
-Files must be ingested into the Data Lake before they can be tagged. Once inside, they are protected. When you need them outside the application, you extract a clean copy via Export.
+Files must be ingested into the Set Sea before they can be tagged. Once inside, they are protected. When you need them outside the application, you extract a clean copy via Export.
 ````
 
 ````html
-<b>Importing:</b> Click the <b>Import</b> button on your active Data Lake in the sidebar to open a folder picker and import a specific directory from your computer. <b>Right-click</b> the same button instead to import whatever files are already sitting in the <code>imports</code> folder, which Onto Directory generates <i>inside</i> the folder you chose for your Lake — handy if you'd rather drop files in via your OS file manager first. Note that this empties <code>imports</code> afterwards: the files are moved into the Lake, not copied. <br><br>
+<b>Importing:</b> Click the <b>Import</b> button on your active Set Sea in the sidebar to open a folder picker and import a specific directory from your computer. <b>Right-click</b> the same button instead to import whatever files are already sitting in the <code>imports</code> folder, which Onto Directory generates <i>inside</i> the folder you chose for your Sea — handy if you'd rather drop files in via your OS file manager first. Note that this empties <code>imports</code> afterwards: the files are moved into the Sea, not copied. <br><br>
 <i>Note:</i> When you import a directory, Onto Directory intelligently reads your existing folder structure and converts it into Tags automatically, saving you hours of manual organization.<br><br>
-<b>Exporting:</b> Right-click any file in the File Explorer view and select <b>Export</b>. This will not delete the file from your Lake; it simply writes a pristine copy of the file to the destination of your choice.
+<b>Exporting:</b> Right-click any file in the File Explorer view and select <b>Export</b>. This will not delete the file from your Sea; it simply writes a pristine copy of the file to the destination of your choice.
 ````
 
 # 3. The Graph: Tags vs. Folders
@@ -96,7 +96,7 @@ At the top of the File Explorer is the Filter Track. Click <b>[ + Drop Tag or Cl
     <li><b>Under Domain Of:</b> Finds all files holding this tag AND any of its children.</li>
     <li><b>Direct Element Of:</b> Finds ONLY files explicitly assigned this exact tag, ignoring children.</li>
     <li><b>AND / OR / SUBTRACT:</b> Logical operators to combine tags. Want to find files that are "Science" AND "2026" but SUBTRACT "Drafts"? Build the blocks, then click <b>Search</b>.</li>
-    <li><b>Name Contains:</b> Matches files whose name contains the text you type in. In the <b>nStructure engine preview</b> this is a standalone block: drop it on its own to search every file in the lake by name, or put it under an <b>AND</b> next to a tag block to search within that tag. In the <b>current release</b> it instead wraps a block of its own — you must fill that inner slot with a tag first, and the filter stays empty until you do, so a name-only search is not available there.</li>
+    <li><b>Name Contains:</b> Matches files whose name contains the text you type in. In the <b>nStructure engine preview</b> this is a standalone block: drop it on its own to search every file in the sea by name, or put it under an <b>AND</b> next to a tag block to search within that tag. In the <b>current release</b> it instead wraps a block of its own — you must fill that inner slot with a tag first, and the filter stays empty until you do, so a name-only search is not available there.</li>
 </ul>
 <i>Tip:</i> You can also drag a tag straight from the Hierarchy Tree and drop it onto the Filter Track to add it as a new block instantly, instead of building it from the <b>[ + Drop Tag or Click ]</b> menu.<br><br>
 If you build a very useful, complex filter, click <b>Save</b> to permanently generate a new Tag that holds the results of that exact query. You can also <b>Export</b> the filter's current results directly from the Filter Track.
@@ -125,5 +125,5 @@ Onto Directory tracks your actions safely and allows you to reverse mistakes. It
 ````html
 Be careful about <b>Undo / Redo</b>: right now every action is stored as its own individual record, so a bulk operation (importing 100 files, or tagging 100 files at once) can use up a lot of history in one step.<br><br>
 In the current release, undo history is capped at your last 100 actions, and redo separately at 33 — so a long chain of undos cannot be fully redone. In the nStructure engine preview, history is currently unbounded — it keeps growing until memory runs out, so save/close periodically during very large sessions rather than relying on the cap to protect you.<br><br>
-<b>Database Optimization (Vacuum):</b> When you delete tags, the system leaves "tombstones" (empty spaces) in the database to keep your graph running quickly. Over months of use, these empty spaces can add up. In the current release, click the <b>Optimize</b> button on your Data Lake header to safely defragment the graph and reclaim memory. The nStructure engine preview does not support this yet — its underlying engine has no compaction capability, so the button is hidden there rather than shown broken.
+<b>Database Optimization (Vacuum):</b> When you delete tags, the system leaves "tombstones" (empty spaces) in the database to keep your graph running quickly. Over months of use, these empty spaces can add up. In the current release, click the <b>Optimize</b> button on your Set Sea header to safely defragment the graph and reclaim memory. The nStructure engine preview does not support this yet — its underlying engine has no compaction capability, so the button is hidden there rather than shown broken.
 ````

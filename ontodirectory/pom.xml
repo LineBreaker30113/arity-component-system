@@ -15,7 +15,8 @@
 
     <name>OntoDirectory</name>
     <description>
-        The GUI. Its code is still in its own repository, to be brought in later.
+        The GUI: OntoDirectory's nStructure engine preview, brought in from its own repository, booting
+        on a Set Sea, whose tags and files an ACSE database holds in the same process.
     </description>
 
     <dependencies>
@@ -66,12 +67,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Test only, for now: TightSetHierarchyTest checks ACSE's hierarchy against OntologyHierarchyLister.
-             The engine itself does not use ACSE yet. -->
+        <!-- The Set Sea's store, in this process; TightSetHierarchyTest also checks ACSE's hierarchy against
+             OntologyHierarchyLister. -->
         <dependency>
             <groupId>org.halim</groupId>
             <artifactId>acse</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -85,7 +85,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.halim.NewMain</mainClass>
+                            <mainClass>org.halim.setSea.SetSeaMain</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

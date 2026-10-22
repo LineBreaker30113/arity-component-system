@@ -7,6 +7,7 @@ import org.halim.nStructure.mhexagon.OntologyReadingService;
 import org.halim.nStructure.sgui.ApplicationController;
 import org.halim.nStructure.sgui.sglib.HierarchyView;
 import org.halim.nStructure.sgui.sglib.Utilities;
+import org.halim.setSea.SetSeaManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -260,11 +261,17 @@ private void showContextMenu(MouseEvent e) {
 		// Bulk Operations for Multi-Selection
 		JMenuItem bulkDelete = new JMenuItem("Delete All Selected Tags");
 		bulkDelete.addActionListener(a -> {
-			int result = JOptionPane.showConfirmDialog(this, "Delete " + selectedTags.size() + " tags? This cannot be undone in bulk.", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+			SetSeaManager sea = manager instanceof SetSeaManager s ? s : null;
+			String warning = sea != null ? " One undo restores them all." : " This cannot be undone in bulk.";
+			int result = JOptionPane.showConfirmDialog(this, "Delete " + selectedTags.size() + " tags?" + warning, "Confirm Deletion", JOptionPane.YES_NO_OPTION);
 			if (result == JOptionPane.YES_OPTION) {
-				for (Utilities.TagNodeDto tag : selectedTags) {
-					manager.removeOntologyClass(tag.identity());
-				}
+				Runnable deleteAll = () -> {
+					for (Utilities.TagNodeDto tag : selectedTags) {
+						manager.removeOntologyClass(tag.identity());
+					}
+				};
+				if (sea != null) sea.getDatabase().edit("delete " + selectedTags.size() + " tags", deleteAll);
+				else deleteAll.run();
 				refreshTreeUI();
 			}
 		});

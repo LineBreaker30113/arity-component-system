@@ -3,6 +3,7 @@ package org.halim.nStructure.sgui;
 import org.halim.nStructure.archive.core.ArchiveManager;
 import org.halim.nStructure.mhexagon.DiagnosticStateProvider;
 import org.halim.nStructure.mhexagon.OntoDirectoryService;
+import org.halim.setSea.SetSeaManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -52,6 +53,7 @@ public void dispatchLakeCloseRequest(OntoDirectoryService.DataLakeService lake) 
 	if (this.activeLake == lake) {
 		if (backgroundSaver != null && !backgroundSaver.isShutdown()) backgroundSaver.shutdown();
 		if (lake instanceof ArchiveManager am && am.isDirty()) am.saveChanges();
+		if (lake instanceof SetSeaManager sea && sea.isDirty()) sea.saveChanges();
 		this.activeLake = null;
 	}
 	servicePort.closeLake(lake);
@@ -127,6 +129,7 @@ private class ServiceListenerImpl implements OntoDirectoryService.OntoDirectoryS
 					am.saveChanges();
 				}
 			}
+			if (activeLake instanceof SetSeaManager sea && sea.isDirty()) sea.saveChanges();
 		}, 3, 3, TimeUnit.SECONDS);
 		
 		// 4. Update the Swing UI

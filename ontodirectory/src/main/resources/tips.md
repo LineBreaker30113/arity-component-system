@@ -14,7 +14,7 @@ If you make a mistake—like accidentally deleting a massive tag—don't panic. 
 ---
 Double-click any Tag in the Hierarchy Tree to instantly filter the File Explorer to that specific Domain.
 ---
-Feeling sluggish after months of deleting? Click 'Optimize' on the Lake header to defragment the database — a current-release feature; the nStructure engine preview hides the button until compaction exists.
+Feeling sluggish after months of deleting? Click 'Optimize' on the Sea header to defragment the database — a current-release feature; the nStructure engine preview hides the button until compaction exists.
 ---
 You can chain multiple AND, OR, and SUBTRACT operators in the Filter Builder to isolate highly specific files in seconds.
 ---

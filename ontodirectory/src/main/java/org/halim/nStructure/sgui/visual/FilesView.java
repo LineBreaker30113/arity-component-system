@@ -299,7 +299,7 @@ private void showContextMenu(java.awt.event.MouseEvent e) {
 		});
 
 		delete.addActionListener(a -> {
-			int decision = JOptionPane.showConfirmDialog(this, "Deletion from Data lake, this action cannot be \"undo\"ne!", "Confirm Deletion.", JOptionPane.OK_CANCEL_OPTION);
+			int decision = JOptionPane.showConfirmDialog(this, "Deletion from the Set Sea, this action cannot be \"undo\"ne!", "Confirm Deletion.", JOptionPane.OK_CANCEL_OPTION);
 			if (decision == JOptionPane.OK_OPTION) {
 				try {
 					activeLakeService.getOntologyManagingService().deleteElements(selectedFiles);
