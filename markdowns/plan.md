@@ -1,311 +1,278 @@
-# Plan — actors, ACSED and ACSESS, and the core commands
+# Plan — the three-file method: moving the decisions into the folders
 
-Written 2026-10-19 and 2026-10-20 by Claude, for one execution session, which stops for the author's
-review and commit. **The design** below is what the session builds; each line is the author's decision,
-Claude's reading of one (marked *reading*), or Claude's suggestion the author took ("Take your
-suggestions", 2026-10-19 and 2026-10-20). **The author's words** are the source, in the order given; where
-a later answer replaced an earlier one, the design follows the later. The Citable wins any conflict: stop
-and ask. Round 3's plan is in git at 31e0194.
-
-## The design
-
-### Scope
-
-- This round: requests for the core, the arities and the journal: arities, catalog rows, identities,
-  values, and plain reads (one identity's values, the occupied identities). No structures, no filtering.
-- Interfaces stay the author's, except `ACS_Actor` and the annotation `ACS_Requestable`, which this
-  session writes.
-
-### `ACS_Actor`, in `org.halim.acs`
-
-Replaces `ACS_Journal.TraceableForUndoingRedoing` everywhere. Its methods:
-
-- `void doTraceableStep(byte stepPair, int[] params, int index)`, moved with its javadoc: the journal's
-  side, unchecked steps.
-- `boolean request(DataInputStream parameters, DataOutputStream returns) throws IOException`: the
-  outside's side. `parameters` starts with the request's code, an `int`, then the inputs; the result
-  goes to `returns`. False when a check or the method failed, the error's text then written to `returns`;
-  a failure outside I/O only reports the error.
-- `void getRequestables(DataOutputStream dos) throws IOException`: writes one line per request, in code
-  order, in the grammar below, UTF-8, each ending in `\n` (*reading*: text, so `acse-language.txt`
-  reads as text).
-- A static helper that writes the line of every method of a class marked `ACS_Requestable`, in code
-  order, by reflection, so no name is a literal; an implementation's `getRequestables` calls it. It
-  refuses loudly when codes repeat or skip (they run 0 to count−1) or a marked method has a type the
-  grammar lacks.
-
-`ACS_Requestable` marks a requestable method and carries its code. Each class's `request` is a switch on
-the code, written in the same order: each case reads its inputs, calls the public method, which keeps its
-checks and calls the checkless one (`setLongFor` as today), and writes the result.
-
-### The grammar
-
-- A line: `name(type name, …) result`, e.g. `setLongFor(int catalog, long identity, long value, String
-  comment) void`; names from reflection, so the parent pom compiles with `-parameters`.
-- Types: `byte`, `short`, `int`, `long`, `float`, `double`, `boolean`, `String`, any of them with `[]`;
-  a result is one of them or `void`.
-- On the wire each as `DataOutputStream` writes it; a `String` as its UTF-8 length, an int, then the
-  bytes, as `ACSES_Request` writes today; an array as its length, an int, then its elements, which a case
-  may write without building the array.
-- Flags fill parameters by name: `name=value` the parameter of that name (`comment=` the `String
-  comment`), `+Name` a `boolean` one, matched ignoring the first letter's case (`+Duplicate` fills
-  `duplicate`); a flag not given leaves `""` or `false`; the plain arguments fill the rest in order.
-- Two requests may share a name when their parameter counts differ (`addArity`, `captureIdentity`);
-  acsess picks the one whose remaining parameters match the plain arguments typed.
-
-### What each actor takes
-
-- **Core** (type 0): `addArity(String description, String comment)`; `addCatalogRow(int arity, String
-  className, String description, String comment)`, an overload in `ACSE_CoreBasic` that builds the row
-  by its full class name; `removeArity`, `removeStructure`, `delegateRemoval`, both `captureIdentity`.
-  The object-taking `addArity` and `addStructure` are not requestable.
-- **A row's file**: a memory row is built with no argument; a file row gets `arity-<k>-row-<j>.bin` at
-  the database's root, `arity-<k>-row-<j>plus.bin` for a single file holding several rows;
-  `FileContentCatalogRow` gets its path row's index from `parameters`.
-- **Arity** (type 1): `registerIf`, `removeIf`, `catalogCount`, the reads and writes of each type, the
-  occupied identities as an `int[]` (a requestable method of its own: `occupied()` returns an object),
-  and `ensureCapacity`, which refuses a negative identity and no longer lowers the reach (today it sets
-  `lastIndex = identity`, `ACSE_ComposableArityCatalog:307`). `truncate` is not requestable.
-- **Journal** (type -128, index 0): `undoLastActivity`, `redoLastActivity`, `undoUntilActivityIndex`,
-  `redoUntilActivityIndex`, `inspectAt`, `endInspection`, `isInspecting`, `getCurrentActivityIndex`,
-  `getPendingActivityCount`. Its `request` refuses a write during an inspection; its `doTraceableStep`
-  throws `UnsupportedOperationException` saying "This feature is out of MVP".
-- A read is recorded as a query, by `recordQueryRequest` and `recordQueryResponse`.
-
-### Addressing
-
-- A request's subject is an int: 0 and up a database's index, 0 the first; -1 acsed; the other negative
-  values kept for later server-level subjects.
-- Within a database, a type, an int: 0 core, -128 journal, 1 arity, 2 structure, 4 procedure, 9 arity row,
-  and -1 for acsed's handling of the database, not journaled as the journal is not; then the index, an
-  int.
-- The header's fields are plain ints, not packed: "commands can be long, we do not need to limit
-  ourselves to bytes". Bytes count where data is held: the journal keeps type and index packed into the
-  one int per request it holds today, a byte then three bytes, since one more int per request is 2^25 ×
-  4 bytes = 128 MiB for 2^25 requests. It writes them only into `journal.jsonl`,
-  which nothing reads back, so `FORMAT` stays 0.
-- *Reading* for rows this round: a row has no requests of its own yet (`ACS_ArityCatalogRowBase` is no
-  actor, and a row's write is journaled by its arity). So `db:arity-0.row-7` fills the arity request's
-  first parameter, `int catalog`, with 7, the author's "a command that requires another index for the
-  row". Type 9 is kept for when rows have requests.
-
-### `acse-language.txt`, the probe and the wire
-
-- At the database's root: per class, a line `class <full name> <count>`, then its `getRequestables`
-  lines. acsed writes it at `createDB` and `loadDB`, and appends a class the file lacks; never after an
-  actor changes. `migrate` and `storeDB toPath=` do not copy it, since a load rewrites it; it counts as
-  ACS's own file, so `+WithOtherFiles` does not copy it as another.
-- acsed is a pure server, subject -1. Its commands are its own switch on the code, not `ACS_Actor`:
-  "ACSED will not be journalled", and its commands "do not need to go through the ACS_Actor". Its command
-  methods are marked `ACS_Requestable`, and at boot the helper writes their lines to `acsed-language.txt`
-  beside the lock (the name is Claude's), which acsess reads without a probe. `boot` stays acsess's,
-  since it starts the process. The flag reader, the usage lines and `beginSession` move to acsess.
-- A command naming a database takes it as its subject, under acsed's database type: `storeDB`,
-  `migrate`, `unloadDB`, `acquire`, `release`, `probe`, `inspectionState`, `waitInspectionReturn`,
-  `components`. Subject -1 keeps `createDB`, `loadDB`, `databases` and `shutdown`.
-- `probe(int type, int index) int`: acsed reads that actor's class and answers its place in the file,
-  appending its section first when it is new.
-- Every request is a frame: the subject; for a database, the type and the index (0 for the core, the
-  journal and acsed's database type) and, for an actor, the class's place from the probe; the
-  acquisition key, a `String`, `""` without one; then `parameters`. A connection carries a byte, 1 for
-  `+continueOnRefusal`, a count, then the frames; acsed answers each in order, a status then `returns`,
-  and stops at the first refusal unless the byte is 1. One frame usually; `Commit`'s queue as many.
-- acsed refuses a frame when that actor's class is no longer at that place, or when bytes are left in
-  `parameters` after `request`.
-- `inspectAt` and `endInspection` leave acsed's commands for the journal's requests; `inspectionState`
-  and `waitInspectionReturn` stay, and after any journal request that ends an inspection acsed answers
-  the waits held.
-- A database is an index too. `acsed.databases`, beside the lock (the file's name is Claude's): a line
-  per loaded database, its index, name and folder, tab-separated, the folder last; rewritten at `boot`,
-  `loadDB`, `unloadDB` and `migrate`, as a temporary file renamed into place. acsess reads it for a
-  name's index and its folder's `acse-language.txt`. An index is never reused while acsed runs, so a
-  stale read reaches no other database; a name holding a tab or a newline is refused.
-
-### The split
-
-- `acses` stays the module and `org.halim.acses` the root; `daemon` becomes `acsed`. `ACSES_Commands`,
-  `ACSES_Daemon`, `ACSES_Database`, `ACSES_PersistenceJar` and `ACSES_Request` become `ACSED_…`; the tool's
-  `ACSES` becomes `ACSESS`; the jar `acsess`; `acsed.sock`, `.lock`, `.log`, `$ACSED_SOCKET`.
-- acsess boots acsed with `socket=<path>`, today's path by default; a later acsess derives the same path;
-  a second boot keeps today's rule.
-- acsess, per command: a first word holding `:` is an address, any other an acsed command (`acsess
-  loadDB /data/main calledBy=main`). It splits an address at its last `:`, the database before it and the
-  actor after (`acsess main:arity-0.row-7 setLongFor 5 42 comment=fix`; `db.v2:arity-0` is the database
-  `db.v2`, so a dot in a name needs no rule), turns the name into its index by `acsed.databases`, probes
-  the actor, reads the class's lines from the file, translates the arguments by them, sends, and prints
-  the result by its type. Two round trips a command; the author: "it can make do with the speed".
+Written 2026-10-22 by Claude, for one session of the understanding phase, whose only goal is creating the
+folders' markdowns and moving the entries into them; it stops for the author's review and commit. **The
+author's words** below are the source; lines marked *reading* are Claude's readings of them. Until the
+method is formalized after this session ("After the migration is done by the new session, we will
+formalize the method."), this plan wins over `CLAUDE.md` → Decisions about the method ("this plan is
+newer, but we need to make a migration first"). Round 4's plan is in git at `141008e`.
 
 ## The author's words
 
-The author, 2026-10-19:
+The method, 2026-10-22, with the grammar fixed:
 
-- Picked among Claude's options: "Commands now, filtering next" — "This round: commands for arities,
-  identities and values, plus plain reads (one identity's values, the occupied identities). The next
-  round builds filtering".
-- How `addCatalogRow` picks its row class, picked: "Full class name" — "Any row class on the daemon's
-  classpath, given by its full name."
-- Reads written to the journal as queries (`recordQueryRequest`/`recordQueryResponse`): "Yes, record
-  them".
-- "as the goal it gives commands to the Core with the request comment and returns what Core returns."
-- "the interface contracts for components must allow a way to sign their allowed methods with
-  bindings, and a call method. Because if you think about it, the ACS contracts are for the management
-  of ACS not its data. So if a component allows things outside the responsibilities of ACS it must
-  allow it through a "call" like method. This likely fixes all."
-- "The "doTraceableStep" is similar to what we want. The difference is, instead of steps the requests
-  are registered. [...] the classes that implement it are actors that expose some methods to outside
-  and some other methods to Journal. This is elegant, we need to make the `TraceableForUndoingRedoing`
-  a separate interface with its own name like "ACS_Actor", and even the journal can implement it, since
-  it exposes some methods to the user."
-- "The `doTraceableStep` will be part of ACS_Actor, and the Journal will simply make it return an
-  illegal action error stating (This feature is out of MVP)."; "The refuse because of "inspection" will
-  likely also be handled inside of the journal's call method"; the multi-branch journal: "completely
-  out of scope".
-- "Every action returns a result, so we do not need CQRS right now."
-- "About the call function, make it take a "DataInputStream"." — "Objects introduce overhead, for a
-  2^25+ record data base this is unacceptable. The method require any number of inputs of any types,
-  formalizing this would be hard."
-- "the daemon will be called ACSED and the command line tool will be called ACSESS. So the ACSES project
-  is split in two packages, acsed that gets raw data, and its inputs are specified during the booting
-  session, and the acsess that converts the CLI to raw Data."; "by inputs I mean things like sockets."
-- "You thought `acsess writes by the same layout the daemon reads by.`, which is correct, the
-  communication becomes the responsibility of acsess. The ACSED will take in parameters when it is
-  booted up to open input channels (or maybe only one channel, whichever preferred). The ACSESS will
-  bootup the ACSED for usage, so it can specify the channels itself, and can use them itself."
-- "ACS_Actor is simple, the session can write it. ACS_Actor will have three more methods than the
-  "Traceable..." class which is "request(DataInputStream parameters, DataOutputStream returns)"."
-- "Every requestable method meant to be binded, and must have error checks, more importantly it will be
-  handled on the component implementation, in order to preserve AOP (the aspect of behavior of
-  component is defined in that component). The others are about describing itself, and has can be
-  defined later."
-- "We still can and should write interfaces (in ACS) for structure types"; "We need to make sub
-  structure contracts having their methods."
-- On Claude's open items: "Call only, (at least for now)"; on a file row's path: "Use a path relative to
-  database root, created automatically, calculated by arity and row index like data. Since there will be
-  an actor that decide stuff from the DataInputStream inputs, we can do whatever we want."; on the
-  journal's requests: "undo, redo, inspection related, undo/redo until. You can guess those."; on the
-  channels: "One, since it is likely for all the functionality."; on the wire: "I said Data Streams.";
-  on structures: "Yes, that requires its own talk."; on the names: "ACSES become ACSED, simple."
-- "Method name is a huge no, that kind of stuff will be handled on the ACSESS, we want the ACSED to be
-  fast and low memory. It can throw IO exception, but it fails outside io it only needs to print out
-  the error."
-- "By layout, if you mean the interfaces, yes. If you also mean a static definition of layout or copy of
-  implementations, NO, Because we are nowhere near to implement all the classes, formalizing the method
-  of automatically binding the implemented Actor's actions visible strings and integer values for the
-  Data Streams is the only option."
-- "ensureCapacity should, it has no harm of being open. One important detail, there must be checkless
-  methods and requests must do the checks and call those methods."
-- On the row file: "Good option. Having a separate file for every type of record is better in general,
-  but we still allowed a single file for multi row option, we can append its name "plus" as in
-  `arity-<k>-row-<j>plus.bin`."; on the step's error class: "yes".
-- "Wasn't it through the journal and plus minus stuff? We need to change it anyway, a byte specifying
-  which group and then three bytes that become a four byte int specify the index."
+> The RAPTOR RAG is good for reasoning and I want to use it as your context remembrance method for
+> developing this project. In order to do so, the plan is to make the root folders' markdowns keep the
+> summaries and general goals, and comparisons about sub folders to explain them. The leaf folders'
+> markdown files give the finest details as decisions. However, this will likely cause many markdown
+> files; for simplicity we will use a three file method: agents.md, agents-citable.md,
+> agents-unreviewed.md. Where: Agents hold the summary of the decisions made, citable is the agreed on
+> facts, and the agent-unreviewed [agents-unreviewed.md] is the things I need to check.
+>
+> Rules are:
+> - The agents will read the agent.md [agents.md] only, and if confused will check the citable first.
+> - If they conflict about the details, (relatively) leaf wins; about the goal and summary, the
+>   (relatively) root wins.
+> - If I make a decision, it will be in the unreviewed section; I will review and fix them.
+> - If I make a decision, it [the agent] will store it in two parts: Verbatim, meaning (a better
+>   grammar and simpler explanation done by removing filler (and alike) words).
+> - If I state I reviewed decisions, the agent will look at unreviewed files and will move them to
+>   citable.
+> - Newer entries are lower, and if they conflict they will win against former entries.
+>
+> So in development I will make decisions which are moved to the markdowns; I will review them, and the
+> agent will move them and build the agents.md using the former agents.md and citables. Remember to
+> clear the agents.unreviewed.md [agents-unreviewed.md] file.
 
-The author, 2026-10-20:
+The answers to Claude's eight questions, 2026-10-22; the quoted option texts are Claude's, picked by the
+author:
 
-- On the code and the error: "Approved."; on the checks: "keep the check in the public methods for now,
-  in development extra error check doesn't harm."
-- "The "request" method handles it a certain way, describing it can be another responsibility, but can
-  be given to "ACS_Actor" again. So two new methods in the ACS_Actor interface, "get allowed request
-  count" and "getRequestMethodAt(int methodI)"." *(Replaced below by `getRequestables`.)*
-- "0 means core, -128 means journal, 1 is for arity, 2 for structures, 4 for procedures, 9 for arity
-  rows"; on rows: "after picking the arity we can simply make a command that requires another index for
-  the row. But you can go with your idea for now, since an element is not likely to have more than 127
-  different data."
-- "the command should allow things like "db.arity-0.row-7", it is easier and usable." *(Its separator
-  replaced below.)*
-- On what describes a request, among a `Method`, a string in a small grammar and a description object:
-  "Go with (b), the string grammar"; "Only problem with b is, we need to automatically read the method
-  names from the code instead of string literals."
-- "The implementation meant to define the requestables. I suggest a "getRequestables(DataOutputStream
-  dos)" that describes the available request options. When the ACSED runs it calls all the classes of
-  the data base for this purpose, and writes them all into one file describing the commands. Then the
-  ACSESS reads that file each time sending a request."
-- "The file that describes commands can be in the database root named as "acse-language.*" or alike."
-- "The file method takes too much overhead for just translating delegation. I suggest a "probe" request
-  which make the instance load its method data from the file. So file is rewritten only when a new class
-  is imported."; on which instance: "A, the acsess process. The ACSESS will likely be used in terminal
-  (as intended), it can make do with the speed slow for a data base."
-- "Take your suggestions for the rest."
-- "Let's make it `acsess main:arity-0.row-7 setLongFor 5 42 comment=fix` instead."
-- "Data base must also be an index, so a file listing data base names with paths with their indexes are
-  the right choice."
-- "So the acsess reads the data base name and gives the index to the acsed. ACSED meant to be a pure
-  server as I said before, and ACSESS is the command line tool to connect to it locally."
-- On acsed's own commands, among Claude's options (binary this round, or later): "a, and use 127 for
-  acsed".
-- Asked whether acsed could be -1, or the negative groups acsed's: "ACSED will not be journalled."
-- "The journal is inside of a data base. Wait, do we plan to make a "Subject Action Parameters" like
-  structure for the commands? Then the negative values mean the database's journal, and 0 means ACSED,
-  and the positives mean data base index. I think this is not optimal tho, since a journal is dependent
-  on a data base, we can simply use positive values for database index and negative values for ACSED
-  commands. After the data base index we can add another byte for the type which will also contain the
-  Journal."
-- "ACSED commands do not need to go through the ACS_Actor, right?" (Claude agreed.)
-- On Claude's readings: "a, index 0 is first, and yes to database subjects. Also commands can be long,
-  we do not need to limit ourselves to bytes. Why optimize the command length for bytes of data?"
-- On acsed's database type (-1) and the journal's packed ids: "Take your suggestions".
+- [Which folders get the three files:] "(Q1: a)" — "The repo root, each module (`acs/`, `acse/`,
+  `acses/`, `acs-view/`, `ontodirectory/`), and a package folder once a decision about it is made, such
+  as `acse/…/arity/catalog/file/`. Folders that only hold one folder get none. A decision about several
+  folders goes to the deepest folder holding all of them, and the other folders' agents.md can point at
+  it."
+- [The names, and how an agent comes to read agents.md:] "(Q2: a, except CLAUDE.md)" — "`AGENTS.md`,
+  `agents-citable.md`, `agents-unreviewed.md`, plus that one setting [`claude-md-and-agents-md`]."
+- [Today's files:] "(Q3: primarily (a), your ideas are cool, but since [the] root holds way too many
+  markdowns, specifically the root lists those on the markdowns)" — (a): "`citable.md` becomes the root
+  agents-citable.md as it is, beside CLAUDE.md. A later decision about a detail goes to its folder and
+  wins there (rule 2). The 35 Unconfirmed entries go to the agents-unreviewed.md of the folder each one
+  concerns. `gui-decisions.md` becomes `acs-view/agents-citable.md`, and the `questions.md` line goes to
+  the root's unreviewed file. `summaries/` and `markdowns/decisions/` are replaced by the agents.md
+  files."
+- [Verbatim and Meaning:] "(Q4: Verbatim has the grammar fixes, and the meaning is your inference; it
+  can be shorter and that's the only goal; if [it] cannot get shorter, no need for inferences. (a))" —
+  (a) [today's entries, which have one part]: "Keep them as they are, counting as both parts."
+- [Which wins across levels, and the overridden entry:] "(Q5: (a). The agent must move the details to
+  the level they are in. The level of a detail is defined by what it describes. If it describes [a] few
+  things' relation, it belongs to the parent of the relations. If it describes a thing, it [is] meant to
+  be on the same level; example: a markdown file [that] describes the acs-viewer is on the parent of the
+  acs-viewer folder.)" — (a): "Level across files, date within a file. A new decision is written in the
+  deepest folder it concerns, so a newer detail lands in the leaf anyway. The Meaning names any entry the
+  new one overrides, so your review sees it." *Reading*: the (a) also picks "Kept and marked "[replaced
+  by: …]", since "we do not cut my words"."
+- [What agents.md contains:] "(Q6: (a))" — "Sentences built from the reviewed Meanings. Each line cites
+  its citable entries by number; numbers are never reused. Each file is about a quarter of its citable,
+  and the root's also compares the subfolders. They are rebuilt leaves first and root last, each from
+  its former agents.md, its citable, and its subfolders' agents.md."
+- [Several sessions at once:] "(Q7: There will be only one session on a folder.)"
+- [Where the method is written:] "(Q8: this plan is newer, but we need to make a migration first.)"
+- "Lastly there are two phases: one is development (ordinary), and the other is understanding (moving
+  the data across markdowns). After you make the plan, we will start a new session with the only goal
+  of creating markdowns and moving those related entries."
 
-## Facts, checked 2026-10-19 and 2026-10-20
+The answers to Claude's two further questions, and two remarks, 2026-10-22:
 
-- `TraceableForUndoingRedoing` is nested in `ACS_Journal` (line 52); `ACS_Core:12`,
-  `ACS_ArityComponentBase:47` and `ACS_StructureComponentBase:10` extend it; `beginRecordingActivity`
-  takes it (`ACS_Journal:9`). `doTraceableStep` is written in `ACSE_CoreBasic`,
-  `ACSE_ComposableArityCatalog` and seven structure classes; the journal replays by `actorOf`, the core
-  0, arity k as -(k+1), structure k as k+1 (`ACSE_JournalBasic:365`). Undoing `addArity` empties its
-  slot (`ACSE_CoreBasic:431`).
-- `ACS_Core`: `addArity` (two), `addCatalogRow(int, ACS_ArityCatalogRowBase, String, String)`,
-  `addStructure`, `removeArity`, `removeStructure`, `delegateRemoval`, `captureIdentity` (two),
-  `getJournal`. `ACS_ArityComponentBase`: `occupied`, `registerIf`, `removeIf`, `catalogCount`, reads for
-  int, long, double, boolean, Object and String, writes for long, double, boolean and String,
-  `copy…Into(…, dest, offset)`; `ensureCapacity` and `truncate` take no comment.
-- The memory rows have a no-argument constructor; the file rows take a `Path`
-  (`IntegerValueCatalogFileInt(Path)`); `FileContentCatalogRow` takes another row.
-- Stored components are `arity-<slot>.bin` and `structure-<slot>.bin` (`ACSE_CoreBasic:402`).
-- `acses` holds `acsess` (`ACSES`, `ACSES_Request`) and `daemon` (`ACSES_Commands`, `ACSES_Daemon`,
-  `ACSES_Database`, `ACSES_PersistenceJar`). The jar is `acses`, its main `org.halim.acses.acsess.ACSES`,
-  which names the daemon by a string (`ACSES:29`).
-- A connection carries one request: a count, then each argument as UTF-8 length and bytes; the answer is
-  a status and one text (`ACSES_Request:21`). The daemon opens one Unix socket and blocks on `accept()`
-  (`ACSES_Daemon:58`); its path is `$ACSES_SOCKET`, else under `$XDG_RUNTIME_DIR`, else the temporary
-  folder, with the log and the lock beside it (`ACSES_Request:28`).
-- No annotation or reflection exists in `acs`, `acse` or `acses`; the parent pom sets no `-parameters`.
-- No command writes to a core yet, so every journal through the daemon is empty (53d82b3's message).
-  Claude's check outside the repo: `~/mein/claude/scripts/acses-smoke/run.sh`, 137 checks at 53d82b3.
+- [On Claude's reading that today's entries are placed by level now:] "Level is the folder."
+- [The move on "reviewed":] "Since the "unreviewed" markdowns will have a certain structure, I feel like
+  we can use a python script to move them automatically."
+- [Q-A, where the root's three files go and which is its summary:] "Q-A: (a)" — "In `markdowns/`:
+  `AGENTS.md`, `agents-citable.md` and `agents-unreviewed.md`. `CLAUDE.md` gets one line,
+  `@markdowns/AGENTS.md`, so the root summary loads at launch; otherwise it is unchanged until the method
+  is formalized. The repo root keeps only `CLAUDE.md` and `README.md`."
+- [Q-B, where a module's files sit:] "Q-B: (a)" — "In the module folder, which stands for the folders
+  down to its package root: `acse/AGENTS.md`."
+- [Which entries the review move takes:] "The script must move things above the `# Unreviewed` line."
+- [Before this session:] "Commit all, then I will run the script [the launcher]."
 
-## The session
+## The design
 
-1. Checkpoint: present the design in ten lines, and ask the one name it leaves: the arity's requestable
-   method for the occupied identities (Claude's suggestion: `occupiedIdentities`). Wait for the answer.
-   Never discard uncommitted work.
-2. The split: packages, the renames, the daemon's name string, the jar, the socket, lock, log and
-   variable. Mechanical.
-3. `acs`: `ACS_Actor` with its helper, and `ACS_Requestable`; every reference to
-   `TraceableForUndoingRedoing` moves to `ACS_Actor`. The parent pom compiles with `-parameters`.
-4. The journal: its actor ids as type and index; its marked methods, `request` and `getRequestables`;
-   its step's error.
-5. The core and the arity: the marked methods with their codes, the `addCatalogRow` overload, the
-   occupied identities, `ensureCapacity`'s check (first check that no caller relies on it lowering the
-   reach), the row files, `request`, `getRequestables`, the reads recorded as queries.
-6. acsed's commands, under subject -1 and acsed's database type. First present their lines, one per command in the grammar, each
-   keeping its meaning and flags, and wait for the author's approval; then convert them, with `probe`
-   and `acsed-language.txt`.
-7. acsed: `socket=` at boot; frames and connections; `acse-language.txt`; actor requests and their
-   refusals; `acsed.databases` and the database indexes; `inspectAt` and `endInspection` moved to the
-   journal, with the held waits answered; `migrate` and `storeDB toPath=` leaving the file out.
-8. acsess: commands and addresses, `acsed.databases`, the probe, the files, the translation, the flags,
-   the overloads, `row-<j>`, the flag reader and usage lines moved in, `beginSession` and `Commit` as
-   frames, the printed results.
-9. Verify: `mvn -o -q compile`. Extend Claude's `~/mein/claude/scripts/acses-smoke/run.sh`, keeping what
-   it checks today through the new wire: boot with `socket=` and a later acsess finding it;
-   `acse-language.txt` after `createDB` and `loadDB`, and a class appended; a probe; `addArity`,
-   `addCatalogRow` by class name (a memory row and a file row), `captureIdentity`, a write and a read of
-   each type through `row-<j>`, the occupied identities; a read recorded as a query; `ensureCapacity`
-   below the reach keeping it; a write during `inspectAt` refused, and `waitInspectionReturn` answered by
-   the journal's `endInspection`; `Commit` stopping at a refusal and going on with `+continueOnRefusal`;
-   a stale class place refused; leftover bytes refused; an unloaded database's index not reused; the
-   journal's step error. Tests in `src/test/` are the author's.
-10. List the doc lines the work makes false (`CLAUDE.md` → Layout, `current-state.md`'s ACSES row, the
-    README's commands, the javadocs naming `acses`), propose replacements, edit on approval.
-11. Propose entries under Unconfirmed in `citable.md` for this round's decisions, quoting the
-    author; add them on approval.
-12. Stop: `git status`, the diff's summary, the checks' results. No commit until the author says.
+### The files
+
+- A folder that holds entries has `AGENTS.md`, the summary; `agents-citable.md`, the entries the author
+  agreed on; and `agents-unreviewed.md`, the entries the author has not checked. A folder, a module
+  included, gets them when its first entry arrives (*reading* of Q1: a, so no file stands empty).
+- The root's three files are in `markdowns/` (Q-A: (a)). `CLAUDE.md` loads the root summary with the
+  line `@markdowns/AGENTS.md`, written there without backticks, since the docs say an import inside a
+  code span is not read.
+- A module folder stands for the folders between it and its package root (Q-B: (a)): `acse/`'s files
+  describe what is in `org.halim.acse`; `ontodirectory/`'s, what is in `org/halim/`, which holds three
+  package roots (`legacy`, `nStructure`, `setSea`).
+- Loading, checked against the docs on 2026-10-22 (https://code.claude.com/docs/en/memory; installed
+  Claude Code 2.1.308, AGENTS.md support since 2.1.277):
+  - By default this repo's `CLAUDE.md` stops every `AGENTS.md` from loading: "By default, Claude reads
+    `AGENTS.md` only when you have no `CLAUDE.md` in your working directory or above it."
+  - With Project instructions set to `claude-md-and-agents-md`, Claude reads "Your `CLAUDE.md` and
+    `AGENTS.md` files together, each directory's `CLAUDE.md` files first and its `AGENTS.md` after them".
+  - A subfolder's `AGENTS.md` loads "when Claude opens a file there with the Read tool". The docs say
+    this for the default mode; step 8 checks it with the setting.
+  - An `AGENTS.md` that `CLAUDE.md` imports "isn't read twice".
+  - `agents-citable.md` and `agents-unreviewed.md` load nowhere by themselves, as rule 1 wants.
+
+### Where an entry goes
+
+- The author's rule (Q5), with "Level is the folder.": an entry goes to the folder its level names. It
+  applies now to today's entries too (*reading*): Q5's "The agent must move the details to the level
+  they are in" overrides Q3 (a)'s "as it is", and the rest of Q3 (a) holds.
+- A folder's files describe the things directly in it, folders and files, and the relations among them
+  (*reading*). A relation goes to the deepest folder holding all its things (Q1: a). An entry is never
+  split: one about two things goes whole to the folder holding both. "The root" is `markdowns/`'s files.
+- Examples, as Claude would place them; step 4's table decides:
+  - "The ACS is a system, as it names; ACSE is its implementation, and ACSES uses it for [the] database
+    service." — the relation of `acs`, `acse` and `acses` → the root.
+  - "ACS-view is the acsess GUI, in a separate Maven module, `acs-view`: …" (unconfirmed) — `acs-view`
+    as a thing → the root, as the author's example says.
+  - "ACSES splits into two packages: `acsed`, the daemon, … and `acsess`, the command line tool, …"
+    (unconfirmed) — the relation of `acsed` and `acsess`, both in `org.halim.acses` → `acses/`.
+  - "We can make the journal's creation independent of the core: `indexer.bin` names the journal's class
+    beside the core's, …" — the journal, the core and the persistence manager, all in `org.halim.acse`
+    → `acse/`.
+  - Goal, Vision, Licence, Process, Words and Target use case describe the project → the root.
+
+### Entries
+
+- In a citable, an entry is numbered when it arrives, `- **N.** `, from 1, never reused or renumbered.
+  Entries keep the section headings they had (`## Goal`, `## Persistence`, …). A section's notes are
+  copied into every file that gets its entries. A moved entry keeps its words, [brackets] and italic
+  notes. A new entry goes at the end of its section, so within a section the lower is the newer
+  (rule 6).
+- In an unreviewed file, a new entry has two parts: **Verbatim**, the author's words with the grammar
+  fixed (`CLAUDE.md` → The quote test), dated; **Meaning**, Claude's inference, only when it is shorter.
+  A `Section:` line names its citable section, and a `Replaces:` line names any entry it overrides: Q5
+  (a) has the Meaning name it, and a line of its own lets the script mark it. Unreviewed entries are not
+  numbered.
+- A folder is named by its path from the repo root, with a module's chain down to its package root left
+  out: `acse/arity/catalog/file` names `acse/src/main/java/org/halim/acse/arity/catalog/file/`, and
+  `root` names `markdowns/`.
+- Today's entries keep their one part (Q4: (a)). Today's unconfirmed entries move as they are
+  (*reading*): their claim is already Claude's inference and their quotes the Verbatim. Their pointers
+  to `citable.md` → a section are rewritten to the cited entry's new place, which changes Claude's words
+  only, and each rewrite is listed.
+- When an entry reaches a citable and overrides an older one, the older is kept and marked
+  `[replaced by: <folder> N]` (Q5: (a)).
+- Conflicts: within a file, the lower wins; across files, the leaf wins on details and the root on
+  goals and the summary (rule 2).
+
+### The review move
+
+- The structure the script relies on (the author: "Since the "unreviewed" markdowns will have a certain
+  structure, I feel like we can use a python script to move them automatically."). An
+  `agents-unreviewed.md` holds, in order:
+  - one header line;
+  - the entries the author has reviewed, which the author moves above the `# Unreviewed` line;
+  - the `# Unreviewed` line;
+  - the entries not yet reviewed, newest lowest, where agents append.
+- Every entry is one top-level bullet that carries its section on its own `Section: <name>` line, so it
+  can move without a heading. A new entry is `- Verbatim: … *(<date>)*`, then an optional `Meaning: …`
+  line, a `Section: …` line and an optional `Replaces: <folder> N` line. A legacy entry is its bullet as
+  it is, plus its `Section:` line.
+- `~/mein/claude/scripts/agents_review_move.py REPO [FOLDER …] [--apply]`, written in step 6:
+  - Without `--apply`, it does a dry run: per folder, each entry with its section and the number it would
+    get, saved dated in `~/mein/claude/results/`.
+  - It takes only the entries above the `# Unreviewed` line ("The script must move things above the
+    `# Unreviewed` line."); the line and everything below it stay.
+  - With `--apply`, it does six things:
+    - appends each entry to the end of its section in the folder's `agents-citable.md`, making the
+      section at the end of the file if missing;
+    - numbers it `- **N.** …` with the next unused number;
+    - marks each `Replaces:` target `[replaced by: <folder> N]`;
+    - removes the moved entries from the unreviewed file, which is how "clear the agents-unreviewed.md
+      file" is read (*reading*);
+    - saves a dated record to `~/mein/claude/results/`;
+    - prints the folders whose `AGENTS.md` needs a rebuild, leaves first, root last.
+  - It refuses to run when any line falls outside the structure, so nothing is moved or cleared
+    silently.
+- Rebuilding `AGENTS.md` means writing a summary, so it stays the agent's work, done on the folders the
+  script prints.
+
+### AGENTS.md
+
+- Sentences built from the entries: from their Meanings where they have one, from their words
+  otherwise. Each line cites the entries it rests on: `(12, 15)` in its folder's citable, `(acse 4)` or
+  `(root 7)` in another folder's.
+- Every entry of the folder's citable is cited. A line keeps the hedges, negations, scope and time words
+  of the entries it cites, or leaves that claim out. The 2026-10-21 checking run found five quotes that
+  each dropped one of these.
+- About a quarter of its citable's words. The root's also compares its subfolders and lists the files in
+  `markdowns/` (Q3).
+- Built from citables only, never from unreviewed entries: leaves first, root last, each from its
+  citable and its subfolders' `AGENTS.md`. The root's former summary is `markdowns/decisions/summaries/`
+  (quotes only, at 39% of its source).
+
+### What stays
+
+- `current-state.md`, `questions.md`, `terms.md`, `markdown-refining.md`, `novelty-study.md`,
+  `naming-fix.md` and `README.md` keep their content; only their lines naming moved files change
+  (step 10). `questions.md`'s "Author-decision" line moves, since it is a decision.
+- `CLAUDE.md` changes only by the import line (Q-A: (a)) and step 10's pointers. The method itself is
+  formalized after this session.
+
+## Facts, 2026-10-22
+
+- `markdowns/decisions/citable.md`: 746 lines, 167 entries above Unconfirmed and 35 under.
+- `acs-view/gui-decisions.md`: 5 entries, "all confirmed".
+- The "Author-decision" line in `questions.md`.
+- Every source is committed with this plan. `javac.20261021_081457.args`, a compiler argument file at
+  the repo root holding home paths, stays untracked.
+- `markdowns/decisions/summaries/`: 14 topic files and `overview.md`.
+- The five modules hold 104 folders, 61 of them holding Java files.
+- Two entries the method touches:
+  - `gui-decisions.md`'s "[Where these decisions live:] I want you to record the GUI design related
+    decisions of acs-viewer in its own maven module folder as "gui-decisions.md" and all confirmed." is
+    replaced by the three-file method: it is kept and marked.
+  - Process's "I want the inferred decisions and [the] rest of the decisions to stay under the same path
+    [`markdowns/decisions/`]." still holds per folder, since each folder's unreviewed and citable files
+    sit together; only its bracket is outdated.
+
+## Steps
+
+1. **Checkpoint.** Run `git status` and say what changed in the sources since this plan's commit. Ask
+   anything still unclear as `markdown-refining.md` → Questions to the author says. This session
+   touches every folder's markdowns, so no other session records decisions while it runs (Q7). Wait.
+2. **The setting.** Ask the author either to set Project instructions to `claude-md-and-agents-md` in
+   `/config`, or to approve adding `"pluginConfigs": {"cc-plugin-agents-md@builtin": {"options":
+   {"instructionFiles": "claude-md-and-agents-md"}}}` to `~/.claude/settings.json`. It applies from the
+   next message.
+3. **Inventory**, by script: every entry with its source, section and first words; counts per source.
+   The result goes, dated, to `~/mein/claude/results/`.
+4. **Placement table**: for each entry, the thing or relation it describes and its folder, grouped by
+   folder. Each whole section that stays at the root is one line, so the review reads only what moves.
+   Entries whose folder is unclear are listed separately, with numbered options. Save it dated, stop
+   for the author's review, and take the fixed table.
+5. **Move**, by script:
+   - Create the files in each folder of the table, each with one header line.
+   - Each entry from `citable.md` above Unconfirmed or from `gui-decisions.md` goes, numbered, to its
+     folder's `agents-citable.md`, under its section. The unconfirmed entries and `questions.md`'s line
+     go below the `# Unreviewed` line of its `agents-unreviewed.md`, each with its `Section:` line.
+   - A check by script: every source entry is found word for word exactly once, in the folder the table
+     says. The only added text is the numbers, headings, header lines, copied section notes and the
+     listed pointer rewrites.
+6. **The review-move script**: write `agents_review_move.py` and test it on a copy in the scratchpad.
+   The test has made-up entries above and below the `# Unreviewed` line in two folders, one entry with
+   a `Replaces:` line, and one malformed file the script must refuse. Run it, dry, on the migrated
+   unreviewed files. The results go, dated, to `~/mein/claude/results/`.
+7. **AGENTS.md**, leaves first, root last; then add the import line to `CLAUDE.md`.
+   - A check by script, adapted from `summary_check.py`: citations resolve, every entry is cited, guard
+     words are kept, and each file's words are counted against its citable.
+   - Then one checking run on a different model, as on 2026-10-21: per entry ok, lost or changed. Fix
+     every changed entry and report the lost share.
+8. **Loading**: open a file with the Read tool in a folder that now has an `AGENTS.md`, and say whether
+   the `AGENTS.md` arrived in context. If not, stop and report. The root summary's import is checked at
+   the start of the next session.
+9. **Remove what moved**, once steps 5 to 7 pass: `markdowns/decisions/`, `acs-view/gui-decisions.md`,
+   and `questions.md`'s moved line.
+10. **Pointers**: list the lines that name the moved files, propose replacements, and edit on approval.
+    They are in `CLAUDE.md`, `current-state.md`, `questions.md`, `README.md`, `markdown-refining.md`,
+    `novelty-study.md`, Claude's memory, and the launchers in `~/mein/claude/scripts/`.
+11. **Stop**: report `git status`; entries per source and per folder, before and after; lines and words
+    per file; and the checks' results. No commit until the author says.
+
+- If the author moves entries above a `# Unreviewed` line during the session and says they are
+  reviewed: run `agents_review_move.py --apply`, then rebuild the `AGENTS.md` files it prints, leaves
+  first.
+- Before each step that edits files, say in one line what it will change.
+- Never cut or change the author's words. A placement or move that would need it is asked, with
+  numbered options.
+- Scripts go to `~/mein/claude/scripts/`, results dated to `~/mein/claude/results/`. Report at the end in
+  a few lines.

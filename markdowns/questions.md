@@ -53,6 +53,7 @@ Markdown files.
 - **What exactly is a "paragraph of knowledge", and how does a paragraph cite its sources and
   reasoning?**
   - Author: "We can talk about it later." The three-agent pipeline is under Goal in `citable.md`.
+  - Author-decision: We will add few rows that store the source file, and it's page number.
 
 ## Identity sets and catalogs
 
