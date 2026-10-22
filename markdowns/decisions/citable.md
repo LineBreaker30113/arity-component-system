@@ -731,3 +731,16 @@ Agents append new inferences here (`CLAUDE.md` → Decisions).
   decision: it is easier to represent directionless here.")* Complements: the entry above, node-cluster
   being a connector with graph rules on its primary arity. No conflict found in the Citable; unary stays
   directed at 0 with symmetric as its restriction, from the same session, unrecorded.
+- ACS-view is the acsess GUI, in a separate Maven module, `acs-view`: a database tool like SQL viewing
+  tools that also edits, OntoDirectory's GUI cloned into it for the structure, not the views, and
+  running acsess; its GUI design decisions are in `acs-view/gui-decisions.md`. *(Author, 2026-10-21:
+  "For context, we later will also make a similar application called ACS-view, that is simply the
+  acsess GUI."; 2026-10-22: "I want you to clone the onto directory GUI to a new maven module of named
+  acs-view, and make it prompt the acsess to work and visualize stuff."; [what the clone keeps:] "Not
+  the views, but the structure of the GUI."; "I need you to build a separate maven module for the goal
+  I specified. Do not make in place edits on other projects. The ACS viewer is a data base tool just
+  like SQL viewing tools that also allow editing."; "These two is about the project, keep it at the
+  root"; "Also move the SQL-tool sentence.")* Commons: "Then we will develop a GUI for that application
+  that uses the terminal input" (`citable.md` → Goal) and "the GUI and agents will use the adaptor"
+  (`citable.md` → Layers and names), acsess being both. Conflicts: "[The project ACS has] six
+  submodules" (`citable.md` → Layers and names) would lose its count, ACS-view being a seventh; asked.
