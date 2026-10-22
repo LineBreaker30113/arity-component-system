@@ -3,6 +3,8 @@
 A classification engine built on abstract mathematics — set algebra over int identities, aimed at
 formal concept analysis. Java 21, Maven, `fastutil` and `RoaringBitmap` as the only runtime dependencies.
 
+@markdowns/CLAUDE.md
+
 ## Working relationship
 
 The author: "My job is to make decisions and write the parts unique, so Claude can complete the
@@ -70,8 +72,8 @@ Every entry has one home. **Agents' inferences live only under the Citable's Unc
 so a wrong one can only sit where the author reviews. Keep the file count low: do not create a
 markdown file without being asked.
 
-- `markdowns/decisions/` — the decisions: the Citable and its summaries, kept as **Decisions** below
-  says. **The Citable wins any conflict with another doc.** Fundamental decisions only: a command
+- Each folder's `agents-citable.md`, `agents-unreviewed.md` and `CLAUDE.md` — the decisions; the root's
+  are in `markdowns/`. Kept as **Decisions** below says. **The Citable wins any conflict with another doc.** Fundamental decisions only: a command
   about one class or method stays out.
 - `markdowns/terms.md` — one-line definitions of terms, looked up by name when met, not read whole.
 - `markdowns/questions.md` — open questions, each with its options and who holds each. A suggestion
@@ -122,7 +124,9 @@ their code, with only filler removed.
 decisions work as a RAPTOR"; "hereby Agents store their inference only, I can fix those
 inferences"; "we do not cut my words." *(2026-10-18)*
 
-- **The Citable**, `markdowns/decisions/citable.md`, is the single source of truth. Above its
+- Since 2026-10-22 the decisions are in the folders' three files (`markdowns/new-architecture.md`); the
+  method below is the former one until it is formalized.
+- **The Citable**, now each folder's `agents-citable.md`, is the single source of truth. Above its
   **Unconfirmed** heading: the author's words, never cut, and the inferences the author confirmed.
   At its end, under Unconfirmed: the agents' inferences.
 - **Agents store inferences only**, never the author's words in full: the agent's claim, then the

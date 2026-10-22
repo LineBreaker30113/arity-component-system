@@ -46,8 +46,8 @@ Its working files are in `reference/novelty/`, gitignored: `novelty-study-2.md` 
 
 Scan of the tracked tree and of all 44 commits, every one on `main`: no email, home path or secret in
 any line ever added, and every commit carries the GitHub noreply address. The only home-style paths
-are `~/main` and `~/db3`, examples inside the author's commands in `citable.md` (Goal; Layers and
-names). Tracked but not project work: `.mcp.json`, Claude Code's local link to IntelliJ, and
+are `~/main` and `~/db3`, examples inside the author's commands in `markdowns/agents-citable.md` (root 1) and
+`acses/agents-citable.md` (2). Tracked but not project work: `.mcp.json`, Claude Code's local link to IntelliJ, and
 `src/main/java/Main.java`, IntelliJ's template.
 
 ## Handoff — decided, not done yet
@@ -73,7 +73,7 @@ decided to be done and urgent.")* The last five, and the reading below, were con
   end as Unconfirmed; summaries cut to about a quarter, plus `summaries/overview.md`; the summary check
   run. Where the handoff goes is the author's call.
 - Later: the procedure contract, and more structure components, the cartesian (ternary) and the
-  transitions arities among them (`citable.md` → Architecture).
+  transitions arities among them (`acs/structure/agents-citable.md` 1).
 - The commercial licence's text, drafted by a lawyer before it is sold, and a contributor agreement
   before the first outside contribution.
 - Delete `reference/msgfilter.py` once the author says so; it is gitignored.
