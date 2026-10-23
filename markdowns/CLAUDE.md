@@ -84,4 +84,4 @@
 - `deprecatedCode/org/halim/ontology/CLAUDE.md`: the former engine, read only.
 - In `markdowns/`: `agents-citable.md` and `agents-unreviewed.md`, this folder's entries;
   `new-architecture.md`, the author's words on the three-file method; `current-state.md`,
-  `questions.md`, `terms.md`, `markdown-refining.md`, `novelty-study.md`, `naming-fix.md` and `plan.md`.
+  `questions.md`, `terms.md`, `markdown-refining.md`, `novelty-study.md` and `naming-fix.md`.

@@ -20,7 +20,7 @@ for refining them. Claude uses it when the author wants a refined markdown file.
 Claude's wording, from the research of 2026-10-14, written at the author's request ("Can you
 implement everything good and related into the refining .md?"). The author's rules above win.
 Since 2026-10-18 it no longer cuts the author's words ("we do not cut my words"): it applies to the
-summaries and to the Unconfirmed inferences (`CLAUDE.md` → Decisions).
+folders' `CLAUDE.md` summaries and to the Meanings in `agents-unreviewed.md` (`CLAUDE.md` → Decisions).
 
 ### Steps
 

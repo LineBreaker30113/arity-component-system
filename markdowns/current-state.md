@@ -68,10 +68,6 @@ decided to be done and urgent.")* The last five, and the reading below, were con
   this naming convention is good, but out of scope; this is boilerplate polishing. — Not named yet.
 - Test the README's "2^28 files of records … a few GiB" claim; nothing measures it. *(Author: "Record
   it, we need to test it.")*
-- Move the decisions into the Citable (`CLAUDE.md` → Decisions): `decisions.md` and its topic files
-  joined into `citable.md`, words unchanged; `inferred-decisions.md` joined in, its Unreviewed at its
-  end as Unconfirmed; summaries cut to about a quarter, plus `summaries/overview.md`; the summary check
-  run. Where the handoff goes is the author's call.
 - Later: the procedure contract, and more structure components, the cartesian (ternary) and the
   transitions arities among them (`acs/structure/agents-citable.md` 1).
 - The commercial licence's text, drafted by a lawyer before it is sold, and a contributor agreement
@@ -89,6 +85,11 @@ Items of the handoff above found done, kept as the record.
   option, we still need to make a string subversion of it. The problem with it is the allowed types
   of those catalogs are not in one place.")* — Done: `StringValueCatalog` in `acs`, its rows in `acse`, in `c0e26c3` (2026-10-19); checked
   2026-10-21.
+- Move the decisions into the Citable (`CLAUDE.md` → Decisions): `decisions.md` and its topic files
+  joined into `citable.md`, words unchanged; `inferred-decisions.md` joined in, its Unreviewed at its
+  end as Unconfirmed; summaries cut to about a quarter, plus `summaries/overview.md`; the summary check
+  run. Where the handoff goes is the author's call. — Done in `f52b823` (2026-10-21), then replaced
+  by the three-file migration in `3c57dce` (2026-10-22); checked 2026-10-23.
 
 ## Former handoff — 2026-09-18
 

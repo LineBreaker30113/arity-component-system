@@ -12,7 +12,7 @@ boilerplate."
 
 | Job | Who | When | Output | Checked by |
 |---|---|---|---|---|
-| Decide | author | a question | the Citable | nothing: the authority |
+| Decide | author | a question | an entry in a folder's citable | nothing: the authority |
 | Write the unique parts | author | — | interfaces, invariants, tests, the first class of each pattern | compiler, the author's tests |
 | Review | author | before a session or a commit | reviewed inferences, accepted diffs | — |
 | Answer | Claude | a question | the terminal, or `response.md` if asked | sources, arithmetic shown |
@@ -22,8 +22,7 @@ boilerplate."
 
 - **Write only when requested** — code, markdown, commits. Recording may also run under a standing
   instruction. Not wanted: implementing features, refactoring, or improving code shown for discussion.
-- **Boilerplate** is code fully determined by the author's code, the Citable, and reviewed
-  inferences: two careful people given the same inputs write the same code. If a choice is left, it
+- **Boilerplate** is code fully determined by the author's code and the citables: two careful people given the same inputs write the same code. If a choice is left, it
   is a unique part — stop and ask rather than choose. It covers sibling variants of a class the author
   wrote, delegation methods, bulk accessors per type once the first one exists, and the mechanical
   edits of a rename (the new name is the author's). Not interfaces, invariants, or tests.
@@ -56,7 +55,7 @@ boilerplate."
 - **No reports, briefs, or plans** unless a file is explicitly requested.
 - **Use the author's words.** Answer in the vocabulary the author already uses. A term they do not
   use is defined where it first appears — in answers, and in `questions.md` and
-  the Citable's Unconfirmed entries too. A question that cannot be asked without jargon is not ready to be
+  the `agents-unreviewed.md` entries too. A question that cannot be asked without jargon is not ready to be
   asked; explain it first.
 - **One question, one answer.** Do not anticipate the next three questions and pre-answer them, and
   do not append an architecture, a build order, or a verification section to a factual answer.
@@ -68,13 +67,14 @@ boilerplate."
 
 ## Markdown files
 
-Every entry has one home. **Agents' inferences live only under the Citable's Unconfirmed heading**,
-so a wrong one can only sit where the author reviews. Keep the file count low: do not create a
+Every entry has one home. **An agent writes a new entry only below a `# Unreviewed` line**, so a
+wrong one can only sit where the author reviews. Keep the file count low: do not create a
 markdown file without being asked.
 
 - Each folder's `agents-citable.md`, `agents-unreviewed.md` and `CLAUDE.md` — the decisions; the root's
-  are in `markdowns/`. Kept as **Decisions** below says. **The Citable wins any conflict with another doc.** Fundamental decisions only: a command
-  about one class or method stays out.
+  are in `markdowns/`. Kept as **Decisions** below says. **A citable wins any conflict with another
+  doc.** Fundamental decisions only: a command about one class or method stays out; a package's design
+  detail is a decision for its folder's files.
 - `markdowns/terms.md` — one-line definitions of terms, looked up by name when met, not read whole.
 - `markdowns/questions.md` — open questions, each with its options and who holds each. A suggestion
   that answers no question is not recorded. A settled question leaves the file.
@@ -101,8 +101,8 @@ their code, with only filler removed.
   negations, scope, time.
 - Quote the transcript or the code, never a compaction summary.
 - A sentence of Claude's becomes the author's only when the author quotes it and approves it, or
-  confirms it strongly enough to claim it — moving it above the Citable's Unconfirmed heading is
-  that claim. General agreement approves no particular sentence.
+  confirms it strongly enough to claim it — moving it above an `agents-unreviewed.md`'s
+  `# Unreviewed` line is that claim. General agreement approves no particular sentence.
 
 **Inferences, suggestions, facts.**
 
@@ -112,45 +112,70 @@ their code, with only filler removed.
 
 **Guards.**
 
-- Doc against doc: the Citable wins. Doc against code: ask the author — the code may be newer.
-- Decision against decision: the newer is correct. Before going on, say which two conflict and which
+- Doc against doc: a citable wins. Doc against code: ask the author — the code may be newer.
+- Decision against decision: within a file the lower, being newer, wins; across files the leaf wins on
+  details and the root on the goal and the summary. Before going on, say which two conflict and which
   one is taken.
-- About the architecture target, the files in `markdowns/` win over the Java code and its
-  documentation.
+- About the architecture target, the folders' three files and the files in `markdowns/` win over the
+  Java code and its documentation.
 - A standing instruction has a scope (which files) and an end. One meant to last goes in this file.
 - A changed decision is edited in place and committed; git keeps the old version.
 
 **Decisions.** The author: "I decided a single source of truth where the rest is build"; "the
 decisions work as a RAPTOR"; "hereby Agents store their inference only, I can fix those
-inferences"; "we do not cut my words." *(2026-10-18)*
+inferences"; "we do not cut my words." *(2026-10-18)* The three-file method, 2026-10-22, is read here
+from the author's words in `markdowns/new-architecture.md`, which win over this reading; a later
+session moves them into the root citable's `## Method`, through `markdowns/agents-unreviewed.md`.
 
-- Since 2026-10-22 the decisions are in the folders' three files (`markdowns/new-architecture.md`); the
-  method below is the former one until it is formalized.
-- **The Citable**, now each folder's `agents-citable.md`, is the single source of truth. Above its
-  **Unconfirmed** heading: the author's words, never cut, and the inferences the author confirmed.
-  At its end, under Unconfirmed: the agents' inferences.
-- **Agents store inferences only**, never the author's words in full: the agent's claim, then the
-  author's own words it rests on, in quotes, dated. The full wording stays in the session
-  transcripts. Agents append under Unconfirmed and edit nothing above it unless the author asks.
-- **The author audits**: fixes an inference, cuts it (never copies) above Unconfirmed to confirm it,
-  or deletes it. Build nothing on an unconfirmed inference.
-- **The summaries** are a two-level tree, the RAPTOR way (summaries built recursively over clusters),
-  from the part above Unconfirmed only: `summaries/<topic>.md`, compact bullets that each quote the
-  Citable, and `summaries/overview.md`, whose lines each cite topic bullets. A cluster is the
-  question entries answer; an entry may sit in several. Cut hard, to about a quarter of the source:
-  detail is one quote away.
-- **Agents read** the overview, then a topic summary, and open a quoted Citable entry only when a
-  line concerns them. The Citable wins over its summary; a summary line without a quote is invalid.
-- **After a change above Unconfirmed**, rebuild only the topic summaries quoting the changed entry,
-  then the overview, and run the summary check (its path is in Claude's memory).
+- **The files.** A folder that holds entries has `CLAUDE.md`, the summary; `agents-citable.md`, the
+  entries the author agreed on; and `agents-unreviewed.md`, the entries the author has not checked. The
+  author: "Agents hold the summary of the decisions made, citable is the agreed on facts, and the
+  agent-unreviewed [agents-unreviewed.md] is the things I need to check." A folder gets them with its
+  first entry; a folder that only holds one folder gets none.
+- The root's are in `markdowns/`, its `CLAUDE.md` imported above. A module folder stands for the
+  folders down to its package root. A folder is named by its path with that chain left out: `root`,
+  `acs`, `acse/arity/catalog/file`.
+- **Where an entry goes.** "Level is the folder." An entry about a thing goes to the folder holding the
+  thing; one about a relation, whole, to the deepest folder holding all its things. The author: "an
+  explanation inside of a folder only explains things inside of that folder and nothing else."
+- **Agents read** the `CLAUDE.md` files, which load by themselves (the root's at launch, a subfolder's
+  when a file there is read), and open a citable only when confused: "The agents will read the
+  agent.md [agents.md] only, and if confused will check the citable first." Build nothing on an
+  unreviewed entry.
+- **Conflicts**: within a file the lower is the newer and wins; across files the leaf wins on details,
+  the root on the goal and the summary.
+- **Recording** a new decision: one bullet at the end of its folder's `agents-unreviewed.md`, below the
+  `# Unreviewed` line, continuation lines indented by two spaces, in this order: `- Verbatim:` the
+  author's words under the quote test, dated `*(YYYY-MM-DD)*`; `Meaning:` Claude's inference, only
+  when it is shorter, naming any entry it overrides; the record-decision labels; `Section: <section>`
+  or `Section: <section> / <subsection>`, naming the citable's heading; last, one `Replaces: <folder> N`
+  per overridden entry. The Verbatim is the author's; an agent adds of its own only the Meaning and the
+  labels. The migrated entries keep their one part and their `Section:` line. A new
+  `agents-unreviewed.md` starts with the header `# <folder>: entries to review`, then the
+  `# Unreviewed` line.
 - **record-decision**, for a new decision. The author: "Agent must scan entire decisions to find
-  "common, complement, contradict" things and then propose me a better definition." Scan the
-  summaries and open the entries they quote; label each related entry Commons, Complements or
-  Conflicts; append the better definition under Unconfirmed, quoting the author, with the entries it
-  would replace and what each loses; ask each conflict as `markdown-refining.md` → Questions to the
-  author says.
-- **Migrated** on 2026-10-21 (`f52b823`): `decisions.md`, its topic files and `inferred-decisions.md`
-  joined into `citable.md`, and the handoff moved to `current-state.md`.
+  "common, complement, contradict" things and then propose me a better definition." Read every
+  folder's `CLAUDE.md` and the target folder's `agents-unreviewed.md`, and open the citable entries the
+  lines concern; label each related entry Commons, Complements or Conflicts, citing it as `(acs 36)`;
+  the better definition is the Meaning, and the entries it would replace are its `Replaces:` lines,
+  with what each loses; ask each conflict as `markdown-refining.md` → Questions to the author says.
+- **The author reviews**: fixes entries and moves the accepted ones above the `# Unreviewed` line, or
+  runs the terminal review. On "reviewed", Claude runs the review move: "The script must move things
+  above the `# Unreviewed` line." Each goes to the end of its section in the citable, numbered
+  `- **N.** ` with the next unused number, never reused; an overridden entry is kept and marked
+  `[replaced by: <folder> N]`; the moved entries leave the unreviewed file. The paths are in Claude's
+  memory.
+- **Then the summaries**: rebuild the `CLAUDE.md` of each folder the move prints, leaves first, root
+  last, each from its former `CLAUDE.md`, its citable, and its subfolders' `CLAUDE.md`, never from
+  unreviewed entries. Each line cites its entries, `(12, 15)` in its own citable, `(acse 4)` or
+  `(root 7)` in another; every entry is cited; a line keeps its entries' hedges, negations, scope and
+  time words, or leaves that claim out. About a quarter of its citable; the root's also compares its
+  subfolders and lists the files in `markdowns/`. Then run the summary check (its path is in Claude's
+  memory).
+- **Two phases**: "one is development (ordinary), and the other is understanding (moving the data
+  across markdowns)." "There will be only one session on a folder."
+- **Migrated** on 2026-10-21 (`f52b823`) into `citable.md`, and on 2026-10-22 (`3c57dce`) into the
+  folders' three files; the former method is in git at `3c57dce`.
 
 ## Layout
 
